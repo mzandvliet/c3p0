@@ -56,10 +56,12 @@ public class SignalBuffer extends AbstractList<Signal> implements ISignalBuffer,
 	public Signal getInterpolated(long tick, long timestamp) {
 		update(tick);
 		
+		// Return oldest
 		Signal oldest = signals.get(0);
 		if (timestamp <= oldest.timestamp)
-			return oldest;
+			return Signal.copy(oldest);
 
+		// Return interpolated
 		for (int i = 0; i < signals.size(); i++) {
 			Signal current = signals.get(i);
 			if (current.timestamp >= timestamp) {
@@ -67,6 +69,7 @@ public class SignalBuffer extends AbstractList<Signal> implements ISignalBuffer,
 			}
 		}
 		
+		// Return newest
 		return Signal.copy(signals.get(signals.size()-1));
 	}
 	
@@ -74,7 +77,7 @@ public class SignalBuffer extends AbstractList<Signal> implements ISignalBuffer,
 		if (tick > lastTick) {
 			Signal newest = source.getLatest(tick);
 			if (transformer != null) {
-				transformer.transform(signals, newest);
+				newest = transformer.transform(signals, newest);
 			}				
 			signals.enqueue(newest);
 			lastTick = tick;

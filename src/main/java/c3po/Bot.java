@@ -30,7 +30,8 @@ public class Bot {
 		
 		// Hmmm, hardly the most elegant. If only we had proper delegates...
 		// Maybe transformer should be its own node with its own little kernel-sized buffer instead of piggybacking on a regular SignalBuffer
-		// Keep the idea of injected transform method though, saves on boilerplate
+		// Keep the idea of injected transform method though, saves on boilerplate.
+		// Actually, making this a node is best because the transformation becomes more explicit, more visible
 		final ISignalTransformer movAvgTransformer = new ISignalTransformer() {
 			private int kernelSize = 5;
 			@Override

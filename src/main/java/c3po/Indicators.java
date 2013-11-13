@@ -13,7 +13,7 @@ public class Indicators {
 		return new Signal(timestamp, valueDelta * lerp);
 	}
 	
-	public static List<Signal> filterMovingAverage(List<Signal> signals, int kernelSize) {
+	public static List<Signal> filterMovingAverage(final List<Signal> signals, final int kernelSize) {
 		int size = signals.size();
 		List<Signal> smoothSignals = new ArrayList<Signal>(size);
 		
@@ -24,7 +24,7 @@ public class Indicators {
 		return smoothSignals;
 	}
 	
-	public static Signal filterMovingAverage(List<Signal> smoothSignals, Signal newest, int kernelSize) {
+	public static Signal filterMovingAverage(final List<Signal> smoothSignals, final Signal newest, final int kernelSize) {
 		int size = smoothSignals.size();
 		
 		if (size == 0)
@@ -39,7 +39,7 @@ public class Indicators {
 			kernelSum += current.value;
 		}
 		kernelSum += newest.value;
-		
+
 		return new Signal(newest.timestamp, kernelSum / kernelSize);
 	}
 	
