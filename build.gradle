@@ -20,6 +20,7 @@ repositories {
 dependencies{
     compile fileTree(dir: 'lib', include: '*.jar')
 
+	compile 'org.json:json:20131018'
     compile 'org.apache.commons:commons-lang3:3.1'
     compile 'org.slf4j:slf4j-api:1.7.2'
     compile 'ch.qos.logback:logback-core:1.0.9'
@@ -44,7 +45,7 @@ buildscript {
     }
 }
 
-//Lets add all dependancies to the generated jar
+//Lets add all dependencies to the generated jar
 jar {
    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
    manifest { attributes 'Main-Class': 'test.Main' }
