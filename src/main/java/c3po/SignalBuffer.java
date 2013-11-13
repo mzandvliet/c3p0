@@ -7,12 +7,18 @@ import java.util.*;
  */
 public class SignalBuffer extends AbstractList<Signal> implements ISignalBuffer, RandomAccess {
 	private ISignalSource source;
+	private ISignalTransformer transformer;
 	private CircularArrayList<Signal> signals;
 	private long lastTick = -1;
 	
 	public SignalBuffer(ISignalSource source, int length) {
 		this.source = source;
 		this.signals = new CircularArrayList<Signal>(length);
+	}
+	
+	public SignalBuffer(ISignalSource source, int length, ISignalTransformer transformer) {
+		this(source, length);
+		this.transformer = transformer;
 	}
 	
 	@Override
@@ -22,16 +28,30 @@ public class SignalBuffer extends AbstractList<Signal> implements ISignalBuffer,
 	
 	@Override
 	public Signal get(int index) {
-		return signals.get(index);
+		return Signal.copy(signals.get(index));
+	}
+	
+	@Override
+	public Signal getLatest(long tick) {
+		update(tick);
+		
+		return Signal.copy(signals.get(signals.size()-1));
+	}
+	
+	@Override
+	public Signal getOldest(long tick) {
+		update(tick);
+		return Signal.copy(signals.get(0));
 	}
 	
 	@Override
 	public Signal get(long tick, int index) {
 		update(tick);
 		
-		return signals.get(index);
+		return Signal.copy(signals.get(index));
 	}
 
+	// Todo: inject interpolation strategy
 	@Override
 	public Signal getInterpolated(long tick, long timestamp) {
 		update(tick);
@@ -47,24 +67,15 @@ public class SignalBuffer extends AbstractList<Signal> implements ISignalBuffer,
 			}
 		}
 		
-		return signals.get(signals.size()-1);
-	}
-	
-	@Override
-	public Signal getLatest(long tick) {
-		update(tick);
-		return signals.get(signals.size()-1);
-	}
-	
-	@Override
-	public Signal getOldest(long tick) {
-		update(tick);
-		return signals.get(0);
+		return Signal.copy(signals.get(signals.size()-1));
 	}
 	
 	private void update(long tick) {
 		if (tick > lastTick) {
-			Signal newest = source.get(tick); 
+			Signal newest = source.getLatest(tick);
+			if (transformer != null) {
+				transformer.transform(signals, newest);
+			}				
 			signals.enqueue(newest);
 			lastTick = tick;
 		}

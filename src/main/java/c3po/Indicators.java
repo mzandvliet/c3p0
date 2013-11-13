@@ -1,6 +1,7 @@
 package c3po;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.math.*;
 
 public class Indicators {
@@ -12,52 +13,69 @@ public class Indicators {
 		return new Signal(timestamp, valueDelta * lerp);
 	}
 	
-	public static double[] filterMovingAverage(double[] values, double kernelSize) {
-		double[] result = new double[values.length];
+	public static List<Signal> filterMovingAverage(List<Signal> signals, int kernelSize) {
+		int size = signals.size();
+		List<Signal> smoothSignals = new ArrayList<Signal>(size);
 		
-		for (int i = 0; i < values.length; i++) {
-			double kernelSum = 0;
-		    for (int j = 0; j < kernelSize; j++) {
-		      int kernelIndex = clamp(i + j, 0, values.length-1);
-		      kernelSum += values[kernelIndex];
-		    }
-		    result[i] = kernelSum / kernelSize;
-		  }
-		
-		return result;
-	}
-	
-	public static double[] filterExpMovingAverage(double[] values, int kernelSize) {
-		double alpha = 2.0 / ((double)kernelSize + 1.0);
-		double[] averageValues = new double[values.length];
-		  
-		double previous = values[values.length-1];
-		averageValues[values.length-1] = previous;
-		double current;
-		for (int i = values.length - 2; i >= 0; i--) {
-			current = values[i] * alpha + previous * (1.0 - alpha);
-			previous = current;
-			averageValues[i] = current;
+		for (int i = 0; i < size; i++) {
+			smoothSignals.add(filterMovingAverage(smoothSignals, signals.get(i), kernelSize));
 		}
 		
-		return averageValues;
+		return smoothSignals;
 	}
+	
+	public static Signal filterMovingAverage(List<Signal> smoothSignals, Signal newest, int kernelSize) {
+		int size = smoothSignals.size();
+		
+		if (size == 0)
+			return Signal.copy(newest);
+		
+		double kernelSum = 0;
+		
+		// From oldest to newest in kernel, clamping in case we don't have enough samples
+		for (int j = 0; j < kernelSize; j++) {
+			int kernelIndex = clamp(size - j, 0, size-1);
+			Signal current = smoothSignals.get(kernelIndex);
+			kernelSum += current.value;
+		}
+		kernelSum += newest.value;
+		
+		return new Signal(newest.timestamp, kernelSum / kernelSize);
+	}
+	
+	// Todo: make recursive filtering methods with signature (Signal previous, Signal current)
+	
+//	public static double[] filterExpMovingAverage(double[] values, int kernelSize) {
+//		double alpha = 2.0 / ((double)kernelSize + 1.0);
+//		double[] averageValues = new double[values.length];
+//		  
+//		double previous = values[values.length-1];
+//		averageValues[values.length-1] = previous;
+//		double current;
+//		for (int i = values.length - 2; i >= 0; i--) {
+//			current = values[i] * alpha + previous * (1.0 - alpha);
+//			previous = current;
+//			averageValues[i] = current;
+//		}
+//		
+//		return averageValues;
+//	}
 	
 	public static int clamp(int value, int min, int max) {
 		return Math.max(min, Math.min(max, value));
 	}
 	
-	public static double[] combine(double[] a, double[] b, ICombiner combiner) {
-		double[] result = new double[a.length];
-		
-		for (int i = 0; i < a.length; i++) {
-			result[i] = combiner.combine(a[i], b[i]);
-		}
-		
-		return result;
-	}
-	
-	public interface ICombiner {
-		public double combine(double a, double b);
-	}
+//	public static double[] combine(double[] a, double[] b, ICombiner combiner) {
+//		double[] result = new double[a.length];
+//		
+//		for (int i = 0; i < a.length; i++) {
+//			result[i] = combiner.combine(a[i], b[i]);
+//		}
+//		
+//		return result;
+//	}
+//	
+//	public interface ICombiner {
+//		public double combine(double a, double b);
+//	}
 }

@@ -1,16 +1,12 @@
 package c3po;
 
 /*
- * Behaves like a value type / struct
+ * Meant to be used like a value type.
  */
 public class Signal {
-	public long timestamp;
-	public double value;
-	
-	public Signal() {
-		timestamp = 0;
-		value = 0;
-	}
+	public static final Signal none = new Signal(0, 0.0);
+	public final long timestamp;
+	public final double value;
 	
 	public Signal(long timestamp, double value) {
 		this.timestamp = timestamp;
@@ -47,5 +43,9 @@ public class Signal {
 	@Override
 	public String toString() {
 		return "Signal [timestamp=" + timestamp + ", value=" + value + "]";
+	}
+	
+	public static Signal copy(Signal signal) {
+		return new Signal(signal.timestamp, signal.value);
 	}
 }
