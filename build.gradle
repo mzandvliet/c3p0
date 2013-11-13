@@ -1,0 +1,58 @@
+project.ext.name = "C3P0"
+project.ext.group = "nl.c3po"
+
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'java'
+
+//Moved source/target specifications to after apply plugin java (resets it in some gradle functions)
+ext.sourceCompatibility = JavaVersion.VERSION_1_6
+ext.targetCompatibility = JavaVersion.VERSION_1_6
+
+defaultTasks 'clean', 'test'
+
+version = "0.1-SNAPSHOT"
+	
+repositories {
+    mavenCentral()
+}
+
+dependencies{
+    compile fileTree(dir: 'lib', include: '*.jar')
+
+    compile 'org.apache.commons:commons-lang3:3.1'
+    compile 'org.slf4j:slf4j-api:1.7.2'
+    compile 'ch.qos.logback:logback-core:1.0.9'
+    compile 'ch.qos.logback:logback-classic:1.0.9'
+	testCompile 'org.mockito:mockito-all:1.9.5'            
+	testCompile 'junit:junit:4.11'
+}
+
+eclipse {
+    jdt {
+        sourceCompatibility = 1.6
+        targetCompatibility = 1.6
+    }
+}
+
+buildscript {
+    repositories {
+     
+    }
+    dependencies {
+   
+    }
+}
+
+//Lets add all dependancies to the generated jar
+jar {
+   from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+   manifest { attributes 'Main-Class': 'test.Main' }
+}
+
+
+//This line was added so the compiler used correct java source & target (Linux specific?)
+compileJava {
+        sourceCompatibility = 1.6
+        targetCompatibility = 1.6
+}
