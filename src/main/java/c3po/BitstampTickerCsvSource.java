@@ -62,7 +62,7 @@ public class BitstampTickerCsvSource implements ISignalSource {
 	    	if (nextLine != null) {
 	    		long timestamp = Long.parseLong(nextLine[0]);
 	    		for (int i = 0; i < signals.length; i++) {
-	    			signals[i].setSample(new Sample(timestamp, Double.parseDouble(nextLine[1])));
+	    			signals[i].setSample(new Sample(timestamp, Double.parseDouble(nextLine[i])));
 	    		}
 			}
 	    	else {

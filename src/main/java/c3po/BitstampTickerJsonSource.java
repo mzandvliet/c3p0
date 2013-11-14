@@ -1,13 +1,9 @@
 package c3po;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import au.com.bytecode.opencsv.CSVReader;
 
 public class BitstampTickerJsonSource implements ISignalSource {
 	private final String url;
