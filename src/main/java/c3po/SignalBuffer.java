@@ -3,12 +3,14 @@ package c3po;
 import java.util.*;
 
 /*
- * Storing history of a signal in chronological order
+ * Stores history of a signal in chronological order.
+ * 
+ * When buffer length reaches max, oldest value is automatically dropped.
  */
 public class SignalBuffer extends AbstractList<Sample> implements ISignalBuffer, RandomAccess {
-	private ISignal source;
-	private CircularArrayList<Sample> signals;
-	private long lastTick = -1;
+	protected ISignal source;
+	protected CircularArrayList<Sample> signals;
+	protected long lastTick = -1;
 	
 	public SignalBuffer(ISignal source, int length) {
 		this.source = source;

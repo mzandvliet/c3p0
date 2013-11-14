@@ -1,5 +1,11 @@
 package c3po;
 
+/*
+ * Used to encapsulate a single part of a multi-part data stream as a signal.
+ * 
+ * Ticks its parent when queried for new values. Parent should then supply it with latest Sample.
+ */
+
 public class SurrogateSignal implements ISignal {
 	private ITickable parent;
 	private Sample latestSample;

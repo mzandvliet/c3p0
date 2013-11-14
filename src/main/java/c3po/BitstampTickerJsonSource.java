@@ -6,11 +6,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class BitstampTickerJsonSource implements ISignalSource {
+	private final int numSignals = 6;
 	private final String url;
 	private SurrogateSignal[] signals;
 	private long lastTick = -1;
 	
-	public BitstampTickerJsonSource(String url, int numSignals) {
+	public BitstampTickerJsonSource(String url) {
 		this.url = url;
 		this.signals = new SurrogateSignal[numSignals];
 		for (int i = 0; i < numSignals; i++) {

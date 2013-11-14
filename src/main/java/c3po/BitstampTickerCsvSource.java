@@ -7,13 +7,14 @@ import java.io.IOException;
 import au.com.bytecode.opencsv.CSVReader;
 
 public class BitstampTickerCsvSource implements ISignalSource {
+	private final int numSignals = 6;
 	private SurrogateSignal[] signals;
 	private final String path;
 	private CSVReader reader;
 	private long lastTick = -1;
 	private boolean isEmpty = false;
 	
-	public BitstampTickerCsvSource(String path, int numSignals) {
+	public BitstampTickerCsvSource(String path) {
 		this.path = path;
 		this.signals = new SurrogateSignal[numSignals];
 		for (int i = 0; i < numSignals; i++) {
