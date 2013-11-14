@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /* Todo:
- * - Rename SignalSource to SignalGroup maybe? It groups a bunch of signals.
+ * 
  * - Encapsulate data transformations as nodes in the tree, supporting
  * 		- 1 Signal to 1 Signal (scaling by a constant, or something)
  * 		- 2 Signals to 1 Signal (substraction)
@@ -27,22 +27,24 @@ public class Bot {
 	final static String csvPath = "resources/bitstamp_ticker_until_20131114.csv";
 	final static boolean isRealtime = false;
 	
+	final static int simulationTicks = 100;
+	final static int resultBufferLength = 20;
+	
 	public static void main(String[] args) {
 		
 		// Define the signal tree		
 		
 		//final ISignalSource tickerSource = new BitstampTickerJsonSource(jsonUrl);
 		final BitstampTickerCsvSource tickerSource = new BitstampTickerCsvSource(csvPath);
-		final ISignalBuffer tickerBuffer = new SignalBuffer(tickerSource.get(2), 20);
+		final ISignalBuffer tickerBuffer = new SignalBuffer(tickerSource.get(2), resultBufferLength);
 		final MovingAverageSignal maSignal = new MovingAverageSignal(tickerBuffer, 5);
-		final ISignalBuffer smoothBuffer = new SignalBuffer(maSignal, 20);
+		final ISignalBuffer smoothBuffer = new SignalBuffer(maSignal, resultBufferLength);
 		
 		tickerSource.open();
 		
-		// Tick the leafs to propagate (or 'draw') signals through the tree
+		// Tick the leafs repeatedly to propagate (or 'draw') signals through the tree from roots to leaves
 		
-		for (long tick = 0; tick < 100; tick++) {
-			
+		for (long tick = 0; tick < simulationTicks; tick++) {
 			smoothBuffer.tick(tick);
 			
 			if (isRealtime)

@@ -6,7 +6,7 @@ public class MovingAverageSignal extends SignalBuffer {
 	private int kernelSize;
 	
 	public MovingAverageSignal(ISignal source, int kernelSize) {
-		super(source, kernelSize * 2);
+		super(source, kernelSize * 2); // Pad buffer length to push calculation error outside critical range
 		this.kernelSize = kernelSize;
 	}
 	
