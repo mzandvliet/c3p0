@@ -1,38 +1,67 @@
 package c3po;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import au.com.bytecode.opencsv.CSVReader;
+
 public class BitstampTickerJsonSource implements ISignalSource {
-	private final String url = "http://www.bitstamp.net/api/ticker/";
-	
-	private Signal latest;
+	private final String url;
+	private SurrogateSignal[] signals;
 	private long lastTick = -1;
+	
+	public BitstampTickerJsonSource(String url, int numSignals) {
+		this.url = url;
+		this.signals = new SurrogateSignal[numSignals];
+		for (int i = 0; i < numSignals; i++) {
+			this.signals[i] = new SurrogateSignal(this);
+		}
+	}
 		
-	public Signal getLatest(long tick) {
-		update(tick);
-		return Signal.copy(latest);
+	@Override
+	public int getNumSignals() {
+		return signals.length;
 	}
 	
-	private void update(long tick) {
+	@Override
+	public ISignal get(int i) {
+		return signals[i];
+	}
+	
+	public enum SignalName {
+		LAST,
+	    HIGH,
+	    LOW,
+	    VOLUME,
+	    BID,
+	    ASK
+	}
+	
+	public void tick(long tick) {
 		if (tick >= lastTick) {
-			latest = parseJson();
+			parseJson();
 			lastTick = tick;
 		}
 	}
-
-	private Signal parseJson() {
+	
+	private void parseJson() {
 		try {
 			JSONObject json = JsonReader.readJsonFromUrl(url);
-			return new Signal(json.getLong("timestamp"), json.getDouble("last"));
+			long timestamp = json.getLong("timestamp");
+    		signals[0].setSample(new Sample(timestamp, json.getDouble("last")));
+    		signals[1].setSample(new Sample(timestamp, json.getDouble("high")));
+    		signals[2].setSample(new Sample(timestamp, json.getDouble("low")));
+    		signals[3].setSample(new Sample(timestamp, json.getDouble("volume")));
+    		signals[4].setSample(new Sample(timestamp, json.getDouble("bid")));
+    		signals[5].setSample(new Sample(timestamp, json.getDouble("ask")));
 		} catch (JSONException e) {
 			e.printStackTrace();
-			return Signal.none;
 		} catch (IOException e) {
 			e.printStackTrace();
-			return Signal.none;
 		}
 	}
 }

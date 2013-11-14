@@ -7,16 +7,30 @@ import java.io.IOException;
 import au.com.bytecode.opencsv.CSVReader;
 
 public class BitstampTickerCsvSource implements ISignalSource {
+	private SurrogateSignal[] signals;
 	private final String path;
 	private CSVReader reader;
-	private Signal latest;
 	private long lastTick = -1;
 	private boolean isEmpty = false;
 	
-	public BitstampTickerCsvSource(String path) {
+	public BitstampTickerCsvSource(String path, int numSignals) {
 		this.path = path;
+		this.signals = new SurrogateSignal[numSignals];
+		for (int i = 0; i < numSignals; i++) {
+			this.signals[i] = new SurrogateSignal(this);
+		}
 	}
 	
+	@Override
+	public int getNumSignals() {
+		return signals.length;
+	}
+	
+	@Override
+	public ISignal get(int i) {
+		return signals[i];
+	}
+
 	public void open() {
 		try {
 			reader = new CSVReader(new FileReader(path));
@@ -35,31 +49,27 @@ public class BitstampTickerCsvSource implements ISignalSource {
 		}
 	}
 	
-	public Signal getLatest(long tick) {
-		update(tick);
-		return Signal.copy(latest);
-	}
-	
-	private void update(long tick) {
+	public void tick(long tick) {
 		if (tick >= lastTick) {
-			latest = parseCsv();
+			parseCsv();
 			lastTick = tick;
 		}
 	}
 
-	private Signal parseCsv() {
+	private void parseCsv() {
 	    try {
 	    	String [] nextLine  = reader.readNext();
 	    	if (nextLine != null) {
-			    return new Signal(Long.parseLong(nextLine[0]), Double.parseDouble(nextLine[1]));
+	    		long timestamp = Long.parseLong(nextLine[0]);
+	    		for (int i = 0; i < signals.length; i++) {
+	    			signals[i].setSample(new Sample(timestamp, Double.parseDouble(nextLine[1])));
+	    		}
 			}
 	    	else {
 	    		 isEmpty = true;
-	    		 return Signal.none;
 	    	}
 		} catch (IOException e) {
 			e.printStackTrace();
-			return Signal.none;
 		}
 	}
 	
@@ -72,5 +82,14 @@ public class BitstampTickerCsvSource implements ISignalSource {
 	 */
 	public boolean isEmpty() {
 		return isEmpty;
+	}
+	
+	public enum SignalName {
+		LAST,
+	    HIGH,
+	    LOW,
+	    VOLUME,
+	    BID,
+	    ASK
 	}
 }

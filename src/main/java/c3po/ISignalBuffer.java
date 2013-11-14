@@ -2,9 +2,8 @@ package c3po;
 
 import java.util.List;
 
-public interface ISignalBuffer extends List<Signal>, ISignalSource  {
-	public Signal get(long tick, int index);
-	public Signal getInterpolated(long tick, long timestamp);
-	public Signal getLatest(long tick);
-	public Signal getOldest(long tick);
+public interface ISignalBuffer extends List<Sample>, ISignal  {
+	public ISignal getSignal();
+	public Sample getSample(long tick, int index);
+	public Sample getInterpolatedSample(long tick, long timestamp);
 }

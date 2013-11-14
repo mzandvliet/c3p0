@@ -5,17 +5,17 @@ import java.util.List;
 import java.math.*;
 
 public class Indicators {
-	public static Signal lerp(Signal oldest, Signal newest, long timestamp) {
+	public static Sample lerp(Sample oldest, Sample newest, long timestamp) {
 		long timeDelta = newest.timestamp - oldest.timestamp;
 		long localTime = newest.timestamp - timestamp;
 		double lerp = (double)localTime / (double)timeDelta;
 		double valueDelta = newest.value - oldest.value;
-		return new Signal(timestamp, valueDelta * lerp);
+		return new Sample(timestamp, valueDelta * lerp);
 	}
 	
-	public static List<Signal> filterMovingAverage(final List<Signal> signals, final int kernelSize) {
+	public static List<Sample> filterMovingAverage(final List<Sample> signals, final int kernelSize) {
 		int size = signals.size();
-		List<Signal> smoothSignals = new ArrayList<Signal>(size);
+		List<Sample> smoothSignals = new ArrayList<Sample>(size);
 		
 		for (int i = 0; i < size; i++) {
 			smoothSignals.add(filterMovingAverage(smoothSignals, signals.get(i), kernelSize));
@@ -24,23 +24,23 @@ public class Indicators {
 		return smoothSignals;
 	}
 	
-	public static Signal filterMovingAverage(final List<Signal> smoothSignals, final Signal newest, final int kernelSize) {
+	public static Sample filterMovingAverage(final List<Sample> smoothSignals, final Sample newest, final int kernelSize) {
 		int size = smoothSignals.size();
 		
 		if (size == 0)
-			return Signal.copy(newest);
+			return Sample.copy(newest);
 		
 		double kernelSum = 0;
 		
 		// From oldest to newest in kernel, clamping in case we don't have enough samples
 		for (int j = 0; j < kernelSize-1; j++) {
 			int kernelIndex = clamp(size - j, 0, size-1);
-			Signal current = smoothSignals.get(kernelIndex);
+			Sample current = smoothSignals.get(kernelIndex);
 			kernelSum += current.value;
 		}
 		kernelSum += newest.value;
 
-		return new Signal(newest.timestamp, kernelSum / kernelSize);
+		return new Sample(newest.timestamp, kernelSum / kernelSize);
 	}
 	
 	// Todo: make recursive filtering methods with signature (Signal previous, Signal current)
@@ -61,9 +61,9 @@ public class Indicators {
 //		return averageValues;
 //	}
 	
-	public static List<Signal> filterExpMovingAverage(List<Signal> signals, int kernelSize) {
+	public static List<Sample> filterExpMovingAverage(List<Sample> signals, int kernelSize) {
 		int size = signals.size();
-		List<Signal> smoothSignals = new ArrayList<Signal>(size);
+		List<Sample> smoothSignals = new ArrayList<Sample>(size);
 		  
 		for (int i = 0; i < size; i++) {
 			smoothSignals.add(filterExpMovingAverage(smoothSignals, signals.get(i), kernelSize));
@@ -72,17 +72,17 @@ public class Indicators {
 		return smoothSignals;
 	}
 	
-	public static Signal filterExpMovingAverage(final List<Signal> smoothSignals, final Signal newest, final int kernelSize) {
+	public static Sample filterExpMovingAverage(final List<Sample> smoothSignals, final Sample newest, final int kernelSize) {
 		int size = smoothSignals.size();
 		
 		if (size == 0)
-			return Signal.copy(newest);
+			return Sample.copy(newest);
 		
 		double alpha = 2.0 / ((double)kernelSize + 1.0);
 		double previous = smoothSignals.get(size-1).value;
 		double current = newest.value * alpha + previous * (1.0 - alpha);
 
-		return new Signal(newest.timestamp, current);
+		return new Sample(newest.timestamp, current);
 	}
 	
 	public static int clamp(int value, int min, int max) {
