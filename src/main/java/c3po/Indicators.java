@@ -33,7 +33,7 @@ public class Indicators {
 		double kernelSum = 0;
 		
 		// From oldest to newest in kernel, clamping in case we don't have enough samples
-		for (int j = 0; j < kernelSize; j++) {
+		for (int j = 0; j < kernelSize-1; j++) {
 			int kernelIndex = clamp(size - j, 0, size-1);
 			Signal current = smoothSignals.get(kernelIndex);
 			kernelSum += current.value;
