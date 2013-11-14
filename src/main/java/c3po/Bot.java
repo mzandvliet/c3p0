@@ -18,7 +18,12 @@ public class Bot {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Bot.class);
 	
 	final static long updateInterval = 1000;
-	final static String csvPath = "E:\\code\\workspace\\c3po\\marketdata\\bitstamp_ticker_13-11-13.csv";
+	//final static String csvPath = "E:\\code\\workspace\\c3po\\marketdata\\bitstamp_ticker_13-11-13.csv";
+	final static String csvPath = "resources/bitstamp_ticker_until_20131114.csv";
+	
+	// Set this to true if you want to read the whole CSV, false if you only want to fill one buffer for testing
+	final static boolean useAllSamples = true;
+	
 	final static boolean isRealtime = false;
 	
 	public static void main(String[] args) {
@@ -26,33 +31,38 @@ public class Bot {
 		final BitstampTickerCsvSource tickerSource = new BitstampTickerCsvSource(csvPath);
 		tickerSource.open();
 		
-		final ISignalBuffer tickerBuffer = new SignalBuffer(tickerSource, 100);
+		do {
 		
-		// Hmmm, hardly the most elegant. If only we had proper delegates...
-		// Maybe transformer should be its own node with its own little kernel-sized buffer instead of piggybacking on a regular SignalBuffer
-		// Keep the idea of injected transform method though, saves on boilerplate.
-		// Actually, making this a node is best because the transformation becomes more explicit, more visible
-		final ISignalTransformer movAvgTransformer = new ISignalTransformer() {
-			private int kernelSize = 5;
-			@Override
-			public Signal transform(List<Signal> lastSignals, Signal newest) {
-				return Indicators.filterMovingAverage(lastSignals, newest, kernelSize);
-			}
-		};
-		
-		final ISignalBuffer smoothBuffer = new SignalBuffer(tickerBuffer, 100, movAvgTransformer);
-		
-		for (long tick = 0; tick < 100; tick++) {
-			smoothBuffer.getLatest(tick);
+			final ISignalBuffer tickerBuffer = new SignalBuffer(tickerSource, 100);
 			
-			if (isRealtime)
-				Wait(updateInterval);
-		}
+			// Hmmm, hardly the most elegant. If only we had proper delegates...
+			// Maybe transformer should be its own node with its own little kernel-sized buffer instead of piggybacking on a regular SignalBuffer
+			// Keep the idea of injected transform method though, saves on boilerplate.
+			// Actually, making this a node is best because the transformation becomes more explicit, more visible
+			final ISignalTransformer movAvgTransformer = new ISignalTransformer() {
+				private int kernelSize = 5;
+				@Override
+				public Signal transform(List<Signal> lastSignals, Signal newest) {
+					return Indicators.filterMovingAverage(lastSignals, newest, kernelSize);
+				}
+			};
+			
+			final ISignalBuffer smoothBuffer = new SignalBuffer(tickerBuffer, 100, movAvgTransformer);
+			
+			for (long tick = 0; tick < 100; tick++) {
+				smoothBuffer.getLatest(tick);
+				
+				if (isRealtime)
+					Wait(updateInterval);
+			}
+			
+			LOGGER.debug("buffer contents: " + tickerBuffer.size());
+			for (int i = 0; i < tickerBuffer.size(); i++) {
+				LOGGER.debug(tickerBuffer.get(i).toString() + smoothBuffer.get(i).toString());
+			}
 		
-		LOGGER.debug("buffer contents: " + tickerBuffer.size());
-		for (int i = 0; i < tickerBuffer.size(); i++) {
-			LOGGER.debug(tickerBuffer.get(i).toString() + smoothBuffer.get(i).toString());
-		}
+		// Reread the CSV for new signals if there is still something left to read
+		} while(useAllSamples && !tickerSource.isEmpty());
 		
 		tickerSource.close();
 	}
