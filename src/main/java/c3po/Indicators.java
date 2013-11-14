@@ -61,6 +61,30 @@ public class Indicators {
 //		return averageValues;
 //	}
 	
+	public static List<Signal> filterExpMovingAverage(List<Signal> signals, int kernelSize) {
+		int size = signals.size();
+		List<Signal> smoothSignals = new ArrayList<Signal>(size);
+		  
+		for (int i = 0; i < size; i++) {
+			smoothSignals.add(filterExpMovingAverage(smoothSignals, signals.get(i), kernelSize));
+		}
+		
+		return smoothSignals;
+	}
+	
+	public static Signal filterExpMovingAverage(final List<Signal> smoothSignals, final Signal newest, final int kernelSize) {
+		int size = smoothSignals.size();
+		
+		if (size == 0)
+			return Signal.copy(newest);
+		
+		double alpha = 2.0 / ((double)kernelSize + 1.0);
+		double previous = smoothSignals.get(size-1).value;
+		double current = newest.value * alpha + previous * (1.0 - alpha);
+
+		return new Signal(newest.timestamp, current);
+	}
+	
 	public static int clamp(int value, int min, int max) {
 		return Math.max(min, Math.min(max, value));
 	}

@@ -41,7 +41,7 @@ public class Bot {
 			private int kernelSize = 5;
 			@Override
 			public Signal transform(List<Signal> lastSignals, Signal newest) {
-				return Indicators.filterMovingAverage(lastSignals, newest, kernelSize);
+				return Indicators.filterExpMovingAverage(lastSignals, newest, kernelSize);
 			}
 		};
 		
