@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class BitstampTickerJsonSource implements ISignalSource {
+public class BitstampTickerJsonSource implements ICompositeSignal {
 	private final int numSignals = 6;
 	private final String url;
 	private SurrogateSignal[] signals;

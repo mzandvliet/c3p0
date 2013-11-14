@@ -1,6 +1,6 @@
 package c3po;
 
-public interface ISignalSource extends ITickable {
+public interface ICompositeSignal extends ITickable {
 	public int getNumSignals();
 	public ISignal get(int i);
 }

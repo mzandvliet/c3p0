@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /* Todo:
+ * - Rename SignalSource to SignalGroup maybe? It groups a bunch of signals.
  * - Encapsulate data transformations as nodes in the tree, supporting
  * 		- 1 Signal to 1 Signal (scaling by a constant, or something)
  * 		- 2 Signals to 1 Signal (substraction)
@@ -11,8 +12,9 @@ import org.slf4j.LoggerFactory;
  * - Create ITradeFloor interface (with a better name perhaps?)
  * 		- basic buy/sell methods
  * 		- wallet supporting multiple currencies
- * 		- pass to bot nodes so they can trade
+ * 		- pass instance to bot nodes so they can trade
  * - Use a charting library to show results, either live or after a simulation
+ * 		- Either implement charts as leaf nodes in the signal tree, or point them to leafs in the tree
  * 		- http://www.jfree.org/jfreechart/samples.html
  * 		- https://code.google.com/p/charts4j/
  */
@@ -26,6 +28,7 @@ public class Bot {
 	final static boolean isRealtime = false;
 	
 	public static void main(String[] args) {
+		
 		// Define the signal tree		
 		
 		//final ISignalSource tickerSource = new BitstampTickerJsonSource(jsonUrl);
@@ -37,6 +40,7 @@ public class Bot {
 		tickerSource.open();
 		
 		// Tick the leafs to propagate (or 'draw') signals through the tree
+		
 		for (long tick = 0; tick < 100; tick++) {
 			
 			smoothBuffer.tick(tick);
@@ -47,7 +51,8 @@ public class Bot {
 		
 		tickerSource.close();
 		
-		// Log results
+		// Display the results
+		
 		LOGGER.debug("buffer contents: " + tickerBuffer.size());
 		for (int i = 0; i < tickerBuffer.size(); i++) {
 			LOGGER.debug(tickerBuffer.get(i).toString() + smoothBuffer.get(i).toString());

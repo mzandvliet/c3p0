@@ -1,0 +1,61 @@
+package c3po;
+
+/* 
+ * MacdSource
+ * 
+ * This is kind of a macro, a signal tree wrapped in a single node for easy use, with
+ * defined inputs and outputs for hooking it into other signal trees.
+ * 
+ * Todo:
+ * 
+ * - Create internal signal tree
+ * - Clear definition of inputs and outputs
+ * - Expose node tree for manual introspection (like chart drawing of buffers or visualizing structure)
+ */
+public class MacdSource implements ICompositeSignal {
+	private final int numSignals = 5;
+	private SurrogateSignal[] signals;
+	private long lastTick = -1;
+	
+	public MacdSource(ISignal ticker, int fast, int slow, int signal) {
+		this.signals = new SurrogateSignal[numSignals];
+		
+		// Todo: create transformation buffers for each stage
+		this.signals[0] = new SurrogateSignal(this);
+		this.signals[1] = new SurrogateSignal(this);
+		this.signals[2] = new SurrogateSignal(this);
+		this.signals[3] = new SurrogateSignal(this);
+		this.signals[4] = new SurrogateSignal(this);
+	}
+		
+	@Override
+	public int getNumSignals() {
+		return numSignals;
+	}
+	
+	@Override
+	public ISignal get(int i) {
+		return signals[i];
+	}
+	
+	public void tick(long tick) {
+		if (tick >= lastTick) {
+			calculate();
+			lastTick = tick;
+		}
+	}
+	
+	private void calculate() {
+		
+	}
+	
+	public enum SignalNames {
+		FAST,
+		SLOW,
+		MACD,
+		SIGNAL,
+		DIFFERENCE
+	}
+	
+	
+}

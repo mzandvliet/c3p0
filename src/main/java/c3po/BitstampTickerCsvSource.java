@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import au.com.bytecode.opencsv.CSVReader;
 
-public class BitstampTickerCsvSource implements ISignalSource {
+public class BitstampTickerCsvSource implements ICompositeSignal {
 	private final int numSignals = 6;
 	private SurrogateSignal[] signals;
 	private final String path;
