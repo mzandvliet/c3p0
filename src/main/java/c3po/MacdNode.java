@@ -14,30 +14,31 @@ package c3po;
  */
 public class MacdNode implements INode {
 	private final int numSignals = 5;
-	private SurrogateSignal[] signals;
+	private ISignal[] signals;
 	private long lastTick = -1;
+	
+	INode fastNode;
+	INode slowNode;
+	INode macdNode;
+	INode signalNode;
+	INode diffNode;
 	
 	public MacdNode(ISignal ticker, int fast, int slow, int signal) {
 		this.signals = new SurrogateSignal[numSignals];
 		
-		/* Todo: 
-		 * 
-		 * - create internal signal tree (mov. avg. etc.), hook them up together
-		 * 
-		 * From the javascript original:
-		 * 
-		 * var avgA = filterExpMovingAverage_(ticker, fast);
-  		 * var avgB = filterExpMovingAverage_(ticker, slow);
-  		 * var macd = combine_(avgA, avgB, function(a, b) { return a - b; });
-  		 * var macdAvg = filterExpMovingAverage_(macd, signal);
-  		 * var diff = combine_(macd, macdAvg, function(a, b) { return a - b; });
-		 */
+		// Create internal signal tree, hook all intermediate results up to outputs
 		
-		this.signals[0] = new SurrogateSignal(this);
-		this.signals[1] = new SurrogateSignal(this);
-		this.signals[2] = new SurrogateSignal(this);
-		this.signals[3] = new SurrogateSignal(this);
-		this.signals[4] = new SurrogateSignal(this);
+		fastNode = new ExpMovingAverageNode(ticker, fast);
+		slowNode = new ExpMovingAverageNode(ticker, slow);
+		macdNode = new SubtractNode(fastNode.getOutput(0), slowNode.getOutput(0));
+		signalNode = new ExpMovingAverageNode(macdNode.getOutput(0), signal);
+		diffNode = new SubtractNode(macdNode.getOutput(0), signalNode.getOutput(0));
+		
+		this.signals[0] = fastNode.getOutput(0);
+		this.signals[1] = slowNode.getOutput(0);
+		this.signals[2] = macdNode.getOutput(0);
+		this.signals[3] = signalNode.getOutput(0);
+		this.signals[4] = diffNode.getOutput(0);
 	}
 		
 	@Override
@@ -52,18 +53,9 @@ public class MacdNode implements INode {
 	
 	public void tick(long tick) {
 		if (tick >= lastTick) {
-			calculate();
+			diffNode.tick(tick);
 			lastTick = tick;
 		}
-	}
-	
-	private void calculate() {
-		/*
-		 * Todo:
-		 *  
-		 * - Draw new Sample through internal signal tree
-		 * - Send Sample to output signals
-		 */
 	}
 	
 	public enum SignalNames {
@@ -73,6 +65,4 @@ public class MacdNode implements INode {
 		SIGNAL,
 		DIFFERENCE
 	}
-	
-	
 }

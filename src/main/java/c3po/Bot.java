@@ -44,16 +44,16 @@ public class Bot {
 		//final ISignalSource tickerSource = new BitstampTickerJsonSource(jsonUrl);
 		//final BitstampTickerDbSource dbTickerSource = new BitstampTickerDbSource(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
 		final BitstampTickerCsvSource tickerNode = new BitstampTickerCsvSource(csvPath);
-		final ISignalBuffer tickerBufferNode = new SignalBuffer(tickerNode.getOutput(2), resultBufferLength);
-		final INode emaNode = new ExpMovingAverageNode(tickerBufferNode, 5);
-		final ISignalBuffer smoothBuffer = new SignalBuffer(emaNode.getOutput(0), resultBufferLength);
+		final ISignalBuffer tickerBufferedSignal = new SignalBuffer(tickerNode.getOutput(2), resultBufferLength);
+		final INode macdNode = new MacdNode(tickerBufferedSignal, 12, 26, 9);
+		final ISignalBuffer resultBuffer = new SignalBuffer(macdNode.getOutput(4), resultBufferLength);
 		
 		tickerNode.open();
 		
 		// Tick the leafs repeatedly to propagate (or 'draw') samples through the tree from roots to leaves
 		
 		for (long tick = 0; tick < simulationTicks; tick++) {
-			smoothBuffer.tick(tick);
+			resultBuffer.tick(tick);
 			
 			if (isRealtime)
 				Wait(updateInterval);
@@ -63,9 +63,9 @@ public class Bot {
 		
 		// Display the results
 		
-		LOGGER.debug("buffer contents: " + tickerBufferNode.size());
-		for (int i = 0; i < tickerBufferNode.size(); i++) {
-			LOGGER.debug(tickerBufferNode.get(i).toString() + smoothBuffer.get(i).toString());
+		LOGGER.debug("buffer contents: " + tickerBufferedSignal.size());
+		for (int i = 0; i < tickerBufferedSignal.size(); i++) {
+			LOGGER.debug(tickerBufferedSignal.get(i).toString() + resultBuffer.get(i).toString());
 		}
 	}
 	
