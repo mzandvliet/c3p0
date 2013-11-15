@@ -32,6 +32,7 @@ import c3po.macd.MacdNodeConfig;
  * - Time
  * 		- Make time range and sampling/tick rate configurable
  * 		- Start using interpolation to correct sample timing error
+ * 		- Supply tick() with timestamp of either real time or simulation time, instead of an arbitrary value
  * 
  * - Use a charting library to show results, either live or after a simulation
  * 		- Either implement charts as leaf nodes in the signal tree, or point them to leafs in the tree
