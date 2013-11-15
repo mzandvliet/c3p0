@@ -54,12 +54,12 @@ public class Bot {
 		//final BitstampTickerDbSource dbTickerSource = new BitstampTickerDbSource(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
 		final BitstampTickerCsvSource tickerNode = new BitstampTickerCsvSource(csvPath);
 		final ITradeFloor tradeFloor = new BitstampTradeFloor(
-				tickerNode.getOutput(0),
-				tickerNode.getOutput(4),
-				tickerNode.getOutput(5),
+				tickerNode.getOutputLast(),
+				tickerNode.getOutputBid(),
+				tickerNode.getOutputAsk(),
 				walletDollarStart);
 		
-		final INode macdNode = new MacdNode(tickerNode.getOutput(0), 12, 26, 9);
+		final INode macdNode = new MacdNode(tickerNode.getOutputLast(), 12, 26, 9);
 		final MacdBot macdBot = new MacdBot(macdNode.getOutput(4), tradeFloor, 0.5, 20);
 		
 		// Tick the leafs repeatedly to propagate (or 'draw') samples through the tree from roots to leaves

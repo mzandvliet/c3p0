@@ -31,6 +31,30 @@ public class BitstampTickerCsvSource implements INode {
 	public ISignal getOutput(int i) {
 		return signals[i];
 	}
+	
+	public OutputSignal getOutputBid() {
+		return signals[SignalName.BID.ordinal()];
+	}
+	
+	public OutputSignal getOutputAsk() {
+		return signals[SignalName.ASK.ordinal()];
+	}
+	
+	public OutputSignal getOutputVolume() {
+		return signals[SignalName.VOLUME.ordinal()];
+	}
+	
+	public OutputSignal getOutputLast() {
+		return signals[SignalName.LAST.ordinal()];
+	}
+	
+	public OutputSignal getOutputHigh() {
+		return signals[SignalName.HIGH.ordinal()];
+	}
+	
+	public OutputSignal getOutputLow() {
+		return signals[SignalName.LOW.ordinal()];
+	}
 
 	public void open() {
 		try {
