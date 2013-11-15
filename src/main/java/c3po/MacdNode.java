@@ -12,12 +12,12 @@ package c3po;
  * - Clear definition of inputs and outputs
  * - Expose node tree for manual introspection (like chart drawing of buffers or visualizing structure)
  */
-public class MacdSource implements ICompositeSignal {
+public class MacdNode implements INode {
 	private final int numSignals = 5;
 	private SurrogateSignal[] signals;
 	private long lastTick = -1;
 	
-	public MacdSource(ISignal ticker, int fast, int slow, int signal) {
+	public MacdNode(ISignal ticker, int fast, int slow, int signal) {
 		this.signals = new SurrogateSignal[numSignals];
 		
 		/* Todo: 
@@ -41,12 +41,12 @@ public class MacdSource implements ICompositeSignal {
 	}
 		
 	@Override
-	public int getNumSignals() {
+	public int getNumOutputs() {
 		return numSignals;
 	}
 	
 	@Override
-	public ISignal get(int i) {
+	public ISignal getOutput(int i) {
 		return signals[i];
 	}
 	

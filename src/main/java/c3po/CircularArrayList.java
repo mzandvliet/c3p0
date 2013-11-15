@@ -12,6 +12,10 @@ import java.util.RandomAccess;
  * isak at du-preez dot com
  * www.du-preez.com
  */
+
+/* Todo:
+ * - Implement queue interface, since that's how we're using this.
+ */
 public class CircularArrayList<E> extends AbstractList<E> implements RandomAccess {
 	private final int n; // buffer length
 	private final List<E> buf; // a List implementing RandomAccess

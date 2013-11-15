@@ -6,7 +6,7 @@ import java.sql.*;
 /**
  * Work in progress in using the database as source
  */
-public class BitstampTickerDbSource implements ICompositeSignal {
+public class BitstampTickerDbSource implements INode {
 	private SurrogateSignal[] signals;
 	private Connection connect = null;
 	  private Statement statement = null;
@@ -31,12 +31,12 @@ public class BitstampTickerDbSource implements ICompositeSignal {
 	}
 	
 	@Override
-	public int getNumSignals() {
+	public int getNumOutputs() {
 		return signals.length;
 	}
 	
 	@Override
-	public ISignal get(int i) {
+	public ISignal getOutput(int i) {
 		return signals[i];
 	}
 	

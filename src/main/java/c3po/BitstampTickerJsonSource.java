@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class BitstampTickerJsonSource implements ICompositeSignal {
+public class BitstampTickerJsonSource implements INode {
 	private final int numSignals = 6;
 	private final String url;
 	private SurrogateSignal[] signals;
@@ -20,12 +20,12 @@ public class BitstampTickerJsonSource implements ICompositeSignal {
 	}
 		
 	@Override
-	public int getNumSignals() {
+	public int getNumOutputs() {
 		return signals.length;
 	}
 	
 	@Override
-	public ISignal get(int i) {
+	public ISignal getOutput(int i) {
 		return signals[i];
 	}
 	

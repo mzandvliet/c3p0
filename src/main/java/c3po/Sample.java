@@ -2,6 +2,8 @@ package c3po;
 
 /*
  * Meant to be used like a value type.
+ * 
+ * (What the shit, java? This is a fucking tuple.)
  */
 public class Sample {
 	public static final Sample none = new Sample(0, 0.0);

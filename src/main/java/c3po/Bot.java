@@ -2,12 +2,16 @@ package c3po;
 
 import java.net.InetSocketAddress;
 import java.sql.SQLException;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /* Todo:
  * 
+ * - Find a simpler, better abstraction for signals
+ * 		- A signal provides one or more sample streams
+ * 		- You can split & merge signals
  * - Encapsulate data transformations as nodes in the tree, supporting
  * 		- 1 Signal to 1 Signal (scaling by a constant, or something)
  * 		- 2 Signals to 1 Signal (substraction)
@@ -38,15 +42,15 @@ public class Bot {
 		// Define the signal tree		
 		
 		//final ISignalSource tickerSource = new BitstampTickerJsonSource(jsonUrl);
-		final BitstampTickerDbSource dbTickerSource = new BitstampTickerDbSource(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
-		final BitstampTickerCsvSource tickerSource = new BitstampTickerCsvSource(csvPath);
-		final ISignalBuffer tickerBuffer = new SignalBuffer(tickerSource.get(2), resultBufferLength);
-		final MovingAverageSignal maSignal = new MovingAverageSignal(tickerBuffer, 5);
-		final ISignalBuffer smoothBuffer = new SignalBuffer(maSignal, resultBufferLength);
+		//final BitstampTickerDbSource dbTickerSource = new BitstampTickerDbSource(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+		final BitstampTickerCsvSource tickerNode = new BitstampTickerCsvSource(csvPath);
+		final ISignalBuffer tickerBufferNode = new SignalBuffer(tickerNode.getOutput(2), resultBufferLength);
+		final INode emaNode = new ExpMovingAverageNode(tickerBufferNode, 5);
+		final ISignalBuffer smoothBuffer = new SignalBuffer(emaNode.getOutput(0), resultBufferLength);
 		
-		tickerSource.open();
+		tickerNode.open();
 		
-		// Tick the leafs repeatedly to propagate (or 'draw') signals through the tree from roots to leaves
+		// Tick the leafs repeatedly to propagate (or 'draw') samples through the tree from roots to leaves
 		
 		for (long tick = 0; tick < simulationTicks; tick++) {
 			smoothBuffer.tick(tick);
@@ -55,13 +59,13 @@ public class Bot {
 				Wait(updateInterval);
 		}
 		
-		tickerSource.close();
+		tickerNode.close();
 		
 		// Display the results
 		
-		LOGGER.debug("buffer contents: " + tickerBuffer.size());
-		for (int i = 0; i < tickerBuffer.size(); i++) {
-			LOGGER.debug(tickerBuffer.get(i).toString() + smoothBuffer.get(i).toString());
+		LOGGER.debug("buffer contents: " + tickerBufferNode.size());
+		for (int i = 0; i < tickerBufferNode.size(); i++) {
+			LOGGER.debug(tickerBufferNode.get(i).toString() + smoothBuffer.get(i).toString());
 		}
 	}
 	
