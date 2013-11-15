@@ -19,9 +19,13 @@ import c3po.TradeAction.TradeActionType;
  */
 
 public class BitstampTradeFloor implements ITradeFloor {
+	
+	private double tradeFee = 0.02d;
+	
 	private double walletUsd;
-	private double walledBtc;
+	private double walletBtc;
 	private List<TradeAction> actions;
+	
 	
 	ISignal lastSignal;
 	ISignal bidSignal;
@@ -43,7 +47,7 @@ public class BitstampTradeFloor implements ITradeFloor {
 
 	@Override
 	public double getWalletBtc() {
-		return walledBtc;
+		return walletBtc;
 	}
 	
 	@Override
@@ -55,6 +59,11 @@ public class BitstampTradeFloor implements ITradeFloor {
 	public double toUsd(double btc) {
 		return btc * lastSignal.peek().value;
 	}
+	
+	@Override
+	public double getWalletValue() {
+		return walletUsd + toUsd(walletBtc);
+	}	
 
 	@Override
 	public void buy(double volume) {
@@ -63,7 +72,9 @@ public class BitstampTradeFloor implements ITradeFloor {
 		
 		// We assume the trade is fulfilled instantly, for the price of the ask
 		walletUsd -= currentAsk.value * volume;
-		walledBtc += volume;
+		
+		// Add the bought volume to the wallet, minus the percentage from the tradefee
+		walletBtc += volume * ((double) 1-tradeFee);
 		
 		actions.add(new TradeAction(TradeActionType.BUY, new Date().getTime(), volume));
 	}
@@ -75,7 +86,7 @@ public class BitstampTradeFloor implements ITradeFloor {
 		
 		// We assume the trade is fulfilled instantly, for the price of the ask
 		walletUsd += currentBid.value * volume;
-		walledBtc -= volume;
+		walletBtc -= volume * ((double) 1 + tradeFee);
 		
 		actions.add(new TradeAction(TradeActionType.SELL, new Date().getTime(), volume));
 	}

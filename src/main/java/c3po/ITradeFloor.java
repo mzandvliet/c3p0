@@ -20,4 +20,5 @@ public interface ITradeFloor {
 	public void sell(double volume);
 	
 	public List<TradeAction> getActions();
+	double getWalletValue();
 }

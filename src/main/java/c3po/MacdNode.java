@@ -1,5 +1,10 @@
 package c3po;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import c3po.macd.MacdNodeConfig;
+
 /* 
  * MacdSource
  * 
@@ -10,6 +15,9 @@ package c3po;
  * - Expose node tree for manual introspection (like chart drawing of buffers or visualizing structure)
  */
 public class MacdNode implements INode {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(Bot.class);
+	
 	private final int numSignals = 5;
 	private ISignal[] signals;
 	private long lastTick = -1;
@@ -20,24 +28,34 @@ public class MacdNode implements INode {
 	INode signalNode;
 	INode diffNode;
 	
-	public MacdNode(ISignal input, int fast, int slow, int signal) {
+	private final MacdNodeConfig config;
+	
+	public MacdNode(ISignal input, MacdNodeConfig config) {
+		this.config = config;
 		this.signals = new OutputSignal[numSignals];
 		
 		// Create internal signal tree, hook all intermediate results up to outputs
-		
-		fastNode = new ExpMovingAverageNode(input, fast);
-		slowNode = new ExpMovingAverageNode(input, slow);
+		fastNode = new ExpMovingAverageNode(input, config.getFastSampleCount());
+		slowNode = new ExpMovingAverageNode(input, config.getSignalSampleCount());
 		macdNode = new SubtractNode(fastNode.getOutput(0), slowNode.getOutput(0));
-		signalNode = new ExpMovingAverageNode(macdNode.getOutput(0), signal);
+		signalNode = new ExpMovingAverageNode(macdNode.getOutput(0), config.getSignalSampleCount());
 		diffNode = new SubtractNode(macdNode.getOutput(0), signalNode.getOutput(0));
 		
-		this.signals[0] = fastNode.getOutput(0);
-		this.signals[1] = slowNode.getOutput(0);
-		this.signals[2] = macdNode.getOutput(0);
-		this.signals[3] = signalNode.getOutput(0);
-		this.signals[4] = diffNode.getOutput(0);
-	}
+		this.signals[SignalNames.FAST.ordinal()] = fastNode.getOutput(0);
+		this.signals[SignalNames.SLOW.ordinal()] = slowNode.getOutput(0);
+		this.signals[SignalNames.MACD.ordinal()] = macdNode.getOutput(0);
+		this.signals[SignalNames.SIGNAL.ordinal()] = signalNode.getOutput(0);
+		this.signals[SignalNames.DIFFERENCE.ordinal()] = diffNode.getOutput(0);
 		
+		LOGGER.debug(String.format("Initiated MacdNode with " + config));
+	}
+	
+		
+	public MacdNodeConfig getConfig() {
+		return config;
+	}
+
+
 	@Override
 	public int getNumOutputs() {
 		return numSignals;

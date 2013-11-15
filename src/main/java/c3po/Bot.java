@@ -2,10 +2,14 @@ package c3po;
 
 import java.net.InetSocketAddress;
 import java.sql.SQLException;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import c3po.macd.MacdBotConfig;
+import c3po.macd.MacdNodeConfig;
 
 /* Todo:
  * 
@@ -37,31 +41,67 @@ import org.slf4j.LoggerFactory;
 
 public class Bot {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Bot.class);
-	
-	final static long updateInterval = 1000;
 	final static String jsonUrl = "http://www.bitstamp.net/api/ticker/";
 	final static String csvPath = "resources/bitstamp_ticker_until_20131114.csv";
-	final static boolean isRealtime = false;
 	
-	final static int simulationTicks = 1400;
-	final static double walletDollarStart = 1000.0;
+	final long updateInterval;
+	final boolean isRealtime;
+	final int simulationTicks;
+	final double walletDollarStart;
+
+	private final BitstampTickerCsvSource tickerNode;
+	
+	// Some object references to make debugging easier
+	private final MacdBot macdBot;
+	private final MacdBotConfig macdBotConfig;
+	private final MacdNode macdNode;
+	private final MacdNodeConfig macdNodeConfig;
+	
+	private ITradeFloor tradeFloor;
+
 	
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
+		Bot bot = new Bot(false, 14000, 1000.0, 1000);
+		bot.run();
+	}
+	
+	public Bot(boolean isRealtime, int simulationTicks, double walletDollarStart, long updateInterval) {
+		this.isRealtime = isRealtime;
+		this.simulationTicks = simulationTicks;
+		this.walletDollarStart = walletDollarStart;
+		this.updateInterval = updateInterval;
 		
 		// Define the signal tree		
 		
 		//final ISignalSource tickerSource = new BitstampTickerJsonSource(jsonUrl);
 		//final BitstampTickerDbSource dbTickerSource = new BitstampTickerDbSource(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
-		final BitstampTickerCsvSource tickerNode = new BitstampTickerCsvSource(csvPath);
-		final ITradeFloor tradeFloor = new BitstampTradeFloor(
+		tickerNode = new BitstampTickerCsvSource(csvPath);
+		tradeFloor = new BitstampTradeFloor(
 				tickerNode.getOutputLast(),
 				tickerNode.getOutputBid(),
 				tickerNode.getOutputAsk(),
-				walletDollarStart);
+				walletDollarStart
+		);
 		
-		final INode macdNode = new MacdNode(tickerNode.getOutputLast(), 12, 26, 9);
-		final MacdBot macdBot = new MacdBot(macdNode.getOutput(4), tradeFloor, 0.5, 20);
+		// MacdNodeConfig
+		int fast = (int) Math.round(1 + Math.random() * 120); // Default: 12
+		int slow = (int) Math.round(1 + Math.random() * 260); // Default: 26
+		int signal = (int) Math.round(1 + Math.random() * 200); // Default: 9
+		macdNodeConfig = new MacdNodeConfig(slow, fast, signal);
+		macdNode = new MacdNode(tickerNode.getOutputLast(), macdNodeConfig);
 		
+		// MacdBot
+		double minDiffVelocity = 0.01 + Math.random() * 0.99; // Default 0.5
+		int startDelay = 20; // Default 20
+		double usdToBtcTradeAmount = 0.01 + Math.random() * 0.99; // Default 0.5
+		double btcToUsdTradeAmount = 0.01 + Math.random() * 0.99; // Default 0.5
+		macdBotConfig = new MacdBotConfig(startDelay, minDiffVelocity, usdToBtcTradeAmount, btcToUsdTradeAmount);
+		macdBot = new MacdBot(macdNode.getOutput(4), tradeFloor, macdBotConfig);
+	}
+	
+	 
+	
+	public void run() {
 		// Tick the leafs repeatedly to propagate (or 'draw') samples through the tree from roots to leaves
 		
 		tickerNode.open();
@@ -75,15 +115,28 @@ public class Bot {
 		
 		// Display the results
 		
-		LOGGER.debug("Num trades: " + tradeFloor.getActions().size() + ", Profit: " + (tradeFloor.getWalledUsd() - walletDollarStart));
+		LOGGER.debug("Num trades: " + tradeFloor.getActions().size() + ", Profit: " + (tradeFloor.getWalletValue() - walletDollarStart));
+	}
+	
+	public String toString() {
+		return String.format("%s, %s", macdNodeConfig, macdBotConfig);
 	}
 	
 	private static void Wait(long interval) {
 		try {
 			Thread.sleep(interval);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
+
+	public ITradeFloor getTradeFloor() {
+		return tradeFloor;
+	}
+
+	public void setTradeFloor(ITradeFloor tradeFloor) {
+		this.tradeFloor = tradeFloor;
+	}
+	
+	
 }
