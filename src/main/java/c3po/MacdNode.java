@@ -21,7 +21,7 @@ public class MacdNode implements INode {
 	INode diffNode;
 	
 	public MacdNode(ISignal input, int fast, int slow, int signal) {
-		this.signals = new SurrogateSignal[numSignals];
+		this.signals = new OutputSignal[numSignals];
 		
 		// Create internal signal tree, hook all intermediate results up to outputs
 		

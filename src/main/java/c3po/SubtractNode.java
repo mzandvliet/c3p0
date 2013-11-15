@@ -3,13 +3,13 @@ package c3po;
 public class SubtractNode implements INode {
 	private ISignal inputA;
 	private ISignal inputB;
-	private SurrogateSignal output;
+	private OutputSignal output;
 	private long lastTick = -1;
 	
 	public SubtractNode(ISignal inputA, ISignal inputB) {
 		this.inputA = inputA;
 		this.inputB = inputB;
-		this.output = new SurrogateSignal(this);
+		this.output = new OutputSignal(this);
 	}
 
 	@Override

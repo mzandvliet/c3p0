@@ -6,14 +6,14 @@ public class ExpMovingAverageNode implements INode {
 	private ISignal input;
 	private int kernelSize;
 	private CircularArrayList<Sample> buffer;
-	private SurrogateSignal output;
+	private OutputSignal output;
 	private long lastTick = -1;
 	
 	public ExpMovingAverageNode(ISignal input, int kernelSize) {
 		this.input = input;
 		this.kernelSize = kernelSize;
 		this.buffer = new CircularArrayList<Sample>(kernelSize * 2);
-		this.output = new SurrogateSignal(this);
+		this.output = new OutputSignal(this);
 	}
 
 	@Override

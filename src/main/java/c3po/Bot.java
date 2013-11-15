@@ -14,6 +14,9 @@ import org.slf4j.LoggerFactory;
  * 		- Tweak macdBot configuration for profit
  * 
  * - Network architecture
+ * 		- Make Sample generic?
+ * 			- So you can have ISignal<TradeAction> & INode<TradeAction>
+ * 			- Analyse wallet & trade data streams using network methods too
  * 		- Find abstractions that reduce boilerplate for data transformation nodes
  * 			- Something akin to delegates/lambdas, you know
  * 		- Make node input/output indexing more human readable with enums

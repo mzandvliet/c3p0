@@ -7,7 +7,7 @@ import java.sql.*;
  * Work in progress in using the database as source
  */
 public class BitstampTickerDbSource implements INode {
-	private SurrogateSignal[] signals;
+	private OutputSignal[] signals;
 	private Connection connect = null;
 	  private Statement statement = null;
 	  private ResultSet resultSet = null;

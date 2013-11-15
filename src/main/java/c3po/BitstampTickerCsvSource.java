@@ -8,7 +8,7 @@ import au.com.bytecode.opencsv.CSVReader;
 
 public class BitstampTickerCsvSource implements INode {
 	private final int numSignals = 6;
-	private SurrogateSignal[] signals;
+	private OutputSignal[] signals;
 	private final String path;
 	private CSVReader reader;
 	private long lastTick = -1;
@@ -16,9 +16,9 @@ public class BitstampTickerCsvSource implements INode {
 	
 	public BitstampTickerCsvSource(String path) {
 		this.path = path;
-		this.signals = new SurrogateSignal[numSignals];
+		this.signals = new OutputSignal[numSignals];
 		for (int i = 0; i < numSignals; i++) {
-			this.signals[i] = new SurrogateSignal(this);
+			this.signals[i] = new OutputSignal(this);
 		}
 	}
 	

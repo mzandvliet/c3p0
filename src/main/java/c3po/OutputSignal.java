@@ -1,17 +1,17 @@
 package c3po;
 
 /*
- * Used to encapsulate a single part of a multi-part data stream as a signal.
+ * Used to encapsulate a single output value for a Node
  * 
  * Ticks its parent when queried for new value. Parent should then supply it with latest Sample.
  */
 
-public class SurrogateSignal implements ISignal {
-	private ITickable parent;
+public class OutputSignal implements ISignal {
+	private ITickable ownerNode;
 	private Sample latestSample;
 	
-	public SurrogateSignal(ITickable parent) {
-		this.parent = parent;
+	public OutputSignal(ITickable node) {
+		this.ownerNode = node;
 	}
 	
 	public void setSample(Sample sample) {
@@ -31,6 +31,6 @@ public class SurrogateSignal implements ISignal {
 	
 	@Override
 	public void tick(long tick) {
-		parent.tick(tick);
+		ownerNode.tick(tick); // Tick the node that owns this output, which then updates this output's value
 	}
 }
