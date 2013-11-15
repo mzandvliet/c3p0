@@ -9,12 +9,23 @@ import org.slf4j.LoggerFactory;
 
 /* Todo:
  * 
- * - Find abstractions that reduce boilerplate for data transformation nodes
- * 		- Something akin to delegates/lambdas, you know
- * - Make node input/output indexing more human readable with enums
+ * - Algorithms
+ * 		- Verify correct macd results (hard to see without charts)
+ * 		- Tweak macdBot configuration for profit
+ * 
+ * - Network architecture
+ * 		- Find abstractions that reduce boilerplate for data transformation nodes
+ * 			- Something akin to delegates/lambdas, you know
+ * 		- Make node input/output indexing more human readable with enums
+ * 
  * - Improve TradeFloor interface with
  * 		- Currency abstraction
  * 		- Costs
+ * 
+ * - Time
+ * 		- Make time range and sampling/tick rate configurable
+ * 		- Start using interpolation to correct sample timing error
+ * 
  * - Use a charting library to show results, either live or after a simulation
  * 		- Either implement charts as leaf nodes in the signal tree, or point them to leafs in the tree
  * 		- http://www.jfree.org/jfreechart/samples.html
