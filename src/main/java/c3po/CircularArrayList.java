@@ -4,6 +4,7 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Queue;
 import java.util.RandomAccess;
 
 /**
@@ -16,7 +17,7 @@ import java.util.RandomAccess;
 /* Todo:
  * - Implement queue interface, since that's how we're using this.
  */
-public class CircularArrayList<E> extends AbstractList<E> implements RandomAccess {
+public class CircularArrayList<E> extends AbstractList<E> implements Queue<E>,RandomAccess {
 	private final int n; // buffer length
 	private final List<E> buf; // a List implementing RandomAccess
 	private int head = 0;
@@ -70,6 +71,16 @@ public class CircularArrayList<E> extends AbstractList<E> implements RandomAcces
 	}
 	
 	@Override
+	public boolean add(E e) {
+		int s = size();
+	    if (s == n - 1) {
+	        remove();
+	    }
+		add(size(), e);
+		return true;
+	}
+	
+	@Override
 	public void add(int i, E e) {
 	    int s = size();
 	    if (s == n - 1) {
@@ -86,14 +97,6 @@ public class CircularArrayList<E> extends AbstractList<E> implements RandomAcces
 	    set(i, e);
 	}
 	
-	public void enqueue(E e) {
-		int s = size();
-	    if (s == n - 1) {
-	        dequeue();
-	    }
-		add(size(), e);
-	}
-	
 	@Override
 	public E remove(int i) {
 	    int s = size();
@@ -108,7 +111,34 @@ public class CircularArrayList<E> extends AbstractList<E> implements RandomAcces
 	    return e;
 	}
 	
-	public E dequeue() {
+	@Override
+	public E element() {
+		return peek();
+	}
+
+	@Override
+	public boolean offer(E e) {
+		add(e);
+		return true;
+	}
+
+	@Override
+	public E peek() throws IllegalStateException {
+		if (size() == 0)
+			throw new IllegalStateException("List is empty");
+			
+		return buf.get(head);
+	}
+
+	@Override
+	public E poll() {
+		if (size() != 0)
+			return buf.get(head);
+		return null;
+	}
+
+	@Override
+	public E remove() {
 		return remove(0);
 	}
 }

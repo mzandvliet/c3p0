@@ -69,7 +69,7 @@ public class SignalBuffer extends AbstractList<Sample> implements ISignalBuffer,
 	
 	public void tick(long tick) {
 		if (tick > lastTick) {
-			signals.enqueue(source.getSample(tick));
+			signals.add(source.getSample(tick));
 			lastTick = tick;
 		}
 	}

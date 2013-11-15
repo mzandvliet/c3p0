@@ -30,7 +30,7 @@ public class ExpMovingAverageNode implements INode {
 	public void tick(long tick) {
 		if (tick > lastTick) {
 			Sample newest = transform(buffer, input.getSample(tick), kernelSize);
-			buffer.enqueue(newest);
+			buffer.add(newest);
 			output.setSample(newest);
 		}
 	}
