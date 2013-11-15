@@ -38,6 +38,7 @@ public class BitstampTickerJsonSource implements ICompositeSignal {
 	    ASK
 	}
 	
+	@Override
 	public void tick(long tick) {
 		if (tick >= lastTick) {
 			parseJson();

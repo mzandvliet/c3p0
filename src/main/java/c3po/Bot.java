@@ -1,5 +1,8 @@
 package c3po;
 
+import java.net.InetSocketAddress;
+import java.sql.SQLException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,11 +33,12 @@ public class Bot {
 	final static int simulationTicks = 100;
 	final static int resultBufferLength = 20;
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		
 		// Define the signal tree		
 		
 		//final ISignalSource tickerSource = new BitstampTickerJsonSource(jsonUrl);
+		final BitstampTickerDbSource dbTickerSource = new BitstampTickerDbSource(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
 		final BitstampTickerCsvSource tickerSource = new BitstampTickerCsvSource(csvPath);
 		final ISignalBuffer tickerBuffer = new SignalBuffer(tickerSource.get(2), resultBufferLength);
 		final MovingAverageSignal maSignal = new MovingAverageSignal(tickerBuffer, 5);
