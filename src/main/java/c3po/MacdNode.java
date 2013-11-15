@@ -7,9 +7,6 @@ package c3po;
  * defined inputs and outputs for hooking it into other signal trees.
  * 
  * Todo:
- * 
- * - Create internal signal tree
- * - Clear definition of inputs and outputs
  * - Expose node tree for manual introspection (like chart drawing of buffers or visualizing structure)
  */
 public class MacdNode implements INode {
@@ -23,13 +20,13 @@ public class MacdNode implements INode {
 	INode signalNode;
 	INode diffNode;
 	
-	public MacdNode(ISignal ticker, int fast, int slow, int signal) {
+	public MacdNode(ISignal input, int fast, int slow, int signal) {
 		this.signals = new SurrogateSignal[numSignals];
 		
 		// Create internal signal tree, hook all intermediate results up to outputs
 		
-		fastNode = new ExpMovingAverageNode(ticker, fast);
-		slowNode = new ExpMovingAverageNode(ticker, slow);
+		fastNode = new ExpMovingAverageNode(input, fast);
+		slowNode = new ExpMovingAverageNode(input, slow);
 		macdNode = new SubtractNode(fastNode.getOutput(0), slowNode.getOutput(0));
 		signalNode = new ExpMovingAverageNode(macdNode.getOutput(0), signal);
 		diffNode = new SubtractNode(macdNode.getOutput(0), signalNode.getOutput(0));

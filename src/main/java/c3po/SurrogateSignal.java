@@ -18,11 +18,18 @@ public class SurrogateSignal implements ISignal {
 		latestSample = sample;
 	}
 	
+	@Override
+	public Sample peek() {
+		return latestSample;
+	}
+	
+	@Override
 	public Sample getSample(long tick) {
 		tick(tick);
 		return Sample.copy(latestSample);
 	}
 	
+	@Override
 	public void tick(long tick) {
 		parent.tick(tick);
 	}

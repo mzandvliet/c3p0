@@ -1,7 +1,5 @@
 package c3po;
 
-import java.util.List;
-
 public class SubtractNode implements INode {
 	private ISignal inputA;
 	private ISignal inputB;

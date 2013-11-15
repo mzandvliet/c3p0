@@ -18,7 +18,7 @@ public class SignalBuffer extends AbstractList<Sample> implements ISignalBuffer,
 	}
 	
 	@Override
-	public ISignal getSignal() {
+	public ISignal getInput() {
 		return source;
 	}
 
@@ -30,6 +30,11 @@ public class SignalBuffer extends AbstractList<Sample> implements ISignalBuffer,
 	@Override
 	public Sample get(int index) {
 		return Sample.copy(signals.get(index));
+	}
+	
+	@Override
+	public Sample peek() {
+		return Sample.copy(source.peek()); 
 	}
 	
 	@Override
