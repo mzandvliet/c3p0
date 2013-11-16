@@ -46,7 +46,7 @@ public class MacdAnalysisNode implements INode {
 		this.signals[SignalNames.SIGNAL.ordinal()] = signalNode.getOutput(0);
 		this.signals[SignalNames.DIFFERENCE.ordinal()] = diffNode.getOutput(0);
 		
-		LOGGER.debug(String.format("Initiated MacdNode with " + config));
+		LOGGER.debug(String.format("Initiated AnalysisNode with " + config));
 	}
 	
 		

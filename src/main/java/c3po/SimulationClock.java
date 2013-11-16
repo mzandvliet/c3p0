@@ -33,7 +33,7 @@ public class SimulationClock implements IClock {
 	public void run() {
 		// Tick the leafs repeatedly to propagate (or 'draw') samples through the tree from roots to leaves
 
-		for (long tick = 0; tick < duration; tick+=timeStep) {
+		for (long tick = 0; tick < duration; tick++) {
 			for (ITickable tickable : tickables) {
 				tickable.tick(tick);
 			}

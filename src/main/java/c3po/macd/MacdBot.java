@@ -13,6 +13,10 @@ import c3po.ITradeFloor;
 
 /* Todo:
  * 
+ * 
+ * - bots should define their own update frequency
+ * 
+ * 
  * - Algorithms
  * 		- Verify correct macd results (hard to see without charts)
  * 		- Tweak macdBot configuration for profit

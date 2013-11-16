@@ -30,7 +30,7 @@ public class MacdTraderNode implements ITickable {
 	}
 
 	/*
-	 *  Do trades purely on zerocrossings in diff, lol
+	 *  Do trades purely based on zero-crossings in difference signal
 	 */
 	@Override
 	public void tick(long tick) {
