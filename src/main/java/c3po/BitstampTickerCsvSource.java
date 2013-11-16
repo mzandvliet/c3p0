@@ -6,61 +6,21 @@ import java.io.IOException;
 
 import au.com.bytecode.opencsv.CSVReader;
 
-public class BitstampTickerCsvSource implements INode {
-	private final int numSignals = 6;
-	private OutputSignal[] signals;
+public class BitstampTickerCsvSource extends BitstampTickerSource {
 	private final String path;
 	private CSVReader reader;
 	private long lastTick = -1;
 	private boolean isEmpty = false;
 	
 	public BitstampTickerCsvSource(String path) {
+		super();
 		this.path = path;
-		this.signals = new OutputSignal[numSignals];
-		for (int i = 0; i < numSignals; i++) {
-			this.signals[i] = new OutputSignal(this);
-		}
 	}
 	
-	@Override
-	public int getNumOutputs() {
-		return signals.length;
-	}
-	
-	@Override
-	public ISignal getOutput(int i) {
-		return signals[i];
-	}
-	
-	public OutputSignal getOutputBid() {
-		return signals[SignalName.BID.ordinal()];
-	}
-	
-	public OutputSignal getOutputAsk() {
-		return signals[SignalName.ASK.ordinal()];
-	}
-	
-	public OutputSignal getOutputVolume() {
-		return signals[SignalName.VOLUME.ordinal()];
-	}
-	
-	public OutputSignal getOutputLast() {
-		return signals[SignalName.LAST.ordinal()];
-	}
-	
-	public OutputSignal getOutputHigh() {
-		return signals[SignalName.HIGH.ordinal()];
-	}
-	
-	public OutputSignal getOutputLow() {
-		return signals[SignalName.LOW.ordinal()];
-	}
-
 	public void open() {
 		try {
 			reader = new CSVReader(new FileReader(path));
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -69,7 +29,6 @@ public class BitstampTickerCsvSource implements INode {
 		try {
 			reader.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -86,8 +45,10 @@ public class BitstampTickerCsvSource implements INode {
 	    	String [] nextLine  = reader.readNext();
 	    	if (nextLine != null) {
 	    		long timestamp = Long.parseLong(nextLine[0]);
+
 	    		for (int i = 0; i < signals.length; i++) {
-	    			signals[i].setSample(new Sample(timestamp, Double.parseDouble(nextLine[i])));
+	    			// Map CSV fields (+1 to skip timestamp) to the signals 
+	    			signals[i].setSample(new Sample(timestamp, Double.parseDouble(nextLine[i+1])));
 	    		}
 			}
 	    	else {
