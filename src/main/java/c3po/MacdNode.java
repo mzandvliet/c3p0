@@ -16,7 +16,7 @@ import c3po.macd.MacdNodeConfig;
  */
 public class MacdNode implements INode {
 	
-	private static final Logger LOGGER = LoggerFactory.getLogger(Bot.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(MacdNode.class);
 	
 	private final int numSignals = 5;
 	private ISignal[] signals;
