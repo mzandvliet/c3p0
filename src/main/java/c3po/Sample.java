@@ -1,5 +1,7 @@
 package c3po;
 
+import java.util.Date;
+
 /*
  * Meant to be used like a value type.
  * 
@@ -14,6 +16,10 @@ public class Sample {
 	public Sample(long timestamp, double value) {
 		this.timestamp = timestamp;
 		this.value = value;
+	}
+	
+	public Date getDate() {
+		return new Date((long)timestamp*1000);
 	}
 	
 	@Override

@@ -1,6 +1,8 @@
 package c3po;
 
+import java.net.InetSocketAddress;
 import java.sql.SQLException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +48,7 @@ public class Bot {
 	final int simulationTicks;
 	final double walletDollarStart;
 
-	private final BitstampTickerCsvSource tickerNode;
+	private final BitstampTickerSource tickerNode;
 	
 	// Some object references to make debugging easier
 	private final MacdBot macdBot;
@@ -62,7 +64,7 @@ public class Bot {
 		bot.run();
 	}
 	
-	public Bot(boolean isRealtime, int simulationTicks, double walletDollarStart, long updateInterval) {
+	public Bot(boolean isRealtime, int simulationTicks, double walletDollarStart, long updateInterval) throws ClassNotFoundException, SQLException {
 		this.isRealtime = isRealtime;
 		this.simulationTicks = simulationTicks;
 		this.walletDollarStart = walletDollarStart;
@@ -71,7 +73,8 @@ public class Bot {
 		// Define the signal tree		
 		
 		//final ISignalSource tickerSource = new BitstampTickerJsonSource(jsonUrl);
-		//final BitstampTickerDbSource dbTickerSource = new BitstampTickerDbSource(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+		//tickerNode = new BitstampTickerDbSource(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+		
 		tickerNode = new BitstampTickerCsvSource(csvPath);
 		tradeFloor = new BitstampTradeFloor(
 				tickerNode.getOutputLast(),
@@ -80,12 +83,23 @@ public class Bot {
 				walletDollarStart
 		);
 		
+		// Graph that displays the last value from the ticker
+		GraphingNode graphingNode = new GraphingNode(tickerNode.getOutputLast(), "Ticker: Last", 1000);
+		graphingNode.pack();
+		graphingNode.setVisible(true);
+		
 		// MacdNodeConfig
 		int fast = (int) Math.round(1 + Math.random() * 120); // Default: 12
 		int slow = (int) Math.round(1 + Math.random() * 260); // Default: 26
 		int signal = (int) Math.round(1 + Math.random() * 200); // Default: 9
 		macdNodeConfig = new MacdNodeConfig(slow, fast, signal);
-		macdNode = new MacdNode(tickerNode.getOutputLast(), macdNodeConfig);
+		macdNode = new MacdNode(graphingNode.getOutput(0), macdNodeConfig);
+		
+		
+		// Graph that displays the macdDiff
+		GraphingNode macdDiffGraph = new GraphingNode(macdNode.getOutput(4), "MacdDiff", 1000);
+		macdDiffGraph.pack();
+		macdDiffGraph.setVisible(true);
 		
 		// MacdBot
 		double minDiffVelocity = 0.01 + Math.random() * 0.99; // Default 0.5
@@ -93,7 +107,7 @@ public class Bot {
 		double usdToBtcTradeAmount = 0.01 + Math.random() * 0.99; // Default 0.5
 		double btcToUsdTradeAmount = 0.01 + Math.random() * 0.99; // Default 0.5
 		macdBotConfig = new MacdBotConfig(startDelay, minDiffVelocity, usdToBtcTradeAmount, btcToUsdTradeAmount);
-		macdBot = new MacdBot(macdNode.getOutput(4), tradeFloor, macdBotConfig);
+		macdBot = new MacdBot(macdDiffGraph.getOutput(0), tradeFloor, macdBotConfig);
 	}
 	
 	 
@@ -110,8 +124,7 @@ public class Bot {
 		}
 		tickerNode.close();
 		
-		// Display the results
-		
+		// Display the results	
 		LOGGER.debug("Num trades: " + tradeFloor.getActions().size() + ", Profit: " + (tradeFloor.getWalletValue() - walletDollarStart));
 	}
 	
@@ -134,6 +147,4 @@ public class Bot {
 	public void setTradeFloor(ITradeFloor tradeFloor) {
 		this.tradeFloor = tradeFloor;
 	}
-	
-	
 }
