@@ -46,6 +46,11 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 	      LOGGER.debug(query);
 	      resultSet.next();
 	}
+	
+	@Override
+	public long getLastTick() {
+		return lastTick;
+	}
 
 	@Override
 	public void tick(long tick) {

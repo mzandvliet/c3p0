@@ -29,6 +29,11 @@ public class OutputSignal implements ISignal {
 	}
 	
 	@Override
+	public long getLastTick() {
+		return ownerNode.getLastTick();
+	}
+	
+	@Override
 	public void tick(long tick) {
 		ownerNode.tick(tick); // Tick the node that owns this output, which then updates this output's value
 	}

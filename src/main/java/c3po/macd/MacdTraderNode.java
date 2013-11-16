@@ -19,6 +19,8 @@ public class MacdTraderNode implements ITickable {
 	
 	private long lastTick;
 	private Sample lastDiff;
+	
+	private long numSkippedTicks;
 
 	public MacdTraderNode(ISignal macdDiff, ITradeFloor tradeFloor, MacdTraderConfig config) {
 		this.macdDiff = macdDiff;
@@ -28,6 +30,11 @@ public class MacdTraderNode implements ITickable {
 
 	public MacdTraderConfig getConfig() {
 		return config;
+	}
+	
+	@Override
+	public long getLastTick() {
+		return lastTick;
 	}
 	
 	@Override
@@ -44,7 +51,7 @@ public class MacdTraderNode implements ITickable {
 	public void decide(long tick) {
 		Sample currentDiff = macdDiff.getSample(tick);
 		
-		if (tick > config.startDelay) {
+		if (numSkippedTicks > config.startDelay) {
 			double velocity = lastDiff.value - currentDiff.value;
 			double signLast = Math.signum(lastDiff.value);
 			double signCurrent = Math.signum(currentDiff.value);
@@ -64,6 +71,9 @@ public class MacdTraderNode implements ITickable {
 				double volume = tradeFloor.toBtc(tradeFloor.getWalletBtc() * config.btcToUsdTradeAmount);
 				tradeFloor.sell(volume);
 			}
+		}
+		else {
+			numSkippedTicks++;
 		}
 		
 		lastDiff = currentDiff;

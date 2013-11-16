@@ -4,38 +4,42 @@ import java.util.ArrayList;
 import java.util.List;
 
 /* 
- * Todo:
- * 
- *  - We want to base the tick's timestamp on the time defined in the simulation data.
+ * Clocks should tick at a rate that is not specific to any bot (much faster, in fact).
+ * Each clock iteration we check whether any bots want to be updated.
  */
 
 public class SimulationClock implements IClock {
-	private List<ITickable> tickables;
-	private long duration;
-	private long timeStep;
+	private List<IBot> bots;
+	private long startTime;
+	private long endTime;
+	private long clockTimestep;
 	
-	public SimulationClock(long startTime, long duration) {
-		this.tickables = new ArrayList<ITickable>();
-		this.duration = duration;
-		this.timeStep = timeStep;
+	public SimulationClock(long clockTimestep, long startTime, long endTime) {
+		this.bots = new ArrayList<IBot>();
+		this.clockTimestep = clockTimestep;
+		this.startTime = startTime;
+		this.endTime = endTime;
 	}
 	
 	@Override
-	public void addListener(ITickable tickable) {
-		tickables.add(tickable);
+	public void addListener(IBot tickable) {
+		bots.add(tickable);
 	}
 
 	@Override
-	public void removeListener(ITickable tickable) {
-		tickables.remove(tickable);
+	public void removeListener(IBot tickable) {
+		bots.remove(tickable);
 	}
 
 	public void run() {
-		// Tick the leafs repeatedly to propagate (or 'draw') samples through the tree from roots to leaves
-
-		for (long tick = 0; tick < duration; tick++) {
-			for (ITickable tickable : tickables) {
-				tickable.tick(tick);
+		for (long currentTick = startTime; currentTick < endTime; currentTick += clockTimestep) {
+			
+			// Iterate over all tickables, see which needs to be ticked
+			
+			for (IBot bot : bots) {
+				if (currentTick - bot.getLastTick() >= bot.getTimestep()) {
+					bot.tick(currentTick);
+				}
 			}
 		}
 	}

@@ -21,6 +21,11 @@ public class SubtractNode implements INode {
 	public ISignal getOutput(int i) {
 		return output;
 	}
+	
+	@Override
+	public long getLastTick() {
+		return lastTick;
+	}
 
 	@Override
 	public void tick(long tick) {

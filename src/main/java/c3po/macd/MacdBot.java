@@ -1,6 +1,7 @@
 package c3po.macd;
 
 import c3po.*;
+
 import java.sql.SQLException;
 
 import org.slf4j.Logger;
@@ -14,7 +15,7 @@ import c3po.ITradeFloor;
 /* Todo:
  * 
  * 
- * - bots should define their own update frequency
+ * - config is still expressed in number-of-ticks, which means it depends on bot's timeStep, should change to units of time
  * - Encapsulate tick invalidation, it's so easy to do wrong, and it's boilerplate
  * 
  * 
@@ -30,6 +31,7 @@ import c3po.ITradeFloor;
  * 			- Something akin to delegates/lambdas, you know
  * 		- Make node input/output indexing more human readable with enums
  * 
+ * - Separate wallet from TradeFloor
  * - Improve TradeFloor interface with
  * 		- Currency abstraction
  * 		- Costs
@@ -55,8 +57,12 @@ public class MacdBot implements IBot {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdBot.class);
 	private final static String jsonUrl = "http://www.bitstamp.net/api/ticker/";
 	private final static String csvPath = "resources/bitstamp_ticker_until_20131114.csv";
-	private final static long simulationSteps = 1400;
-	private static final long timeStep = 1000;
+	private final static long simulationStartTime = 1384079023;
+	private final static long simulationEndTime = 1384412693;
+	private final static long clockTimestep = 1;
+	
+	private static final long botTimestep = 1000;
+	
 	private static final double walletDollarStart = 1000.0;
 	
 	//================================================================================
@@ -79,9 +85,11 @@ public class MacdBot implements IBot {
 		
 		// Create bot config
 		
+		// todo: this is still in number-of-ticks, which means it depends on bot's timeStep, should change to units of time
+		
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(48,102,36); // Todo: trader.startDelay is proportional to this, maybe Max(fast,slow,signal)
 		MacdTraderConfig traderConfig = new MacdTraderConfig(102, 0.1, 0.5, 0.5);
-		MacdBotConfig config = new MacdBotConfig(timeStep, analysisConfig, traderConfig);
+		MacdBotConfig config = new MacdBotConfig(botTimestep, analysisConfig, traderConfig);
 		
 		// Create bot
 		
@@ -89,7 +97,7 @@ public class MacdBot implements IBot {
 		
 		// Create a clock
 		
-		IClock botClock = new SimulationClock(config.timeStep, simulationSteps); // Todo: is this part of the bot, or outside of it?
+		IClock botClock = new SimulationClock(clockTimestep, simulationStartTime, simulationEndTime);
 		botClock.addListener(bot);
 		
 		// Run the program
@@ -112,6 +120,8 @@ public class MacdBot implements IBot {
 	
 	private final MacdBotConfig config;
 	
+	private long lastTick;
+	
     // Debug references
 	
 	private final MacdAnalysisNode analysisNode;
@@ -131,8 +141,17 @@ public class MacdBot implements IBot {
 		traderNode = new MacdTraderNode(analysisNode.getOutput(4), tradeFloor, config.traderConfig);
 	}
 	
+	@Override
+	public long getLastTick() {
+		return lastTick;
+	}
+	
+	@Override
 	public void tick(long tick) {
-		traderNode.tick(tick);
+		if (tick > lastTick) {
+			traderNode.tick(tick);
+		}
+		lastTick = tick;
 	}
 	
 	@Override

@@ -1,6 +1,7 @@
 package c3po.macd;
 
 import c3po.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,6 +64,11 @@ public class MacdAnalysisNode implements INode {
 	@Override
 	public ISignal getOutput(int i) {
 		return signals[i];
+	}
+	
+	@Override
+	public long getLastTick() {
+		return lastTick;
 	}
 	
 	@Override

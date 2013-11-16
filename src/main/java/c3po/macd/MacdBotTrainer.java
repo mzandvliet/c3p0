@@ -35,20 +35,32 @@ public class MacdBotTrainer {
 	
 	private final static List<IBot> bots = new LinkedList<IBot>();
 	
-	private final static long simulationSteps = 1400;
-	private static final long timeStep = 1000;
+	private final static long simulationStartTime = 1384079023;
+	private final static long simulationEndTime = 1384412693;
+	private final static long clockTimestep = 1;
 	
 	private final static int numBots = 100;
 	private final static double walletStartDollars = 1000.0;
 	
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
+		// Todo loop and mutate
+		simulateEpoch();
+	}
+	
+	private static void simulateEpoch() {
+		// Create a ticker
+		
 		final BitstampTickerCsvSource tickerNode = new BitstampTickerCsvSource(csvPath);
+		
+		// Create a clock
+		
+		IClock botClock = new SimulationClock(clockTimestep, simulationStartTime, simulationEndTime);
 		
 		// Create the bots
 		
 		for (int i = 0; i < numBots; i++) {
 			
-			// Each bot needs its own wallet (Todo: But not its own tradefloor!!!)
+			// Todo: bots should have a personal wallet, but could share a tradeFloor. Split wallet and tradefloor concepts
 			
 			final ITradeFloor tradeFloor =  new BitstampTradeFloor(
 					tickerNode.getOutputLast(),
@@ -57,18 +69,17 @@ public class MacdBotTrainer {
 					walletStartDollars
 			);
 			
-			// Create unique bot config
+			// Create unique bot config (todo: randomize/mutate)
 			MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(48,102,36);
 			MacdTraderConfig traderConfig = new MacdTraderConfig(102, 0.5, 0.5, 0.5);
-			MacdBotConfig config = new MacdBotConfig(timeStep, analysisConfig, traderConfig);
+			MacdBotConfig config = new MacdBotConfig(1000, analysisConfig, traderConfig);
 			
 			IBot bot = new MacdBot(config, tickerNode.getOutputLast(), tradeFloor);
+			botClock.addListener(bot);
 			bots.add(bot);
 		}
 		
-		// Create a clock
 		
-		IClock botClock = new SimulationClock(simulationSteps, timeStep);
 		
 		// Run the program
 		
@@ -77,6 +88,8 @@ public class MacdBotTrainer {
 		botClock.run();
 		
 		tickerNode.close();
+		
+		// Todo: remove bots from clock
 	}
 	
 	private static MacdBotConfig Mutate(MacdBotConfig config) {

@@ -34,6 +34,11 @@ public class BitstampTickerCsvSource extends BitstampTickerSource {
 	}
 	
 	@Override
+	public long getLastTick() {
+		return lastTick;
+	}
+
+	@Override
 	public void tick(long tick) {
 		if (tick > lastTick) {
 			parseCsv();

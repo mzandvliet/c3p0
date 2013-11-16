@@ -5,22 +5,22 @@ import java.util.Date;
 import java.util.List;
 
 public class RealtimeClock implements IClock {
-	private List<ITickable> tickables;
-	private long timeStep;
+	private List<IBot> bots;
+	private long timeStep; // This should be at least as small as your fastest bot's desired timeStep
 	
 	public RealtimeClock(long timeStep) {
-		this.tickables = new ArrayList<ITickable>();
+		this.bots = new ArrayList<IBot>();
 		this.timeStep = timeStep;
 	}
 	
 	@Override
-	public void addListener(ITickable tickable) {
-		tickables.add(tickable);
+	public void addListener(IBot tickable) {
+		bots.add(tickable);
 	}
 
 	@Override
-	public void removeListener(ITickable tickable) {
-		tickables.remove(tickable);
+	public void removeListener(IBot tickable) {
+		bots.remove(tickable);
 	}
 	
 	public void run() {
@@ -29,9 +29,11 @@ public class RealtimeClock implements IClock {
 		// Todo: Whelp! How do we define our stop condition (user), and how do we check for it?
 		
 		//while (true) {
-			long currentTime = new Date().getTime();
-			for (ITickable tickable : tickables) {
-				tickable.tick(currentTime);
+			long currentTick = new Date().getTime();
+			for (IBot bot : bots) {
+				if (currentTick - bot.getLastTick() >= bot.getTimestep()) {
+					bot.tick(currentTick);
+				}
 			}
 			
 			Wait(timeStep);
