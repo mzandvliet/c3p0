@@ -65,11 +65,12 @@ public class MacdAnalysisNode implements INode {
 		return signals[i];
 	}
 	
+	@Override
 	public void tick(long tick) {
-		if (tick >= lastTick) {
+		if (tick > lastTick) {
 			diffNode.tick(tick);
-			lastTick = tick;
 		}
+		lastTick = tick;
 	}
 	
 	public enum SignalNames {

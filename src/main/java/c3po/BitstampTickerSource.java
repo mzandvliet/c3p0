@@ -63,6 +63,7 @@ public abstract class BitstampTickerSource implements INode {
 	 * supplied timestamp.
 	 * 
 	 */
+	@Override
 	public abstract void tick(long timestamp);
 	
 	/**

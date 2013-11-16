@@ -16,7 +16,8 @@ public class MacdTraderNode implements ITickable {
 	private final ISignal macdDiff;
 	private final ITradeFloor tradeFloor;
 	private final MacdTraderConfig config;
-
+	
+	private long lastTick;
 	private Sample lastDiff;
 
 	public MacdTraderNode(ISignal macdDiff, ITradeFloor tradeFloor, MacdTraderConfig config) {
@@ -28,12 +29,19 @@ public class MacdTraderNode implements ITickable {
 	public MacdTraderConfig getConfig() {
 		return config;
 	}
-
+	
+	@Override
+	public void tick(long tick) {
+		if (tick > lastTick) {
+			decide(tick);
+		}
+		lastTick = tick;
+	}
+	
 	/*
 	 *  Do trades purely based on zero-crossings in difference signal
 	 */
-	@Override
-	public void tick(long tick) {
+	public void decide(long tick) {
 		Sample currentDiff = macdDiff.getSample(tick);
 		
 		if (tick > config.startDelay) {

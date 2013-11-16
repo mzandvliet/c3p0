@@ -15,6 +15,7 @@ import c3po.ITradeFloor;
  * 
  * 
  * - bots should define their own update frequency
+ * - Encapsulate tick invalidation, it's so easy to do wrong, and it's boilerplate
  * 
  * 
  * - Algorithms
@@ -79,7 +80,7 @@ public class MacdBot implements IBot {
 		// Create bot config
 		
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(48,102,36); // Todo: trader.startDelay is proportional to this, maybe Max(fast,slow,signal)
-		MacdTraderConfig traderConfig = new MacdTraderConfig(102, 0.5, 0.5, 0.5);
+		MacdTraderConfig traderConfig = new MacdTraderConfig(102, 0.1, 0.5, 0.5);
 		MacdBotConfig config = new MacdBotConfig(timeStep, analysisConfig, traderConfig);
 		
 		// Create bot
@@ -109,6 +110,8 @@ public class MacdBot implements IBot {
     // Properties
     //================================================================================
 	
+	private final MacdBotConfig config;
+	
     // Debug references
 	
 	private final MacdAnalysisNode analysisNode;
@@ -120,6 +123,7 @@ public class MacdBot implements IBot {
     //================================================================================
 	
 	public MacdBot(MacdBotConfig config, ISignal ticker, ITradeFloor tradeFloor) {	
+		this.config = config;
 		
 		// Define the signal tree		
 		
@@ -131,6 +135,11 @@ public class MacdBot implements IBot {
 		traderNode.tick(tick);
 	}
 	
+	@Override
+	public long getTimestep() {
+		return config.timeStep;
+	}
+
 	public String toString() {
 		return String.format("%s, %s", analysisNode.getConfig(), traderNode.getConfig());
 	}

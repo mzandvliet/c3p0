@@ -14,7 +14,7 @@ public class SimulationClock implements IClock {
 	private long duration;
 	private long timeStep;
 	
-	public SimulationClock(long duration, long timeStep) {
+	public SimulationClock(long startTime, long duration) {
 		this.tickables = new ArrayList<ITickable>();
 		this.duration = duration;
 		this.timeStep = timeStep;

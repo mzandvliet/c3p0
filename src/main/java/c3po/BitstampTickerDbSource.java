@@ -48,9 +48,16 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 	}
 
 	@Override
-	public void tick(long timestamp) {
+	public void tick(long tick) {
+		if (tick > lastTick) {
+			query(tick);
+		}
+		lastTick = tick;
+	}
+	
+	public void query(long tick) {
 		try {
-			fetchData(timestamp); 
+			fetchData(tick); 
 			useCurrentRow();
 		} catch (SQLException e) {
 			e.printStackTrace();
