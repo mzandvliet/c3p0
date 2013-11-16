@@ -1,12 +1,5 @@
 package c3po;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-
-import au.com.bytecode.opencsv.CSVReader;
-import c3po.BitstampTickerCsvSource.SignalName;
-
 public abstract class BitstampTickerSource implements INode {
 	protected final int numSignals = 6;
 	protected OutputSignal[] signals;
