@@ -59,6 +59,8 @@ public class GraphingNode extends ApplicationFrame implements INode {
 			Sample newest = input.getSample(tick);
 			buffer.add(newest);
 
+			// Updates the dataset
+			System.out.println(newest.getDate());
 			s1.addOrUpdate(new Second(newest.getDate()), newest.value);
 			
 			output.setSample(newest);
