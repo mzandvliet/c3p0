@@ -3,6 +3,7 @@ package c3po;
 import java.awt.Color;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
 import javax.swing.JPanel;
 
 import org.jfree.chart.*;
@@ -13,6 +14,16 @@ import org.jfree.data.time.*;
 import org.jfree.data.xy.*;
 import org.jfree.ui.*;
 
+/*
+ * 
+ * HOW TO USE
+ * 
+		// Graph that displays the macdDiff
+		GraphingNode macdDiffGraph = new GraphingNode(macdNode.getOutput(4), "MacdDiff", 1000);
+		macdDiffGraph.pack();
+		macdDiffGraph.setVisible(true);
+		
+ */
 /**
  * Example class of how graphing can work. We can either make this very configurable, or
  * extend it a couple times and configure it exactly how we want to display the data. 
@@ -140,4 +151,9 @@ public class GraphingNode extends ApplicationFrame implements INode {
         panel.setMouseWheelEnabled(true);
         return panel;
     }
+
+	@Override
+	public long getLastTick() {
+		return lastTick;
+	}
 }
