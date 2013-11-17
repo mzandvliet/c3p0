@@ -35,9 +35,18 @@ import c3po.SimulationClock;
 
 public class MacdBotTrainer {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdBotTrainer.class);
-	private final static String csvPath = "resources/bitstamp_ticker_fake_downhill.csv";
-	private final static long simulationStartTime = 1383468287000l;
-	private final static long simulationEndTime = 1384078962000l; 
+//	private final static String csvPath = "resources/bitstamp_ticker_fake_downhill.csv";
+//	private final static long simulationStartTime = 1383468287000l;
+//	private final static long simulationEndTime = 1384078962000l; 
+	
+//	private final static String csvPath = "resources/bitstamp_ticker_fake_down_up.csv";
+//	private final static long simulationStartTime = 1383468287000l;
+//	private final static long simulationEndTime = 1384689637000l; 
+	
+	private final static String csvPath = "resources/bitstamp_ticker_till_20131117.csv";
+	private final static long simulationStartTime = 1384079023000l;
+	private final static long simulationEndTime = 1384689637000l; 
+	
 	private final static long clockTimestep = 1000;
 	
 	private final static int numBots = 100;
@@ -116,14 +125,17 @@ public class MacdBotTrainer {
 			1 + (int) Math.floor(Math.random() * 1000)
 		);
 		
-		double minBuyVelocity = 0.0d + (Math.random() * 1.0d);
-		double minSellVelocity = -0.5d + (Math.random() * 1.0d);
+		double minBuyThreshold = 0.0d + (Math.random() * 1.0d);
+		double minSellThreshold = -0.5d + (Math.random() * 1.0d);
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
 				Math.max(analysisConfig.fastPeriod, Math.max(analysisConfig.signalPeriod, analysisConfig.slowPeriod)),
-				minBuyVelocity,
-				minSellVelocity,
+				minBuyThreshold,
+				minSellThreshold,
 				Math.random(),
-				Math.random()
+				Math.random(),
+				60000l + (long) (Math.random() * 86400000d),
+				60000l + (long) (Math.random() * 86400000d)
+				
 		);
 		
 		MacdBotConfig config = new MacdBotConfig(1000, analysisConfig, traderConfig);

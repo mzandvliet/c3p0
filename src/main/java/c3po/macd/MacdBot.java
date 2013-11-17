@@ -15,14 +15,24 @@ import c3po.ITradeFloor;
 /* Todo:
  * 
  * ------ Important -----
- * - Make sure ticker signal works correctly when ticked by multiple sources in parallel
- * - config is still expressed in number-of-ticks, which means it depends on bot's timeStep, should change to units of time
- * - Encapsulate tick invalidation, it's so easy to do wrong, and it's boilerplate
+ * - TickerDBSource and TickerJsonSource should use MILISECONDS!!
+ * - MacdAnalysisConfig is still expressed in number-of-ticks, which means it depends on bot's timeStep. Should change to units of time.
+ * - Encapsulate tick invalidation, it's so easy to do wrong, and it is a bunch of boilerplate
+ * ----------------------
  * 
+ * - Develop exit protocol and implementation
+ * - Seed newly started bots with data from recorded history, then update with live feed
  * 
  * - Algorithms
- * 		- Verify correct macd results (hard to see without charts)
- * 		- Tweak macdBot configuration for profit
+ * 		- Genetic algorithm optimizer
+ * 
+ * - Time
+ * 		- Start using interpolation to correct sample timing error
+ * 
+ * - Use a charting library to show results, either live or after a simulation
+ * 		- Either implement charts as leaf nodes in the signal tree, or point them to leafs in the tree
+ * 		- http://www.jfree.org/jfreechart/samples.html
+ * 		- https://code.google.com/p/charts4j/
  * 
  * - Network architecture
  * 		- Make Sample generic?
@@ -37,13 +47,6 @@ import c3po.ITradeFloor;
  * 		- Separate wallet concept from TradeFloor
  * 		- Costs
  * 
- * - Time
- * 		- Start using interpolation to correct sample timing error
- * 
- * - Use a charting library to show results, either live or after a simulation
- * 		- Either implement charts as leaf nodes in the signal tree, or point them to leafs in the tree
- * 		- http://www.jfree.org/jfreechart/samples.html
- * 		- https://code.google.com/p/charts4j/
  */
 
 public class MacdBot implements IBot {
@@ -53,10 +56,11 @@ public class MacdBot implements IBot {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdBot.class);
 	private final static String jsonUrl = "http://www.bitstamp.net/api/ticker/";
-	private final static String csvPath = "resources/bitstamp_ticker_till_20131117.csv";
-	private final static long simulationStartTime = 1384079023;
-	private final static long simulationEndTime = 1384689637;
-	private final static long clockTimestep = 1;
+	private final static String csvPath = "resources/bitstamp_ticker_fake_down_up.csv";
+	private final static long simulationStartTime = 1383468287000l;
+	private final static long simulationEndTime = 1384689637000l; 
+	
+	private final static long clockTimestep = 1000;
 	
 	private static final long botTimestep = 1000;
 	
@@ -85,7 +89,7 @@ public class MacdBot implements IBot {
 		// todo: this is still in number-of-ticks, which means it depends on bot's timeStep, should change to units of time
 		
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(52,24,18); // Todo: trader.startDelay is proportional to this, maybe Max(fast,slow,signal)
-		MacdTraderConfig traderConfig = new MacdTraderConfig(102, 0.15, 0.5 , 0.5, 0.5);
+		MacdTraderConfig traderConfig = new MacdTraderConfig(102, 0.15, 0.5 , 0.5, 0.5, 600000, 600000);
 		MacdBotConfig config = new MacdBotConfig(botTimestep, analysisConfig, traderConfig);
 		
 		// Create bot
