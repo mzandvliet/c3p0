@@ -72,10 +72,16 @@ public class SignalBuffer extends AbstractList<Sample> implements ISignalBuffer,
 		return Sample.copy(signals.get(signals.size()-1));
 	}
 	
+	@Override
+	public long getLastTick() {
+		return lastTick;
+	}
+	
+	@Override
 	public void tick(long tick) {
 		if (tick > lastTick) {
 			signals.add(source.getSample(tick));
-			lastTick = tick;
 		}
+		lastTick = tick;
 	}
 }

@@ -1,9 +1,9 @@
-package c3po;
+package c3po.macd;
+
+import c3po.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import c3po.macd.MacdNodeConfig;
 
 /* 
  * MacdSource
@@ -14,9 +14,9 @@ import c3po.macd.MacdNodeConfig;
  * Todo:
  * - Expose node tree for manual introspection (like chart drawing of buffers or visualizing structure)
  */
-public class MacdNode implements INode {
+public class MacdAnalysisNode implements INode {
 	
-	private static final Logger LOGGER = LoggerFactory.getLogger(MacdNode.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(MacdAnalysisNode.class);
 	
 	private final int numSignals = 5;
 	private ISignal[] signals;
@@ -28,17 +28,17 @@ public class MacdNode implements INode {
 	INode signalNode;
 	INode diffNode;
 	
-	private final MacdNodeConfig config;
+	private final MacdAnalysisConfig config;
 	
-	public MacdNode(ISignal input, MacdNodeConfig config) {
+	public MacdAnalysisNode(ISignal input, MacdAnalysisConfig config) {
 		this.config = config;
 		this.signals = new OutputSignal[numSignals];
 		
 		// Create internal signal tree, hook all intermediate results up to outputs
-		fastNode = new ExpMovingAverageNode(input, config.getFastSampleCount());
-		slowNode = new ExpMovingAverageNode(input, config.getSignalSampleCount());
+		fastNode = new ExpMovingAverageNode(input, config.fastPeriod);
+		slowNode = new ExpMovingAverageNode(input, config.slowPeriod);
 		macdNode = new SubtractNode(fastNode.getOutput(0), slowNode.getOutput(0));
-		signalNode = new ExpMovingAverageNode(macdNode.getOutput(0), config.getSignalSampleCount());
+		signalNode = new ExpMovingAverageNode(macdNode.getOutput(0), config.signalPeriod);
 		diffNode = new SubtractNode(macdNode.getOutput(0), signalNode.getOutput(0));
 		
 		this.signals[SignalNames.FAST.ordinal()] = fastNode.getOutput(0);
@@ -47,11 +47,11 @@ public class MacdNode implements INode {
 		this.signals[SignalNames.SIGNAL.ordinal()] = signalNode.getOutput(0);
 		this.signals[SignalNames.DIFFERENCE.ordinal()] = diffNode.getOutput(0);
 		
-		LOGGER.debug(String.format("Initiated MacdNode with " + config));
+		LOGGER.debug(String.format("Initiated AnalysisNode with " + config));
 	}
 	
 		
-	public MacdNodeConfig getConfig() {
+	public MacdAnalysisConfig getConfig() {
 		return config;
 	}
 
@@ -66,11 +66,17 @@ public class MacdNode implements INode {
 		return signals[i];
 	}
 	
+	@Override
+	public long getLastTick() {
+		return lastTick;
+	}
+	
+	@Override
 	public void tick(long tick) {
-		if (tick >= lastTick) {
+		if (tick > lastTick) {
 			diffNode.tick(tick);
-			lastTick = tick;
 		}
+		lastTick = tick;
 	}
 	
 	public enum SignalNames {

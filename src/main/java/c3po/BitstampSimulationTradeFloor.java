@@ -4,7 +4,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import c3po.TradeAction.TradeActionType;
+import c3po.macd.MacdTraderNode;
 
 /* Todo:
  * 
@@ -18,9 +22,9 @@ import c3po.TradeAction.TradeActionType;
  * 		- So it can produce results as signals (like wallet values)
  */
 
-public class BitstampTradeFloor implements ITradeFloor {
-	
-	private double tradeFee = 0.02d;
+public class BitstampSimulationTradeFloor implements ITradeFloor {
+	private static final Logger LOGGER = LoggerFactory.getLogger(BitstampSimulationTradeFloor.class);
+	private double tradeFee = 0.05d;
 	
 	private double walletUsd;
 	private double walletBtc;
@@ -31,7 +35,7 @@ public class BitstampTradeFloor implements ITradeFloor {
 	ISignal bidSignal;
 	ISignal askSignal;
 	
-	public BitstampTradeFloor(ISignal last, ISignal bid, ISignal ask, double startDollars) {
+	public BitstampSimulationTradeFloor(ISignal last, ISignal bid, ISignal ask, double startDollars) {
 		this.lastSignal = last;
 		this.bidSignal = bid;
 		this.askSignal = ask;
@@ -66,33 +70,48 @@ public class BitstampTradeFloor implements ITradeFloor {
 	}	
 
 	@Override
-	public void buy(double volume) {
+	public double buy(long timestamp, double volume) {
 		// We get the latest ask, assuming the ticker is updated by some other part of the app
 		Sample currentAsk = askSignal.peek();
+		
+		// The amount of Btc we are going to get if we buy for volume USD
+		double buyBtc = volume * ((double) 1-tradeFee);
 		
 		// We assume the trade is fulfilled instantly, for the price of the ask
 		walletUsd -= currentAsk.value * volume;
 		
 		// Add the bought volume to the wallet, minus the percentage from the tradefee
-		walletBtc += volume * ((double) 1-tradeFee);
+		walletBtc += buyBtc;
 		
-		actions.add(new TradeAction(TradeActionType.BUY, new Date().getTime(), volume));
+		actions.add(new TradeAction(TradeActionType.BUY, timestamp, volume));
+		
+		return buyBtc;
 	}
 
 	@Override
-	public void sell(double volume) {
+	public double sell(long timestamp, double volumeBitcoins) {
 		// We get the latest ask, assuming the ticker is updated by some other part of the app
 		Sample currentBid = bidSignal.peek();
 		
 		// We assume the trade is fulfilled instantly, for the price of the ask
-		walletUsd += currentBid.value * volume;
-		walletBtc -= volume * ((double) 1 + tradeFee);
+		double soldForUsd = currentBid.value * (volumeBitcoins * (1-tradeFee));
+		walletUsd += soldForUsd;
+		walletBtc -= volumeBitcoins;
 		
-		actions.add(new TradeAction(TradeActionType.SELL, new Date().getTime(), volume));
+		actions.add(new TradeAction(TradeActionType.SELL, timestamp, volumeBitcoins));
+		
+		return soldForUsd;
 	}
 
 	@Override
 	public List<TradeAction> getActions() {
 		return actions;
+	}
+	
+	public void dump() {
+		LOGGER.debug("Trades: " + actions.size());
+		for(TradeAction action : actions) {
+			LOGGER.debug(action.toString());
+		}
 	}
 }

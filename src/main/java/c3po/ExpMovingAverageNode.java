@@ -25,14 +25,24 @@ public class ExpMovingAverageNode implements INode {
 	public ISignal getOutput(int i) {
 		return output;
 	}
+	
+	@Override
+	public long getLastTick() {
+		return lastTick;
+	}
 
 	@Override
 	public void tick(long tick) {
 		if (tick > lastTick) {
-			Sample newest = transform(buffer, input.getSample(tick), kernelSize);
-			buffer.add(newest);
-			output.setSample(newest);
+			average(tick);
 		}
+		lastTick = tick;
+	}
+	
+	public void average(long tick) {
+		Sample newest = transform(buffer, input.getSample(tick), kernelSize);
+		buffer.add(newest);
+		output.setSample(newest);
 	}
 
 	private Sample transform(List<Sample> lastSignals, Sample newest, int kernelSize) {

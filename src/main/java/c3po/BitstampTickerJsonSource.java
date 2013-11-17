@@ -39,11 +39,16 @@ public class BitstampTickerJsonSource implements INode {
 	}
 	
 	@Override
+	public long getLastTick() {
+		return lastTick;
+	}
+	
+	@Override
 	public void tick(long tick) {
-		if (tick >= lastTick) {
+		if (tick > lastTick) {
 			parseJson();
-			lastTick = tick;
 		}
+		lastTick = tick;
 	}
 	
 	private void parseJson() {
