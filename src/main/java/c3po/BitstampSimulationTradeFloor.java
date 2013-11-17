@@ -18,9 +18,9 @@ import c3po.TradeAction.TradeActionType;
  * 		- So it can produce results as signals (like wallet values)
  */
 
-public class BitstampTradeFloor implements ITradeFloor {
+public class BitstampSimulationTradeFloor implements ITradeFloor {
 	
-	private double tradeFee = 0.02d;
+	private double tradeFee = 0.05d;
 	
 	private double walletUsd;
 	private double walletBtc;
@@ -31,7 +31,7 @@ public class BitstampTradeFloor implements ITradeFloor {
 	ISignal bidSignal;
 	ISignal askSignal;
 	
-	public BitstampTradeFloor(ISignal last, ISignal bid, ISignal ask, double startDollars) {
+	public BitstampSimulationTradeFloor(ISignal last, ISignal bid, ISignal ask, double startDollars) {
 		this.lastSignal = last;
 		this.bidSignal = bid;
 		this.askSignal = ask;
@@ -66,29 +66,37 @@ public class BitstampTradeFloor implements ITradeFloor {
 	}	
 
 	@Override
-	public void buy(double volume) {
+	public double buy(double volume) {
 		// We get the latest ask, assuming the ticker is updated by some other part of the app
 		Sample currentAsk = askSignal.peek();
+		
+		// The amount of Btc we are going to get if we buy for volume USD
+		double buyBtc = volume * ((double) 1-tradeFee);
 		
 		// We assume the trade is fulfilled instantly, for the price of the ask
 		walletUsd -= currentAsk.value * volume;
 		
 		// Add the bought volume to the wallet, minus the percentage from the tradefee
-		walletBtc += volume * ((double) 1-tradeFee);
+		walletBtc += buyBtc;
 		
 		actions.add(new TradeAction(TradeActionType.BUY, new Date().getTime(), volume));
+		
+		return buyBtc;
 	}
 
 	@Override
-	public void sell(double volume) {
+	public double sell(double volumeBitcoins) {
 		// We get the latest ask, assuming the ticker is updated by some other part of the app
 		Sample currentBid = bidSignal.peek();
 		
 		// We assume the trade is fulfilled instantly, for the price of the ask
-		walletUsd += currentBid.value * volume;
-		walletBtc -= volume * ((double) 1 + tradeFee);
+		double soldForUsd = currentBid.value * (volumeBitcoins * (1-tradeFee));
+		walletUsd += soldForUsd;
+		walletBtc -= volumeBitcoins;
 		
-		actions.add(new TradeAction(TradeActionType.SELL, new Date().getTime(), volume));
+		actions.add(new TradeAction(TradeActionType.SELL, new Date().getTime(), volumeBitcoins));
+		
+		return soldForUsd;
 	}
 
 	@Override

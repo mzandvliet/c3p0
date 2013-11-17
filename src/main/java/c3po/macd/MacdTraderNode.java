@@ -1,5 +1,8 @@
 package c3po.macd;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import c3po.ISignal;
 import c3po.ITickable;
 import c3po.ITradeFloor;
@@ -13,6 +16,7 @@ import c3po.Sample;
  */
 
 public class MacdTraderNode implements ITickable {
+	private static final Logger LOGGER = LoggerFactory.getLogger(MacdTraderNode.class);
 	private final ISignal macdDiff;
 	private final ITradeFloor tradeFloor;
 	private final MacdTraderConfig config;
@@ -63,13 +67,16 @@ public class MacdTraderNode implements ITickable {
 			
 			if (velocity > 0f) {
 				// Trade half of current usdWallet
-				double volume = tradeFloor.toBtc(tradeFloor.getWalledUsd() * config.usdToBtcTradeAmount);
-				tradeFloor.buy(volume);
+				double dollars = tradeFloor.getWalledUsd() * config.usdToBtcTradeAmount;
+				double volume = tradeFloor.toBtc(dollars);
+				double btcBought = tradeFloor.buy(volume);
+				LOGGER.info(String.format("Bought %s BTC for %s USD because velocity %s > %s", btcBought, dollars, velocity, config.minDiffVelocity));
 			}
 			else {
 				// Trade all of current btcWallet
-				double volume = tradeFloor.toBtc(tradeFloor.getWalletBtc() * config.btcToUsdTradeAmount);
-				tradeFloor.sell(volume);
+				double btcToSell = tradeFloor.getWalletBtc() * config.btcToUsdTradeAmount;
+				double soldForUSD = tradeFloor.sell(btcToSell);
+				LOGGER.info(String.format("Sold %s BTC for %s USD because velocity %s < -%s", btcToSell, soldForUSD, velocity, config.minDiffVelocity));
 			}
 		}
 		else {

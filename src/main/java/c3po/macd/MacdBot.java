@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import c3po.BitstampTickerCsvSource;
-import c3po.BitstampTradeFloor;
+import c3po.BitstampSimulationTradeFloor;
 import c3po.IClock;
 import c3po.ITradeFloor;
 
@@ -57,9 +57,9 @@ public class MacdBot implements IBot {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdBot.class);
 	private final static String jsonUrl = "http://www.bitstamp.net/api/ticker/";
-	private final static String csvPath = "resources/bitstamp_ticker_until_20131114.csv";
+	private final static String csvPath = "resources/bitstamp_ticker_till_20131117.csv";
 	private final static long simulationStartTime = 1384079023;
-	private final static long simulationEndTime = 1384412693;
+	private final static long simulationEndTime = 1384689637;
 	private final static long clockTimestep = 1;
 	
 	private static final long botTimestep = 1000;
@@ -77,7 +77,7 @@ public class MacdBot implements IBot {
 		//final BitstampTickerDbSource dbTickerSource = new BitstampTickerDbSource(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
 		final BitstampTickerCsvSource tickerNode = new BitstampTickerCsvSource(csvPath);
 				
-		final ITradeFloor tradeFloor =  new BitstampTradeFloor(
+		final ITradeFloor tradeFloor =  new BitstampSimulationTradeFloor(
 				tickerNode.getOutputLast(),
 				tickerNode.getOutputBid(),
 				tickerNode.getOutputAsk(),
@@ -88,8 +88,8 @@ public class MacdBot implements IBot {
 		
 		// todo: this is still in number-of-ticks, which means it depends on bot's timeStep, should change to units of time
 		
-		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(48,102,36); // Todo: trader.startDelay is proportional to this, maybe Max(fast,slow,signal)
-		MacdTraderConfig traderConfig = new MacdTraderConfig(102, 0.1, 0.5, 0.5);
+		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(52,24,18); // Todo: trader.startDelay is proportional to this, maybe Max(fast,slow,signal)
+		MacdTraderConfig traderConfig = new MacdTraderConfig(102, 0.15, 0.5 , 0.5);
 		MacdBotConfig config = new MacdBotConfig(botTimestep, analysisConfig, traderConfig);
 		
 		// Create bot
@@ -120,6 +120,7 @@ public class MacdBot implements IBot {
     //================================================================================
 	
 	private final MacdBotConfig config;
+	private final ITradeFloor tradeFloor;
 	
 	private long lastTick;
 	
@@ -135,6 +136,7 @@ public class MacdBot implements IBot {
 	
 	public MacdBot(MacdBotConfig config, ISignal ticker, ITradeFloor tradeFloor) {	
 		this.config = config;
+		this.tradeFloor = tradeFloor;
 		
 		// Define the signal tree		
 		
@@ -158,6 +160,11 @@ public class MacdBot implements IBot {
 	@Override
 	public long getTimestep() {
 		return config.timeStep;
+	}
+
+	@Override
+	public ITradeFloor getTradeFloor() {
+		return tradeFloor;
 	}
 
 	public String toString() {
