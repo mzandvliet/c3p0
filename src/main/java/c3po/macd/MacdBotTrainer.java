@@ -35,12 +35,12 @@ import c3po.SimulationClock;
 
 public class MacdBotTrainer {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdBotTrainer.class);
-	private final static String csvPath = "resources/bitstamp_ticker_till_20131117.csv";
-	private final static long simulationStartTime = 1384079023;
-	private final static long simulationEndTime = 1384689637;
-	private final static long clockTimestep = 1;
+	private final static String csvPath = "resources/bitstamp_ticker_fake_downhill.csv";
+	private final static long simulationStartTime = 1383468287000l;
+	private final static long simulationEndTime = 1384078962000l; 
+	private final static long clockTimestep = 1000;
 	
-	private final static int numBots = 100000;
+	private final static int numBots = 100;
 	private final static double walletStartDollars = 1000.0;
 	
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
@@ -79,7 +79,7 @@ public class MacdBotTrainer {
 		for(IBot bot : population) {
 			double walletValue = bot.getTradeFloor().getWalletValue();
 			
-			if(walletValue > highestWalletValue){
+			if(walletValue > highestWalletValue && bot.getTradeFloor().getActions().size() > 0){
 				highestWalletValue = walletValue;
 				bestBot = bot;
 			}
@@ -87,7 +87,7 @@ public class MacdBotTrainer {
 		}
 		
 		LOGGER.debug("Bot " + bestBot + " has " + highestWalletValue + " USD");	
-
+		bestBot.getTradeFloor().dump();
 	}
 	
 	private List<IBot> getRandomPopulation(int size, BitstampTickerSource ticker, IClock botClock) {
@@ -116,9 +116,14 @@ public class MacdBotTrainer {
 			1 + (int) Math.floor(Math.random() * 1000)
 		);
 		
+		double minBuyVelocity = 0.0d + (Math.random() * 1.0d);
+		double minSellVelocity = -0.5d + (Math.random() * 1.0d);
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
-				Math.max(analysisConfig.fastPeriod, Math.max(analysisConfig.signalPeriod, analysisConfig.slowPeriod))
-				, Math.random(), Math.random(), Math.random()
+				Math.max(analysisConfig.fastPeriod, Math.max(analysisConfig.signalPeriod, analysisConfig.slowPeriod)),
+				minBuyVelocity,
+				minSellVelocity,
+				Math.random(),
+				Math.random()
 		);
 		
 		MacdBotConfig config = new MacdBotConfig(1000, analysisConfig, traderConfig);

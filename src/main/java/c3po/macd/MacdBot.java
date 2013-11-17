@@ -32,17 +32,13 @@ import c3po.ITradeFloor;
  * 			- Something akin to delegates/lambdas, you know
  * 		- Make node input/output indexing more human readable with enums
  * 
- * - Separate wallet from TradeFloor
- * - Improve TradeFloor interface with
+ * - Improve TradeFloor interface
  * 		- Currency abstraction
+ * 		- Separate wallet concept from TradeFloor
  * 		- Costs
  * 
  * - Time
- * 		- Timestep parameter is part of bot, integrate it
- * 			- May their rates differ? Can they differ from the source signal?
- * 		- Make time range and sampling/tick rate configurable
  * 		- Start using interpolation to correct sample timing error
- * 		- Supply tick() with timestamp of either real time or simulation time, instead of an arbitrary value
  * 
  * - Use a charting library to show results, either live or after a simulation
  * 		- Either implement charts as leaf nodes in the signal tree, or point them to leafs in the tree
@@ -89,7 +85,7 @@ public class MacdBot implements IBot {
 		// todo: this is still in number-of-ticks, which means it depends on bot's timeStep, should change to units of time
 		
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(52,24,18); // Todo: trader.startDelay is proportional to this, maybe Max(fast,slow,signal)
-		MacdTraderConfig traderConfig = new MacdTraderConfig(102, 0.15, 0.5 , 0.5);
+		MacdTraderConfig traderConfig = new MacdTraderConfig(102, 0.15, 0.5 , 0.5, 0.5);
 		MacdBotConfig config = new MacdBotConfig(botTimestep, analysisConfig, traderConfig);
 		
 		// Create bot

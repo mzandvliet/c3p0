@@ -16,9 +16,11 @@ public interface ITradeFloor {
 	public double toBtc(double usd);
 	public double toUsd(double btc);
 	
-	public double buy(double volume);
-	public double sell(double volume);
+	public double buy(long timestamp, double volume);
+	public double sell(long timestamp, double volume);
 	
 	public List<TradeAction> getActions();
 	double getWalletValue();
+	
+	public void dump();
 }

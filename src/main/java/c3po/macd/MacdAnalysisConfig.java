@@ -18,6 +18,6 @@ public class MacdAnalysisConfig {
 	}
 	
 	public String toString() {
-		return String.format("[MacdNodeConfig - slow: %d, fast: %d, signal: %d]", slowPeriod, fastPeriod, slowPeriod);
+		return String.format("[MacdNodeConfig - slow: %d, fast: %d, signal: %d]", slowPeriod, fastPeriod, signalPeriod);
 	}
 }

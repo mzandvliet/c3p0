@@ -11,6 +11,8 @@ public class BitstampTickerCsvSource extends BitstampTickerSource {
 	private CSVReader reader;
 	private long lastTick = -1;
 	private boolean isEmpty = false;
+	private String[] prevLine; 
+	private String[] nextLine;
 	
 	public BitstampTickerCsvSource(String path) {
 		super();
@@ -41,25 +43,33 @@ public class BitstampTickerCsvSource extends BitstampTickerSource {
 	@Override
 	public void tick(long tick) {
 		if (tick > lastTick) {
-			parseCsv();
+			parseCsv(tick);
 		}
 		lastTick = tick;
 	}
 
-	private void parseCsv() {
+	private void parseCsv(long tick) {
 	    try {
-	    	String [] nextLine  = reader.readNext();
-	    	if (nextLine != null) {
-	    		long timestamp = Long.parseLong(nextLine[0]);
-
-	    		for (int i = 0; i < signals.length; i++) {
-	    			// Map CSV fields (+1 to skip timestamp) to the signals 
-	    			signals[i].setSample(new Sample(timestamp, Double.parseDouble(nextLine[i+1])));
-	    		}
-			}
-	    	else {
-	    		 isEmpty = true;
+	    	if(prevLine == null)
+	          prevLine = reader.readNext();
+	    	
+	    	if(nextLine == null)
+	    		nextLine = reader.readNext();
+	    	
+	    	while(Long.parseLong(nextLine[0]) * 1000 < tick && nextLine != null) {
+	    		prevLine = nextLine;
+	    		nextLine = reader.readNext();	    		
 	    	}
+	    	
+	    	// TODO Interpolate!
+	    	
+	    	// but for now...
+	    	long timestamp = Long.parseLong(prevLine[0]) * 1000;
+	    	for (int i = 0; i < signals.length; i++) {
+    			// Map CSV fields (+1 to skip timestamp) to the signals 
+    			signals[i].setSample(new Sample(timestamp, Double.parseDouble(prevLine[i+1])));
+    		}
+	    	
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

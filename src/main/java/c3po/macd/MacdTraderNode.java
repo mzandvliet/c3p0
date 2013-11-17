@@ -49,6 +49,8 @@ public class MacdTraderNode implements ITickable {
 		lastTick = tick;
 	}
 	
+	private final static double minDollars = 1.0d;
+	
 	/*
 	 *  Do trades purely based on zero-crossings in difference signal
 	 */
@@ -56,27 +58,18 @@ public class MacdTraderNode implements ITickable {
 		Sample currentDiff = macdDiff.getSample(tick);
 		
 		if (numSkippedTicks > config.startDelay) {
-			double velocity = lastDiff.value - currentDiff.value;
-			double signLast = Math.signum(lastDiff.value);
-			double signCurrent = Math.signum(currentDiff.value);
-			
-			boolean isCrossing = Math.abs(velocity) > config.minDiffVelocity && signLast != signCurrent;
-			
-			if (!isCrossing)  // We only trade if there is a zero crossing
-				return;
-			
-			if (velocity > 0f) {
+			if (currentDiff.value > config.minBuyVelocity && tradeFloor.getWalledUsd() > minDollars) {
 				// Trade half of current usdWallet
 				double dollars = tradeFloor.getWalledUsd() * config.usdToBtcTradeAmount;
 				double volume = tradeFloor.toBtc(dollars);
-				double btcBought = tradeFloor.buy(volume);
-				LOGGER.info(String.format("Bought %s BTC for %s USD because velocity %s > %s", btcBought, dollars, velocity, config.minDiffVelocity));
+				double btcBought = tradeFloor.buy(tick, volume);
+				LOGGER.info(String.format("Bought %s BTC for %s USD because velocity %s > %s", btcBought, dollars, currentDiff.value, config.minBuyVelocity));
 			}
-			else {
+			else if (currentDiff.value < config.minSellVelocity && tradeFloor.getWalletBtc() > tradeFloor.toBtc(minDollars)) {
 				// Trade all of current btcWallet
 				double btcToSell = tradeFloor.getWalletBtc() * config.btcToUsdTradeAmount;
-				double soldForUSD = tradeFloor.sell(btcToSell);
-				LOGGER.info(String.format("Sold %s BTC for %s USD because velocity %s < -%s", btcToSell, soldForUSD, velocity, config.minDiffVelocity));
+				double soldForUSD = tradeFloor.sell(tick, btcToSell);
+				LOGGER.info(String.format("Sold %s BTC for %s USD because velocity %s < %s", btcToSell, soldForUSD, currentDiff.value, config.minSellVelocity));
 			}
 		}
 		else {

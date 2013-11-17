@@ -4,7 +4,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import c3po.TradeAction.TradeActionType;
+import c3po.macd.MacdTraderNode;
 
 /* Todo:
  * 
@@ -19,7 +23,7 @@ import c3po.TradeAction.TradeActionType;
  */
 
 public class BitstampSimulationTradeFloor implements ITradeFloor {
-	
+	private static final Logger LOGGER = LoggerFactory.getLogger(BitstampSimulationTradeFloor.class);
 	private double tradeFee = 0.05d;
 	
 	private double walletUsd;
@@ -66,7 +70,7 @@ public class BitstampSimulationTradeFloor implements ITradeFloor {
 	}	
 
 	@Override
-	public double buy(double volume) {
+	public double buy(long timestamp, double volume) {
 		// We get the latest ask, assuming the ticker is updated by some other part of the app
 		Sample currentAsk = askSignal.peek();
 		
@@ -79,13 +83,13 @@ public class BitstampSimulationTradeFloor implements ITradeFloor {
 		// Add the bought volume to the wallet, minus the percentage from the tradefee
 		walletBtc += buyBtc;
 		
-		actions.add(new TradeAction(TradeActionType.BUY, new Date().getTime(), volume));
+		actions.add(new TradeAction(TradeActionType.BUY, timestamp, volume));
 		
 		return buyBtc;
 	}
 
 	@Override
-	public double sell(double volumeBitcoins) {
+	public double sell(long timestamp, double volumeBitcoins) {
 		// We get the latest ask, assuming the ticker is updated by some other part of the app
 		Sample currentBid = bidSignal.peek();
 		
@@ -94,7 +98,7 @@ public class BitstampSimulationTradeFloor implements ITradeFloor {
 		walletUsd += soldForUsd;
 		walletBtc -= volumeBitcoins;
 		
-		actions.add(new TradeAction(TradeActionType.SELL, new Date().getTime(), volumeBitcoins));
+		actions.add(new TradeAction(TradeActionType.SELL, timestamp, volumeBitcoins));
 		
 		return soldForUsd;
 	}
@@ -102,5 +106,12 @@ public class BitstampSimulationTradeFloor implements ITradeFloor {
 	@Override
 	public List<TradeAction> getActions() {
 		return actions;
+	}
+	
+	public void dump() {
+		LOGGER.debug("Trades: " + actions.size());
+		for(TradeAction action : actions) {
+			LOGGER.debug(action.toString());
+		}
 	}
 }
