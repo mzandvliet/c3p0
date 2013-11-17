@@ -14,7 +14,8 @@ import c3po.ITradeFloor;
 
 /* Todo:
  * 
- * 
+ * ------ Important -----
+ * - Make sure ticker signal works correctly when ticked by multiple sources in parallel
  * - config is still expressed in number-of-ticks, which means it depends on bot's timeStep, should change to units of time
  * - Encapsulate tick invalidation, it's so easy to do wrong, and it's boilerplate
  * 
