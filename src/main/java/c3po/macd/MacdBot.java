@@ -18,6 +18,8 @@ import c3po.ITradeFloor;
  * - TickerDBSource and TickerJsonSource should use MILISECONDS!!
  * - MacdAnalysisConfig is still expressed in number-of-ticks, which means it depends on bot's timeStep. Should change to units of time.
  * - Encapsulate tick invalidation, it's so easy to do wrong, and it is a bunch of boilerplate
+ * 		- abstract class AbstractTickable implements ITickable { protected abstract void onNewTick(); }
+ * 		- That handles the if (tick > last), and just does a callback on your code when new values are needed
  * ----------------------
  * 
  * - Develop exit protocol and implementation

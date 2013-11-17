@@ -75,8 +75,9 @@ public class GraphingNode extends ApplicationFrame implements INode {
 			s1.addOrUpdate(new Second(newest.getDate()), newest.value);
 			
 			output.setSample(newest);
-			lastTick = tick;
 		}
+		
+		lastTick = tick;
 	}
 
     /**
