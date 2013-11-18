@@ -2,6 +2,10 @@ package c3po;
 
 import java.net.InetSocketAddress;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +19,7 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 
 	private Connection connect = null;
 	private Statement statement = null;
-	private ResultSet resultSet = null;
+	ArrayList<BitstampTickerRow> buffer;
 
 	
 	public BitstampTickerDbSource(InetSocketAddress host, String user, String pwd) throws ClassNotFoundException, SQLException {
@@ -38,13 +42,28 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 	}
 	
 	private void fetchData(long timestamp) throws SQLException {
+		
+		  long fetchTime = (timestamp / 1000) - 60;
+		  
 	      // Statements allow to issue SQL queries to the database
 	      statement = connect.createStatement();
 	      // Result set get the result of the SQL query
-	      String query = "select * from bitstamp_ticker WHERE timestamp < " + timestamp + " ORDER BY timestamp DESC LIMIT 1";
-	      resultSet = statement.executeQuery(query);
+	      String query = "select * from bitstamp_ticker WHERE `timestamp` >= " + fetchTime  + " ORDER BY timestamp ASC";
+	      ResultSet resultSet = statement.executeQuery(query);
 	      LOGGER.debug(query);
-	      resultSet.next();
+	      
+	      // I dont understand shit of this resultSet class so I just use my own buffer
+	      buffer = new ArrayList<BitstampTickerRow>();
+	      while(resultSet.next()) {
+	    	  buffer.add(new BitstampTickerRow(
+	    			  resultSet.getLong("timestamp"), 
+	    			  resultSet.getDouble("ask"), 
+	    			  resultSet.getDouble("last"), 
+	    			  resultSet.getDouble("low"), 
+	    			  resultSet.getDouble("high"), 
+	    			  resultSet.getDouble("bid"), 
+	    			  resultSet.getLong("volume")));
+	      }
 	}
 	
 	@Override
@@ -62,20 +81,48 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 	
 	public void query(long tick) {
 		try {
-			fetchData(tick); 
-			useCurrentRow();
+			// The first time, fill the buffer
+			do {
+			  fetchData(tick); 
+			  Thread.sleep(1000);
+			} while(buffer.size() < 1);
+			
+			BitstampTickerRow prev = buffer.get(0);
+			
+			if(buffer.size() == 1) {
+				useRow(prev);
+			    return;
+			}
+			
+			BitstampTickerRow current = null;
+			for(int index = 1; index < buffer.size(); index++) {
+				current = buffer.get(index);
+				
+				// If the next is too new, use the prev
+				if(current.timestamp > tick) {
+					useRow(prev);
+					return;
+				}
+			}
+			
+			useRow(current);
+			return;
 		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} 
 	}
 	
-	private void useCurrentRow() throws SQLException {
-		signals[SignalName.ASK.ordinal()].setSample(new Sample(resultSet.getLong("timestamp"), resultSet.getDouble("ask")));
-		signals[SignalName.BID.ordinal()].setSample(new Sample(resultSet.getLong("timestamp"), resultSet.getDouble("bid")));
-		signals[SignalName.HIGH.ordinal()].setSample(new Sample(resultSet.getLong("timestamp"), resultSet.getDouble("high")));
-		signals[SignalName.LAST.ordinal()].setSample(new Sample(resultSet.getLong("timestamp"), resultSet.getDouble("last")));
-		signals[SignalName.LOW.ordinal()].setSample(new Sample(resultSet.getLong("timestamp"), resultSet.getDouble("low")));
-		signals[SignalName.VOLUME.ordinal()].setSample(new Sample(resultSet.getLong("timestamp"), resultSet.getDouble("volume")));
+	private void useRow(BitstampTickerRow row) throws SQLException {
+		
+		LOGGER.debug("Using row " + row);
+		signals[SignalName.ASK.ordinal()].setSample(new Sample(row.timestamp, row.ask));
+		signals[SignalName.BID.ordinal()].setSample(new Sample(row.timestamp, row.bid));
+		signals[SignalName.HIGH.ordinal()].setSample(new Sample(row.timestamp, row.high));
+		signals[SignalName.LAST.ordinal()].setSample(new Sample(row.timestamp, row.last));
+		signals[SignalName.LOW.ordinal()].setSample(new Sample(row.timestamp, row.low));
+		signals[SignalName.VOLUME.ordinal()].setSample(new Sample(row.timestamp, row.volume));
 	}
 
 	@Override
@@ -104,18 +151,18 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 	public class BitstampTickerRow {
 		public long timestamp;
 		public double ask;
-		public double buy;
-		public double sell;
+		public double last;
+		public double low;
 		public double high;
 		public double bid;
 		public double volume;
 		
-		public BitstampTickerRow(long timestamp, double ask, double buy,
-				double sell, double high, double bid, double volume) {
+		public BitstampTickerRow(long timestamp, double ask, double last,
+				double low, double high, double bid, double volume) {
 			this.timestamp = timestamp;
 			this.ask = ask;
-			this.buy = buy;
-			this.sell = sell;
+			this.last = last;
+			this.low = low;
 			this.high = high;
 			this.bid = bid;
 			this.volume = volume;

@@ -50,7 +50,7 @@ public class RealtimeBotRunner {
 		
 		// Create a clock
 		
-		IClock botClock = new RealtimeClock(clockTimestep, 1000l);
+		IClock botClock = new RealtimeClock(clockTimestep, 200000l);
 		botClock.addListener(bot);
 		
 		// Run the program
