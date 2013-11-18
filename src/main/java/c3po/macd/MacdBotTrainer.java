@@ -40,24 +40,24 @@ import c3po.SimulationClock;
 
 public class MacdBotTrainer {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdBotTrainer.class);
-//	private final static String csvPath = "resources/bitstamp_ticker_fake_downhill.csv";
-//	private final static long simulationStartTime = 1383468287000l;
-//	private final static long simulationEndTime = 1384078962000l; 
+	private final static String csvPath = "resources/bitstamp_ticker_fake_downhill.csv";
+	private final static long simulationStartTime = 1383468287000l;
+	private final static long simulationEndTime = 1384078962000l; 
 	
 //	private final static String csvPath = "resources/bitstamp_ticker_fake_down_up.csv";
 //	private final static long simulationStartTime = 1383468287000l;
 //	private final static long simulationEndTime = 1384689637000l; 
 	
-	private final static String csvPath = "resources/bitstamp_ticker_till_20131117.csv";
-	private final static long simulationStartTime = 1384079023000l;
-	private final static long simulationEndTime = 1384689637000l; 
+//	private final static String csvPath = "resources/bitstamp_ticker_till_20131117.csv";
+//	private final static long simulationStartTime = 1384079023000l;
+//	private final static long simulationEndTime = 1384689637000l; 
 	
 	private final static long clockTimestep = 1000;
 	
 	private final static int numEpochs = 10;
-	private final static int numBots = 50;
-	private final static int numWinners = 10;
-	private final static double mutationChance = 0.1d;
+	private final static int numBots = 100;
+	private final static int numWinners = 20;
+	private final static double mutationChance = 0.2d;
 	private final static double walletStartDollars = 1000.0;
 	
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
@@ -75,20 +75,6 @@ public class MacdBotTrainer {
 		}
 	}
 	
-	private class Nummie {
-		public int num;
-
-		public Nummie(int num) {
-			super();
-			this.num = num;
-		}
-
-		@Override
-		public String toString() {
-			return "" + num;
-		}
-	}
-	
 	private List<MacdBotConfig> simulateEpoch(final List<MacdBotConfig> configs, final int epoch) {
 		
 		// Create a ticker
@@ -98,15 +84,12 @@ public class MacdBotTrainer {
 		// Create a clock
 		
 		IClock botClock = new SimulationClock(clockTimestep, simulationStartTime, simulationEndTime);
-		
 		List<MacdBot> population = createPopulationFromConfigs(configs, tickerNode, botClock);
 		
 		// Run the simulation
 		
 		tickerNode.open();
-		
 		botClock.run();
-		
 		tickerNode.close();
 		
 		// return population;
@@ -146,15 +129,13 @@ public class MacdBotTrainer {
 	}
 	
 	
-	
+	// Move winners to the start, losers to the end
 	private void sortByScore(final List<MacdBot> population) {
 		
 		Collections.sort(population, new Comparator<IBot>() {
 
 	        public int compare(IBot botA, IBot botB) {
-	        	// Move winners to the start, losers to the end
-	        	// Todo: incorporate number of trades to filter out the do-nothing bots
-	        	
+	        	// Todo: incorporate number of trades to filter out the do-nothing bots?
 	            return botA.getTradeFloor().getWalletValue() > botB.getTradeFloor().getWalletValue() ? -1 : 1;
 	        }
 	    });
@@ -234,7 +215,7 @@ public class MacdBotTrainer {
 	
 	private MacdBotConfig createChild(final MacdBotConfig parentA, final MacdBotConfig parentB) {
 		
-		// Crossover
+		// Each property is randomly selected from either parent
 		
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
 				which() ? parentA.analysisConfig.slowPeriod : parentB.analysisConfig.slowPeriod,
@@ -264,6 +245,8 @@ public class MacdBotTrainer {
 	
 	private MacdBotConfig mutate(final MacdBotConfig config, double mutationChance) {
 		MacdBotConfig randomConfig = createRandomConfig();
+		
+		// Each property has a separately evaluated chance of mutating
 		
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
 				shouldMutate(mutationChance) ? config.analysisConfig.slowPeriod : randomConfig.analysisConfig.slowPeriod,
