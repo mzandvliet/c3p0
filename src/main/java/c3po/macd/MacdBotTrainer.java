@@ -40,25 +40,29 @@ import c3po.SimulationClock;
 
 public class MacdBotTrainer {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdBotTrainer.class);
-	private final static String csvPath = "resources/bitstamp_ticker_fake_downhill.csv";
-	private final static long simulationStartTime = 1383468287000l;
-	private final static long simulationEndTime = 1384078962000l; 
-	
-//	private final static String csvPath = "resources/bitstamp_ticker_fake_down_up.csv";
-//	private final static long simulationStartTime = 1383468287000l;
-//	private final static long simulationEndTime = 1384689637000l; 
 	
 //	private final static String csvPath = "resources/bitstamp_ticker_till_20131117.csv";
 //	private final static long simulationStartTime = 1384079023000l;
 //	private final static long simulationEndTime = 1384689637000l; 
 	
+//	private final static String csvPath = "resources/bitstamp_ticker_fake_downhill.csv";
+//	private final static long simulationStartTime = 1383468287000l;
+//	private final static long simulationEndTime = 1384078962000l; 
+	
+	private final static String csvPath = "resources/bitstamp_ticker_fake_down_up.csv";
+	private final static long simulationStartTime = 1383468287000l;
+	private final static long simulationEndTime = 1384689637000l; 
+	
 	private final static long clockTimestep = 1000;
 	
-	private final static int numEpochs = 10;
-	private final static int numBots = 100;
-	private final static int numWinners = 20;
+	private final static int numEpochs = 30;
+	private final static int numBots = 50;
+	private final static int numParents = 25;
+	private final static int numElites = 5;
 	private final static double mutationChance = 0.2d;
-	private final static double walletStartDollars = 1000.0;
+	
+	private final static double walletStartDollars = 0.0;
+	private final static double walletStartBtcInUsd = 1000.0;
 	
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		MacdBotTrainer trainer = new MacdBotTrainer();
@@ -70,8 +74,8 @@ public class MacdBotTrainer {
 		
 		for (int i = 0; i < numEpochs; i++) {
 			List<MacdBotConfig> sortedConfigs = simulateEpoch(configs, i);
-			List<MacdBotConfig> winners = sortedConfigs.subList(0, numWinners);
-			configs = evolveConfigs(winners, numBots);
+			List<MacdBotConfig> winners = sortedConfigs.subList(0, numParents);
+			configs = evolveConfigs(winners, numBots, numElites);
 		}
 	}
 	
@@ -81,6 +85,8 @@ public class MacdBotTrainer {
 		
 		final BitstampTickerSource tickerNode = new BitstampTickerCsvSource(csvPath);
 		
+		tickerNode.open();
+		
 		// Create a clock
 		
 		IClock botClock = new SimulationClock(clockTimestep, simulationStartTime, simulationEndTime);
@@ -88,7 +94,7 @@ public class MacdBotTrainer {
 		
 		// Run the simulation
 		
-		tickerNode.open();
+		
 		botClock.run();
 		tickerNode.close();
 		
@@ -144,12 +150,15 @@ public class MacdBotTrainer {
 	private List<MacdBot> createPopulationFromConfigs(List<MacdBotConfig> configs, BitstampTickerSource ticker, IClock botClock) {
 		ArrayList<MacdBot> population = new ArrayList<MacdBot>();
 		
+		double startBtc = walletStartBtcInUsd / ticker.getOutputLast().getSample(simulationStartTime).value;
+		
 		for (int i = 0; i < configs.size(); i++) {
 			final ITradeFloor tradeFloor =  new BitstampSimulationTradeFloor(
 					ticker.getOutputLast(),
 					ticker.getOutputBid(),
 					ticker.getOutputAsk(),
-					walletStartDollars
+					walletStartDollars,
+					startBtc
 			);
 			
 			MacdBot bot = new MacdBot(configs.get(i), ticker.getOutputLast(), tradeFloor);
@@ -195,18 +204,26 @@ public class MacdBotTrainer {
 		return config;
 	}
 	
-	private List<MacdBotConfig> evolveConfigs(List<MacdBotConfig> winners, int populationSize) {
-		List<MacdBotConfig> childrenGenes = new ArrayList<MacdBotConfig>();
+	private List<MacdBotConfig> evolveConfigs(List<MacdBotConfig> parents, int populationSize, int numElites) {
+		List<MacdBotConfig> newGenes = new ArrayList<MacdBotConfig>();
 		
-		for (int i = 0; i < populationSize; i++) {
-			MacdBotConfig parentA = getRandom(winners);
-			MacdBotConfig parentB = getRandom(winners);
+		int numChildren = populationSize - numElites;
+		
+		// Crossbreed new children
+		for (int i = 0; i < numChildren; i++) {
+			MacdBotConfig parentA = getRandom(parents);
+			MacdBotConfig parentB = getRandom(parents);
 			
 			MacdBotConfig child = createChild(parentA, parentB);
-			childrenGenes.add(child);
+			newGenes.add(child);
 		}
 		
-		return childrenGenes;
+		// Add elites to the pool, they survive verbatim
+		for (int i = 0; i < numElites; i++) {
+			newGenes.add(parents.get(i)); // Assuming the first are the best
+		}
+		
+		return newGenes;
 	}
 	
 	private MacdBotConfig getRandom(final List<MacdBotConfig> list) {
