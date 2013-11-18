@@ -23,6 +23,7 @@ public class RealtimeBotRunner {
 	private final static long botTimestep = 1000;
 	
 	private static final double walletDollarStart = 1000.0;
+	private static final double walletBtcStart = 0.0;
 
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		// Set up global signal tree
@@ -33,7 +34,8 @@ public class RealtimeBotRunner {
 				tickerNode.getOutputLast(),
 				tickerNode.getOutputBid(),
 				tickerNode.getOutputAsk(),
-				walletDollarStart
+				walletDollarStart,
+				walletBtcStart
 		);
 		
 		// Create bot config

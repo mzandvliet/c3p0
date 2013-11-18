@@ -35,11 +35,12 @@ public class BitstampSimulationTradeFloor implements ITradeFloor {
 	ISignal bidSignal;
 	ISignal askSignal;
 	
-	public BitstampSimulationTradeFloor(ISignal last, ISignal bid, ISignal ask, double startDollars) {
+	public BitstampSimulationTradeFloor(ISignal last, ISignal bid, ISignal ask, double startDollars, double startBtc) {
 		this.lastSignal = last;
 		this.bidSignal = bid;
 		this.askSignal = ask;
 		this.walletUsd = startDollars;
+		this.walletBtc = startBtc;
 		
 		this.actions = new ArrayList<TradeAction>();
 	}

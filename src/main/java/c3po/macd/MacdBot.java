@@ -71,6 +71,7 @@ public class MacdBot implements IBot {
 	private final static long clockTimestep = 1000;
 	private static final long botTimestep = 1000;
 	private static final double walletDollarStart = 1000.0;
+	private static final double walletBtcStart = 0.0;
 	
 	//================================================================================
     // Main
@@ -87,7 +88,8 @@ public class MacdBot implements IBot {
 				tickerNode.getOutputLast(),
 				tickerNode.getOutputBid(),
 				tickerNode.getOutputAsk(),
-				walletDollarStart
+				walletDollarStart,
+				walletBtcStart
 		);
 		
 		// Create bot config
