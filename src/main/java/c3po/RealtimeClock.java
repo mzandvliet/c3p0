@@ -7,8 +7,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import c3po.macd.RealBot;
-
 public class RealtimeClock implements IClock, Runnable {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(RealtimeClock.class);
@@ -16,6 +14,8 @@ public class RealtimeClock implements IClock, Runnable {
 	private List<IBot> bots;
 	private long timeStep; 
 	private long preloadTime;
+
+	private boolean stopIt = false;
 	
 	/**
 	 * Creates a clock that runs realtime
@@ -26,6 +26,7 @@ public class RealtimeClock implements IClock, Runnable {
 	public RealtimeClock(long timeStep, long preloadTime) {
 		this.bots = new ArrayList<IBot>();
 		this.timeStep = timeStep;
+		this.preloadTime = preloadTime;
 	}
 	
 	@Override
@@ -45,23 +46,31 @@ public class RealtimeClock implements IClock, Runnable {
 		
 		// First run the learning period
 		long currentTick = new Date().getTime() - preloadTime;
-		while(currentTick < new Date().getTime())
-		for (IBot bot : bots) {
-			if (currentTick - bot.getLastTick() >= bot.getTimestep()) {
-				bot.tick(currentTick);
+		LOGGER.debug("Tick: " + currentTick);
+		while(currentTick < new Date().getTime()) {
+			for (IBot bot : bots) {
+				if (bot.getLastTick() == 0 || currentTick - bot.getLastTick() >= bot.getTimestep()) {
+					bot.tick(currentTick);
+					LOGGER.debug("Bot : " + bot + " Tick: " + currentTick);
+				}
 			}
-			
+		
 			currentTick += timeStep;
 		}
 		
+		LOGGER.debug("Finished preloading data, starting realtime execution");
+		
 		// And now... run forever!
-		while (true) {
+		while (stopIt == false) {
 			currentTick = new Date().getTime();
 			for (IBot bot : bots) {
-				if (currentTick - bot.getLastTick() >= bot.getTimestep()) {
+				if (bot.getLastTick() == 0 || currentTick - bot.getLastTick() >= bot.getTimestep()) {
 					bot.tick(currentTick);
+					LOGGER.debug("Bot : " + bot + " Tick: " + currentTick);
 				}
 			}
+			
+			LOGGER.debug("Tick: " + currentTick);
 
 			Wait(timeStep);
 		}
@@ -73,5 +82,9 @@ public class RealtimeClock implements IClock, Runnable {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public synchronized void stop() {
+		this.stopIt = true;
 	}
 }
