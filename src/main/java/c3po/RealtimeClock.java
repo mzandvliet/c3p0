@@ -16,6 +16,8 @@ public class RealtimeClock implements IClock, Runnable {
 	private long preloadTime;
 
 	private boolean stopIt = false;
+
+	private long maxTicks;
 	
 	/**
 	 * Creates a clock that runs realtime
@@ -27,6 +29,11 @@ public class RealtimeClock implements IClock, Runnable {
 		this.bots = new ArrayList<IBot>();
 		this.timeStep = timeStep;
 		this.preloadTime = preloadTime;
+	}
+	
+	public RealtimeClock(long timeStep, long preloadTime, long maxTicks) {
+		this(timeStep, preloadTime);
+		this.maxTicks = maxTicks;
 	}
 	
 	@Override
@@ -61,7 +68,8 @@ public class RealtimeClock implements IClock, Runnable {
 		LOGGER.debug("Finished preloading data, starting realtime execution");
 		
 		// And now... run forever!
-		while (stopIt == false) {
+		long tickIndex = 0;
+		while (stopIt == false && (maxTicks == 0 || maxTicks > tickIndex)) {
 			currentTick = new Date().getTime();
 			for (IBot bot : bots) {
 				if (bot.getLastTick() == 0 || currentTick - bot.getLastTick() >= bot.getTimestep()) {
@@ -73,6 +81,7 @@ public class RealtimeClock implements IClock, Runnable {
 			LOGGER.debug("Tick: " + currentTick);
 
 			Wait(timeStep);
+			tickIndex++;
 		}
 	}
 	
