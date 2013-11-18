@@ -41,6 +41,8 @@ import c3po.ITradeFloor;
  * 		- https://code.google.com/p/charts4j/
  * 
  * - Network architecture
+ * 		- INode should define setInput() to assign signals dynamically
+ * 			- Constructor should not take input signals anymore
  * 		- Make Sample generic?
  * 			- So you can have ISignal<TradeAction> & INode<TradeAction>
  * 			- Analyse wallet & trade data streams using network methods too
@@ -67,9 +69,7 @@ public class MacdBot implements IBot {
 	private final static long simulationEndTime = 1384689637000l; 
 	
 	private final static long clockTimestep = 1000;
-	
 	private static final long botTimestep = 1000;
-	
 	private static final double walletDollarStart = 1000.0;
 	
 	//================================================================================
@@ -171,6 +171,10 @@ public class MacdBot implements IBot {
 	@Override
 	public ITradeFloor getTradeFloor() {
 		return tradeFloor;
+	}
+	
+	public MacdBotConfig getConfig() {
+		return config;
 	}
 
 	public String toString() {

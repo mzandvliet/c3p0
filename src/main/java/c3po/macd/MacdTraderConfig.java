@@ -41,7 +41,7 @@ public class MacdTraderConfig {
 	}
 
 	public String toString() {
-		return String.format("[MacdBotConfig - startDelay: %s, minBuyThreshold: %s, minSellThreshold: %s, usdToBtcTradeAmount: %s, btcToUsdTradeAmount: %s, sellBackoffTimer: %ss, buyBackoffTimer: %ss]", 
+		return String.format("[TraderConfig - startDelay: %s, minBuyThreshold: %s, minSellThreshold: %s, usdToBtcTradeAmount: %s, btcToUsdTradeAmount: %s, sellBackoffTimer: %ss, buyBackoffTimer: %ss]", 
 				startDelay, 
 				(double) Math.round(minBuyDiffThreshold * 10000) / 10000,
 				(double) Math.round(minSellDiffThreshold * 10000) / 10000,

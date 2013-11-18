@@ -64,7 +64,7 @@ public class MacdTraderNode implements ITickable {
 				double btcBought = tradeFloor.buy(tick, volume);
 				lastBuy = tick;
 				
-				LOGGER.info(String.format("Bought %s BTC for %s USD because difference %s > %s", btcBought, dollars, currentDiff.value, config.minBuyDiffThreshold));
+				//LOGGER.info(String.format("Bought %s BTC for %s USD because difference %s > %s", btcBought, dollars, currentDiff.value, config.minBuyDiffThreshold));
 			}
 			else if (!sellInBackOffTimer && currentDiff.value < config.minSellDiffThreshold && tradeFloor.getWalletBtc() > tradeFloor.toBtc(minDollars)) {
 				// Trade all of current btcWallet
@@ -72,7 +72,7 @@ public class MacdTraderNode implements ITickable {
 				double soldForUSD = tradeFloor.sell(tick, btcToSell);
 				lastSell = tick;
 				
-				LOGGER.info(String.format("Sold %s BTC for %s USD because difference %s < %s", btcToSell, soldForUSD, currentDiff.value, config.minSellDiffThreshold));
+				//LOGGER.info(String.format("Sold %s BTC for %s USD because difference %s < %s", btcToSell, soldForUSD, currentDiff.value, config.minSellDiffThreshold));
 				
 			}
 		}

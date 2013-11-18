@@ -10,4 +10,9 @@ public class MacdBotConfig {
 		this.analysisConfig = analysisConfig;
 		this.traderConfig = traderConfig;
 	}
+
+	@Override
+	public String toString() {
+		return analysisConfig.toString() + ", " + traderConfig.toString();
+	}
 }

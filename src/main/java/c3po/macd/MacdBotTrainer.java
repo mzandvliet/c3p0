@@ -2,6 +2,8 @@ package c3po.macd;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -19,18 +21,21 @@ import c3po.ITradeFloor;
 import c3po.SimulationClock;
 
 /**
- * This class is used to repeatedly run a bit with different configurations and analyse its performance
+ * This optimizes MacdBots using genetic algoritms.
  * 
  * Todo:
  * 
- * - Create config mutation algorithms
+ * - This would be a lot cleaner with the following network architecture changes
+ * 		- Binding input signal dynamically (outside of constructor)
+ * 		- Bots having a private wallet but sharing a tradefloor
+ * 		- Then you could return bots from simulateEpoch and sort performance externally
  * 
- * - Genetic algoritm routine:
+ * - Make IBot<IConfig> with getConfig(), and IBotTrainer<IConfig>
+ * 		- This makes genetic algorithm optimization trivial since all you have to do is implement the mutate() function for your IConfig
  * 
- * - Simulate epoch
- * - Select epoch winners
- * - Mutate winners
- * - Repeat until local optimum is reached
+ * Notes:
+ * 
+ * - Bot timestep is not affected by genetic modification
  */
 
 public class MacdBotTrainer {
@@ -49,16 +54,43 @@ public class MacdBotTrainer {
 	
 	private final static long clockTimestep = 1000;
 	
-	private final static int numBots = 100;
+	private final static int numEpochs = 10;
+	private final static int numBots = 50;
+	private final static int numWinners = 10;
+	private final static double mutationChance = 0.1d;
 	private final static double walletStartDollars = 1000.0;
 	
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		MacdBotTrainer trainer = new MacdBotTrainer();
-		
-		trainer.simulateEpoch();
+		trainer.run();		
 	}
 	
-	private void simulateEpoch() {
+	public void run() {
+		List<MacdBotConfig> configs = createRandomConfigs(numBots);
+		
+		for (int i = 0; i < numEpochs; i++) {
+			List<MacdBotConfig> sortedConfigs = simulateEpoch(configs, i);
+			List<MacdBotConfig> winners = sortedConfigs.subList(0, numWinners);
+			configs = evolveConfigs(winners, numBots);
+		}
+	}
+	
+	private class Nummie {
+		public int num;
+
+		public Nummie(int num) {
+			super();
+			this.num = num;
+		}
+
+		@Override
+		public String toString() {
+			return "" + num;
+		}
+	}
+	
+	private List<MacdBotConfig> simulateEpoch(final List<MacdBotConfig> configs, final int epoch) {
+		
 		// Create a ticker
 		
 		final BitstampTickerSource tickerNode = new BitstampTickerCsvSource(csvPath);
@@ -67,13 +99,9 @@ public class MacdBotTrainer {
 		
 		IClock botClock = new SimulationClock(clockTimestep, simulationStartTime, simulationEndTime);
 		
-		// Create the bots
-
-		List<IBot> population = getRandomPopulation(numBots, tickerNode, botClock);
+		List<MacdBot> population = createPopulationFromConfigs(configs, tickerNode, botClock);
 		
-		
-		
-		// Run the program
+		// Run the simulation
 		
 		tickerNode.open();
 		
@@ -81,28 +109,61 @@ public class MacdBotTrainer {
 		
 		tickerNode.close();
 		
-		// Todo: remove bots from clock
+		// return population;
 		
-		double highestWalletValue = 0;
-		IBot bestBot = null;
-		for(IBot bot : population) {
-			double walletValue = bot.getTradeFloor().getWalletValue();
-			
-			if(walletValue > highestWalletValue && bot.getTradeFloor().getActions().size() > 0){
-				highestWalletValue = walletValue;
-				bestBot = bot;
-			}
-				
+		
+		/* --------------------------------------------------------------------------------------------------------
+		 * Ideally you'd just return the bots and let the caller sort the data herself, but since
+		 * the bots are now hard wired to the locally defined inputs that wouldn't work. Fix this...
+		 * 
+		 *  Or at least, we want to couple gene and fitness, so maybe a simple value type:
+		 *  
+		 *  Score<IConfig> { IConfig config, double profit, int numTrades }
+		 *  --------------------------------------------------------------------------------------------------------
+		 */
+		
+		
+		// Return the configs sorted by their performance
+		
+		sortByScore(population);
+		
+		List<MacdBotConfig> sortedConfigs = new ArrayList<MacdBotConfig>();
+		for (MacdBot bot : population) {
+			sortedConfigs.add(bot.getConfig());
 		}
 		
-		LOGGER.debug("Bot " + bestBot + " has " + highestWalletValue + " USD");	
-		bestBot.getTradeFloor().dump();
+		LOGGER.debug("Finished epoch " + epoch);
+		
+		MacdBot bestBot = population.get(0);
+		LOGGER.debug("Best bot was: " + bestBot.getConfig().toString());
+		LOGGER.debug("Wallet: " + bestBot.getTradeFloor().getWalletValue());
+		
+		MacdBot worstBot = population.get(population.size()-1);
+		LOGGER.debug("Worst bot was: " + worstBot.getConfig().toString());
+		LOGGER.debug("Wallet: " + worstBot.getTradeFloor().getWalletValue());
+		
+		return sortedConfigs;
 	}
 	
-	private List<IBot> getRandomPopulation(int size, BitstampTickerSource ticker, IClock botClock) {
-		ArrayList<IBot> population = new ArrayList<IBot>();
+	
+	
+	private void sortByScore(final List<MacdBot> population) {
 		
-		for (int i = 0; i < size; i++) {
+		Collections.sort(population, new Comparator<IBot>() {
+
+	        public int compare(IBot botA, IBot botB) {
+	        	// Move winners to the start, losers to the end
+	        	// Todo: incorporate number of trades to filter out the do-nothing bots
+	        	
+	            return botA.getTradeFloor().getWalletValue() > botB.getTradeFloor().getWalletValue() ? -1 : 1;
+	        }
+	    });
+	}
+	
+	private List<MacdBot> createPopulationFromConfigs(List<MacdBotConfig> configs, BitstampTickerSource ticker, IClock botClock) {
+		ArrayList<MacdBot> population = new ArrayList<MacdBot>();
+		
+		for (int i = 0; i < configs.size(); i++) {
 			final ITradeFloor tradeFloor =  new BitstampSimulationTradeFloor(
 					ticker.getOutputLast(),
 					ticker.getOutputBid(),
@@ -110,7 +171,7 @@ public class MacdBotTrainer {
 					walletStartDollars
 			);
 			
-			MacdBot bot = new MacdBot(getRandom(), ticker.getOutputLast(), tradeFloor);
+			MacdBot bot = new MacdBot(configs.get(i), ticker.getOutputLast(), tradeFloor);
 			botClock.addListener(bot);
 			population.add(bot);
 		}
@@ -118,23 +179,33 @@ public class MacdBotTrainer {
 		return population;
 	}
 	
-	private MacdBotConfig getRandom() {		
+	private List<MacdBotConfig> createRandomConfigs(int numConfigs) {
+		ArrayList<MacdBotConfig> configs = new ArrayList<MacdBotConfig>();
+		
+		for (int i = 0; i < numConfigs; i++) {
+			configs.add(createRandomConfig());
+		}
+		
+		return configs;
+	}
+	
+	private MacdBotConfig createRandomConfig() {		
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
-			1 + (int) Math.floor(Math.random() * 1000),
-			1 + (int) Math.floor(Math.random() * 1000),
-			1 + (int) Math.floor(Math.random() * 1000)
+			getRandomSignalperiod(1000),
+			getRandomSignalperiod(1000),
+			getRandomSignalperiod(1000)
 		);
 		
 		double minBuyThreshold = 0.0d + (Math.random() * 1.0d);
 		double minSellThreshold = -0.5d + (Math.random() * 1.0d);
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
-				Math.max(analysisConfig.fastPeriod, Math.max(analysisConfig.signalPeriod, analysisConfig.slowPeriod)),
+				max(analysisConfig),
 				minBuyThreshold,
 				minSellThreshold,
 				Math.random(),
 				Math.random(),
-				60000l + (long) (Math.random() * 86400000d),
-				60000l + (long) (Math.random() * 86400000d)
+				getRandomBackoffDuration(60000l, 86400000l),
+				getRandomBackoffDuration(60000l, 86400000l)
 				
 		);
 		
@@ -143,10 +214,97 @@ public class MacdBotTrainer {
 		return config;
 	}
 	
-	private MacdBotConfig mutate(final MacdBotConfig config) {
-
-		// Todo:Mutate properties based on chance
+	private List<MacdBotConfig> evolveConfigs(List<MacdBotConfig> winners, int populationSize) {
+		List<MacdBotConfig> childrenGenes = new ArrayList<MacdBotConfig>();
 		
-		return null;
+		for (int i = 0; i < populationSize; i++) {
+			MacdBotConfig parentA = getRandom(winners);
+			MacdBotConfig parentB = getRandom(winners);
+			
+			MacdBotConfig child = createChild(parentA, parentB);
+			childrenGenes.add(child);
+		}
+		
+		return childrenGenes;
+	}
+	
+	private MacdBotConfig getRandom(final List<MacdBotConfig> list) {
+		return list.get( (int)(Math.random() * list.size()) );
+	}
+	
+	private MacdBotConfig createChild(final MacdBotConfig parentA, final MacdBotConfig parentB) {
+		
+		// Crossover
+		
+		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
+				which() ? parentA.analysisConfig.slowPeriod : parentB.analysisConfig.slowPeriod,
+				which() ? parentA.analysisConfig.fastPeriod : parentB.analysisConfig.fastPeriod,
+				which() ? parentA.analysisConfig.signalPeriod : parentB.analysisConfig.signalPeriod);
+		
+		MacdTraderConfig traderConfig = new MacdTraderConfig(
+				max(analysisConfig),
+				which() ? parentA.traderConfig.minBuyDiffThreshold : parentB.traderConfig.minBuyDiffThreshold,
+				which() ? parentA.traderConfig.minSellDiffThreshold : parentB.traderConfig.minSellDiffThreshold,
+				which() ? parentA.traderConfig.usdToBtcTradeAmount : parentB.traderConfig.usdToBtcTradeAmount,
+				which() ? parentA.traderConfig.btcToUsdTradeAmount : parentB.traderConfig.btcToUsdTradeAmount,
+				which() ? parentA.traderConfig.sellBackoffTimer : parentB.traderConfig.sellBackoffTimer,
+				which() ? parentA.traderConfig.buyBackoffTimer : parentB.traderConfig.buyBackoffTimer);
+		
+		MacdBotConfig childConfig = new MacdBotConfig(
+				which() ? parentA.timeStep : parentB.timeStep,
+				analysisConfig,
+				traderConfig);
+		
+		// Mutate
+		
+		childConfig = mutate(childConfig, mutationChance);
+		
+		return childConfig;
+	}
+	
+	private MacdBotConfig mutate(final MacdBotConfig config, double mutationChance) {
+		MacdBotConfig randomConfig = createRandomConfig();
+		
+		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
+				shouldMutate(mutationChance) ? config.analysisConfig.slowPeriod : randomConfig.analysisConfig.slowPeriod,
+				shouldMutate(mutationChance) ? config.analysisConfig.fastPeriod : randomConfig.analysisConfig.fastPeriod,
+				shouldMutate(mutationChance) ? config.analysisConfig.signalPeriod : randomConfig.analysisConfig.signalPeriod
+			);
+			
+			double minBuyThreshold = shouldMutate(0.1d) ? config.traderConfig.minBuyDiffThreshold : config.traderConfig.minBuyDiffThreshold;
+			double minSellThreshold = shouldMutate(0.1d) ? config.traderConfig.minSellDiffThreshold : config.traderConfig.minSellDiffThreshold;
+			MacdTraderConfig traderConfig = new MacdTraderConfig(
+					max(analysisConfig),
+					minBuyThreshold,
+					minSellThreshold,
+					shouldMutate(mutationChance) ? config.traderConfig.usdToBtcTradeAmount : config.traderConfig.usdToBtcTradeAmount,
+					shouldMutate(mutationChance) ? config.traderConfig.btcToUsdTradeAmount : config.traderConfig.btcToUsdTradeAmount,
+					shouldMutate(mutationChance) ? config.traderConfig.sellBackoffTimer : config.traderConfig.sellBackoffTimer,
+					shouldMutate(mutationChance) ? config.traderConfig.buyBackoffTimer : config.traderConfig.buyBackoffTimer
+			);
+			
+			MacdBotConfig mutatedConfig = new MacdBotConfig(config.timeStep, analysisConfig, traderConfig);
+		
+		return mutatedConfig;
+	}
+	
+	private boolean which() {
+		return shouldMutate(0.5d);
+	}
+	
+	private boolean shouldMutate(double chance) {
+		return Math.random() < chance;
+	}
+	
+	private int getRandomSignalperiod(int range) {
+		return 1 + (int) Math.floor(Math.random() * range);
+	}
+	
+	private long getRandomBackoffDuration(long min, long max) {
+		return min + (long)(Math.random() * (double)(max-min));
+	}
+	
+	public int max(MacdAnalysisConfig config) {
+		return Math.max(config.fastPeriod, Math.max(config.signalPeriod, config.slowPeriod));
 	}
 }
