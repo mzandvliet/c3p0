@@ -110,6 +110,7 @@ public class BitstampSimulationTradeFloor implements ITradeFloor {
 	
 	public void dump() {
 		LOGGER.debug("Trades: " + actions.size());
+		LOGGER.debug("Wallet: " + walletUsd + " USD, " + walletBtc + " BTC");
 		for(TradeAction action : actions) {
 			LOGGER.debug(action.toString());
 		}
