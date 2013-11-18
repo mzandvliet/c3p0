@@ -18,6 +18,7 @@ import c3po.IBot;
 import c3po.IClock;
 import c3po.ISignal;
 import c3po.ITradeFloor;
+import c3po.Indicators;
 import c3po.SimulationClock;
 
 /**
@@ -45,22 +46,24 @@ public class MacdBotTrainer {
 //	private final static long simulationStartTime = 1384079023000l;
 //	private final static long simulationEndTime = 1384689637000l; 
 	
-//	private final static String csvPath = "resources/bitstamp_ticker_fake_downhill.csv";
-//	private final static long simulationStartTime = 1383468287000l;
-//	private final static long simulationEndTime = 1384078962000l; 
+	private final static String csvPath = "resources/bitstamp_ticker_till_20131117_pingpong.csv";
+	private final static long simulationStartTime = 1384079023000l;
+	private final static long simulationEndTime = 1384682984000l; 
 	
-	private final static String csvPath = "resources/bitstamp_ticker_fake_down_up.csv";
-	private final static long simulationStartTime = 1383468287000l;
-	private final static long simulationEndTime = 1384689637000l; 
-	
-	private final static long clockTimestep = 1000;
+	private final static long clockTimestep = 10000;
 	private final static long botStepTime = 60000; // Because right now we're keeping it constant, and data sampling rate is ~1 minute
+	
+	// For a single run of random bots
+	
+//	private final static int numEpochs = 1;
+//	private final static int numBots = 1000;
 	
 	private final static int numEpochs = 100;
 	private final static int numBots = 100;
+	
 	private final static int numParents = 50;
-	private final static int numElites = 10;
-	private final static double mutationChance = 0.2d;
+	private final static int numElites = 5;
+	private final static double mutationChance = 0.33d;
 	
 	private final static double walletStartDollars = 0.0;
 	private final static double walletStartBtcInUsd = 1000.0;
@@ -95,9 +98,7 @@ public class MacdBotTrainer {
 		
 		// Run the simulation
 		
-		
 		botClock.run();
-		tickerNode.close();
 		
 		// return population;
 		
@@ -132,18 +133,35 @@ public class MacdBotTrainer {
 		LOGGER.debug("Worst bot was: " + worstBot.getConfig().toString());
 		LOGGER.debug("Wallet: " + worstBot.getTradeFloor().getWalletValue());
 		
+		
+		tickerNode.close();
+		
 		return sortedConfigs;
 	}
 	
 	
-	// Move winners to the start, losers to the end
+	
 	private void sortByScore(final List<MacdBot> population) {
 		
 		Collections.sort(population, new Comparator<IBot>() {
 
 	        public int compare(IBot botA, IBot botB) {
-	        	// Todo: incorporate number of trades to filter out the do-nothing bots?
-	            return botA.getTradeFloor().getWalletValue() > botB.getTradeFloor().getWalletValue() ? -1 : 1;
+            	// Move bigger earners to the start, losers to the end
+	        	// A minimum # of trade is required, but importance of trade frequency falls off after just a couple of them
+	            	
+	        	double botAWallet = botA.getTradeFloor().getWalletValue();
+	        	double botAActivity = 0.1d + Math.log(botA.getTradeFloor().getActions().size()); 
+            	double botAPerformance = botAWallet * botAActivity;
+            	
+            	double botBWallet = botB.getTradeFloor().getWalletValue();
+	        	double botBActivity = 0.1d + Math.log(botB.getTradeFloor().getActions().size());
+            	double botBPerformance = botBWallet * botBActivity;
+            	
+            	if (botAPerformance == botBPerformance) {
+            		return 0;
+            	}
+            	
+            	return botAPerformance > botBPerformance ? -1 : 1;
 	        }
 	    });
 	}
