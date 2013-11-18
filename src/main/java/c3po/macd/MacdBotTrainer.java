@@ -128,18 +128,20 @@ public class MacdBotTrainer {
 		MacdBot bestBot = population.get(0);
 		LOGGER.debug("Best bot was: " + bestBot.getConfig().toString());
 		LOGGER.debug("Wallet: " + bestBot.getTradeFloor().getWalletValue());
-		
+		LOGGER.debug("Trades: " + bestBot.getTradeFloor().getActions().size());
+
 		MacdBot worstBot = population.get(population.size()-1);
 		LOGGER.debug("Worst bot was: " + worstBot.getConfig().toString());
 		LOGGER.debug("Wallet: " + worstBot.getTradeFloor().getWalletValue());
+		LOGGER.debug("Trades: " + worstBot.getTradeFloor().getActions().size());
+		
+		LOGGER.debug("...");
 		
 		
 		tickerNode.close();
 		
 		return sortedConfigs;
 	}
-	
-	
 	
 	private void sortByScore(final List<MacdBot> population) {
 		
@@ -192,17 +194,22 @@ public class MacdBotTrainer {
 		ArrayList<MacdBotConfig> configs = new ArrayList<MacdBotConfig>();
 		
 		for (int i = 0; i < numConfigs; i++) {
-			configs.add(createRandomConfig());
+			MacdBotConfig config = validateConfig(createRandomConfig());
+			configs.add(config);
 		}
 		
 		return configs;
 	}
 	
-	private MacdBotConfig createRandomConfig() {		
+	private MacdBotConfig createRandomConfig() {
+		
+		int fast = getRandomSignalperiod(1, 1000);
+		int slow = getRandomSignalperiod(1, 1000);
+		int signal = getRandomSignalperiod(1, 1000);
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
-			getRandomSignalperiod(1000),
-			getRandomSignalperiod(1000),
-			getRandomSignalperiod(1000)
+			fast,
+			slow,
+			signal
 		);
 		
 		double minBuyThreshold = 0.0d + (Math.random() * 1.0d);
@@ -233,7 +240,8 @@ public class MacdBotTrainer {
 			MacdBotConfig parentA = getRandom(parents);
 			MacdBotConfig parentB = getRandom(parents);
 			
-			MacdBotConfig child = createChild(parentA, parentB);
+			MacdBotConfig child = crossBreedConfig(parentA, parentB);
+			child = validateConfig(child);
 			newGenes.add(child);
 		}
 		
@@ -249,13 +257,13 @@ public class MacdBotTrainer {
 		return list.get( (int)(Math.random() * list.size()) );
 	}
 	
-	private MacdBotConfig createChild(final MacdBotConfig parentA, final MacdBotConfig parentB) {
+	private MacdBotConfig crossBreedConfig(final MacdBotConfig parentA, final MacdBotConfig parentB) {
 		
 		// Each property is randomly selected from either parent
 		
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
-				which() ? parentA.analysisConfig.slowPeriod : parentB.analysisConfig.slowPeriod,
 				which() ? parentA.analysisConfig.fastPeriod : parentB.analysisConfig.fastPeriod,
+				which() ? parentA.analysisConfig.slowPeriod : parentB.analysisConfig.slowPeriod,
 				which() ? parentA.analysisConfig.signalPeriod : parentB.analysisConfig.signalPeriod);
 		
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
@@ -274,38 +282,57 @@ public class MacdBotTrainer {
 		
 		// Mutate
 		
-		childConfig = mutate(childConfig, mutationChance);
+		childConfig = mutateConfig(childConfig, mutationChance);
 		
 		return childConfig;
 	}
 	
-	private MacdBotConfig mutate(final MacdBotConfig config, double mutationChance) {
+	private MacdBotConfig mutateConfig(final MacdBotConfig config, double mutationChance) {
 		MacdBotConfig randomConfig = createRandomConfig();
 		
 		// Each property has a separately evaluated chance of mutating
 		
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
-				shouldMutate(mutationChance) ? config.analysisConfig.slowPeriod : randomConfig.analysisConfig.slowPeriod,
 				shouldMutate(mutationChance) ? config.analysisConfig.fastPeriod : randomConfig.analysisConfig.fastPeriod,
+				shouldMutate(mutationChance) ? config.analysisConfig.slowPeriod : randomConfig.analysisConfig.slowPeriod,
 				shouldMutate(mutationChance) ? config.analysisConfig.signalPeriod : randomConfig.analysisConfig.signalPeriod
 			);
 			
-			double minBuyThreshold = shouldMutate(0.1d) ? config.traderConfig.minBuyDiffThreshold : config.traderConfig.minBuyDiffThreshold;
-			double minSellThreshold = shouldMutate(0.1d) ? config.traderConfig.minSellDiffThreshold : config.traderConfig.minSellDiffThreshold;
-			MacdTraderConfig traderConfig = new MacdTraderConfig(
-					max(analysisConfig),
-					minBuyThreshold,
-					minSellThreshold,
-					shouldMutate(mutationChance) ? config.traderConfig.usdToBtcTradeAmount : config.traderConfig.usdToBtcTradeAmount,
-					shouldMutate(mutationChance) ? config.traderConfig.btcToUsdTradeAmount : config.traderConfig.btcToUsdTradeAmount,
-					shouldMutate(mutationChance) ? config.traderConfig.sellBackoffTimer : config.traderConfig.sellBackoffTimer,
-					shouldMutate(mutationChance) ? config.traderConfig.buyBackoffTimer : config.traderConfig.buyBackoffTimer
-			);
-			
-			MacdBotConfig mutatedConfig = new MacdBotConfig(config.timeStep, analysisConfig, traderConfig);
+		double minBuyThreshold = shouldMutate(0.1d) ? config.traderConfig.minBuyDiffThreshold : config.traderConfig.minBuyDiffThreshold;
+		double minSellThreshold = shouldMutate(0.1d) ? config.traderConfig.minSellDiffThreshold : config.traderConfig.minSellDiffThreshold;
+		MacdTraderConfig traderConfig = new MacdTraderConfig(
+				max(analysisConfig),
+				minBuyThreshold,
+				minSellThreshold,
+				shouldMutate(mutationChance) ? config.traderConfig.usdToBtcTradeAmount : config.traderConfig.usdToBtcTradeAmount,
+				shouldMutate(mutationChance) ? config.traderConfig.btcToUsdTradeAmount : config.traderConfig.btcToUsdTradeAmount,
+				shouldMutate(mutationChance) ? config.traderConfig.sellBackoffTimer : config.traderConfig.sellBackoffTimer,
+				shouldMutate(mutationChance) ? config.traderConfig.buyBackoffTimer : config.traderConfig.buyBackoffTimer
+		);
+		
+		MacdBotConfig mutatedConfig = new MacdBotConfig(config.timeStep, analysisConfig, traderConfig);
 		
 		return mutatedConfig;
 	}
+	
+	private MacdBotConfig validateConfig(final MacdBotConfig config) {
+		/*
+		 *  Ensures some basic common sense. The genetic algorithm loves to get stuck on an otherwise insane config that just happens to fit the data.
+		 */
+		
+		MacdAnalysisConfig validAnalysisConfig = new MacdAnalysisConfig(
+				config.analysisConfig.fastPeriod  > config.analysisConfig.slowPeriod ?
+						getRandomSignalperiod(1, config.analysisConfig.slowPeriod) :
+						config.analysisConfig.fastPeriod,
+				config.analysisConfig.slowPeriod,
+				config.analysisConfig.signalPeriod
+			);
+			
+		MacdBotConfig validConfig = new MacdBotConfig(config.timeStep, validAnalysisConfig, config.traderConfig);
+		
+		return validConfig;
+	}
+	
 	
 	private boolean which() {
 		return shouldMutate(0.5d);
@@ -315,8 +342,8 @@ public class MacdBotTrainer {
 		return Math.random() < chance;
 	}
 	
-	private int getRandomSignalperiod(int range) {
-		return 1 + (int) Math.floor(Math.random() * range);
+	private int getRandomSignalperiod(int min, int max) {
+		return min + (int)(Math.random() * (double)(max-min));
 	}
 	
 	private long getRandomBackoffDuration(long min, long max) {

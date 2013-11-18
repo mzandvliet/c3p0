@@ -7,17 +7,17 @@ package c3po.macd;
  * 
  */
 public class MacdAnalysisConfig {
-	public final int slowPeriod;
 	public final int fastPeriod;
+	public final int slowPeriod;
 	public final int signalPeriod;
 	
-	public MacdAnalysisConfig(int slowPeriod, int fastPeriod, int signalPeriod) {
+	public MacdAnalysisConfig(int fastPeriod, int slowPeriod, int signalPeriod) {
 		this.slowPeriod = slowPeriod;
 		this.fastPeriod = fastPeriod;
 		this.signalPeriod = signalPeriod;
 	}
 	
 	public String toString() {
-		return String.format("[AnalysisConfig - slow: %d, fast: %d, signal: %d]", slowPeriod, fastPeriod, signalPeriod);
+		return String.format("[AnalysisConfig - fast: %d, slow: %d, signal: %d]", fastPeriod, slowPeriod, signalPeriod);
 	}
 }
