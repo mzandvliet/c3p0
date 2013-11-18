@@ -54,11 +54,12 @@ public class MacdBotTrainer {
 	private final static long simulationEndTime = 1384689637000l; 
 	
 	private final static long clockTimestep = 1000;
+	private final static long botStepTime = 60000; // Because right now we're keeping it constant, and data sampling rate is ~1 minute
 	
-	private final static int numEpochs = 30;
-	private final static int numBots = 50;
-	private final static int numParents = 25;
-	private final static int numElites = 5;
+	private final static int numEpochs = 100;
+	private final static int numBots = 100;
+	private final static int numParents = 50;
+	private final static int numElites = 10;
 	private final static double mutationChance = 0.2d;
 	
 	private final static double walletStartDollars = 0.0;
@@ -199,7 +200,7 @@ public class MacdBotTrainer {
 				
 		);
 		
-		MacdBotConfig config = new MacdBotConfig(1000, analysisConfig, traderConfig);
+		MacdBotConfig config = new MacdBotConfig(botStepTime, analysisConfig, traderConfig);
 		
 		return config;
 	}
