@@ -25,12 +25,7 @@ import c3po.ITradeFloor;
  * - Develop exit protocol and implementation
  * - Seed newly started bots with data from recorded history, then update with live feed
  * 
- * - Algorithms
- * 		- Genetic algorithm optimizer
- * 		- Consider variations for opening and closing positions in Macd. See how they affect performance.
- * 			- Ride the wave from beginning to end
- * 			- Spread the wave into multiple positions (like we do now)
- * 			- Do buy/sell in sequence or decoupled (like we do now)
+ * - Use varying macd configurations to fit current market context
  * 
  * - Time
  * 		- Start using interpolation to correct sample timing error

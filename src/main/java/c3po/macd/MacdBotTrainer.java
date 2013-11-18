@@ -22,9 +22,24 @@ import c3po.Indicators;
 import c3po.SimulationClock;
 
 /**
- * This optimizes MacdBots using genetic algoritms.
+ * This finds optimal MacdBot configurations for a given simulation dataset.
+ * 
+ * 
  * 
  * Todo:
+ * 
+ * I'm getting the impression that no one MACD config will last us very long, and that we
+ * should adapt it to context regularly.
+ * 
+ * You can do that manually, but why not do the following:
+ * 
+ * MovingGenAlgMacdBot, een macdBot die z'n eigen parameters optimaliseert met de resultaten 
+ * van een sliding genAlg analyse window wat achter z'n real-time aanhobbelt.
+ * 
+ * Misschien zelfs de genAlg analyse window gedeeltelijk op een voorspelling van de toekomstige
+ * koers laten lopen, zodat het zichzelf sneller voor kan bereiden op toekomstige trend veranderingen.
+ * 
+ * ------------------
  * 
  * - This would be a lot cleaner with the following network architecture changes
  * 		- Binding input signal dynamically (outside of constructor)
