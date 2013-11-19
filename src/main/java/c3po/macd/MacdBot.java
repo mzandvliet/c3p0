@@ -2,6 +2,7 @@ package c3po.macd;
 
 import c3po.*;
 
+import java.net.InetSocketAddress;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -104,8 +105,15 @@ public class MacdBot implements IBot {
 		// Create bot
 		
 		IBot bot = new MacdBot(config, tickerNode.getOutputLast(), tradeFloor);
+		
+		// Create loggers
+		
 		DebugTradeLogger tradeLogger = new DebugTradeLogger();
 		bot.addListener(tradeLogger);
+		
+		DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+		dbTradeLogger.open();
+		dbTradeLogger.startSession(simulationStartTime);
 		
 		// Create a clock
 		
@@ -119,6 +127,8 @@ public class MacdBot implements IBot {
 		botClock.run();
 		
 		tickerNode.close();
+		
+		dbTradeLogger.close();
 		
 		// Log results
 		
