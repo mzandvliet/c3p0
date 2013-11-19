@@ -8,6 +8,7 @@ import c3po.BitstampTickerCsvSource;
 import c3po.IBot;
 import c3po.ISignal;
 import c3po.ITradeFloor;
+import c3po.ITradeListener;
 
 public class SelfOptimizingMacdBot implements IBot {
 	
@@ -67,7 +68,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(MacdBotTrainer.clas
 		 *  - Needs a wakeUp delay parameter to avoid early measurement error, just like MacdBot
 		 */		
 	}
-	
+
 	@Override
 	public long getLastTick() {
 		// TODO Auto-generated method stub
@@ -76,6 +77,18 @@ private static final Logger LOGGER = LoggerFactory.getLogger(MacdBotTrainer.clas
 
 	@Override
 	public void tick(long tick) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void addListener(ITradeListener listener) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void removeListener(ITradeListener listener) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -91,6 +104,4 @@ private static final Logger LOGGER = LoggerFactory.getLogger(MacdBotTrainer.clas
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
-	
 }

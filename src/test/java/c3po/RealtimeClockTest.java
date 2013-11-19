@@ -69,6 +69,16 @@ public class RealtimeClockTest {
 		public ITradeFloor getTradeFloor() {
 			return null;
 		}
+		@Override
+		public void addListener(ITradeListener listener) {
+			// TODO Auto-generated method stub
+			
+		}
+		@Override
+		public void removeListener(ITradeListener listener) {
+			// TODO Auto-generated method stub
+			
+		}
 	}
 
 }

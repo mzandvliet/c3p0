@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import c3po.BitstampTickerCsvSource;
 import c3po.BitstampTickerSource;
 import c3po.BitstampSimulationTradeFloor;
+import c3po.DebugTradeLogger;
 import c3po.IBot;
 import c3po.IClock;
 import c3po.ISignal;
@@ -105,6 +107,9 @@ public class MacdBotTrainer {
 		IClock botClock = new SimulationClock(clockTimestep, simulationStartTime, simulationEndTime);
 		List<MacdBot> population = createPopulationFromConfigs(configs, tickerNode, botClock);
 		
+		HashMap<MacdBot, DebugTradeLogger> loggers = createLoggers(population);
+		
+		
 		// Run the simulation
 		
 		botClock.run();
@@ -125,7 +130,7 @@ public class MacdBotTrainer {
 		
 		// Return the configs sorted by their performance
 		
-		sortByScore(population);
+		sortByScore(population, loggers);
 		
 		List<MacdBotConfig> sortedConfigs = new ArrayList<MacdBotConfig>();
 		for (MacdBot bot : population) {
@@ -137,12 +142,12 @@ public class MacdBotTrainer {
 		MacdBot bestBot = population.get(0);
 		LOGGER.debug("Best bot was: " + bestBot.getConfig().toString());
 		LOGGER.debug("Wallet: " + bestBot.getTradeFloor().getWalletValue());
-		LOGGER.debug("Trades: " + bestBot.getTradeFloor().getActions().size());
+		LOGGER.debug("Trades: " + loggers.get(bestBot).getActions().size());
 
 		MacdBot worstBot = population.get(population.size()-1);
 		LOGGER.debug("Worst bot was: " + worstBot.getConfig().toString());
 		LOGGER.debug("Wallet: " + worstBot.getTradeFloor().getWalletValue());
-		LOGGER.debug("Trades: " + worstBot.getTradeFloor().getActions().size());
+		LOGGER.debug("Trades: " + loggers.get(worstBot).getActions().size());
 		
 		LOGGER.debug("...");
 		
@@ -152,7 +157,7 @@ public class MacdBotTrainer {
 		return sortedConfigs;
 	}
 	
-	private void sortByScore(final List<MacdBot> population) {
+	private void sortByScore(final List<MacdBot> population, final HashMap<MacdBot, DebugTradeLogger> loggers) {
 		
 		Collections.sort(population, new Comparator<IBot>() {
 
@@ -161,11 +166,11 @@ public class MacdBotTrainer {
 	        	// A minimum # of trade is required, but importance of trade frequency falls off after just a couple of them
 	            	
 	        	double botAWallet = botA.getTradeFloor().getWalletValue();
-	        	double botAActivity = 0.1d + Math.log(botA.getTradeFloor().getActions().size()); 
+	        	double botAActivity = 0.1d + Math.log(loggers.get(botA).getActions().size()); 
             	double botAPerformance = botAWallet * botAActivity;
             	
             	double botBWallet = botB.getTradeFloor().getWalletValue();
-	        	double botBActivity = 0.1d + Math.log(botB.getTradeFloor().getActions().size());
+	        	double botBActivity = 0.1d + Math.log(loggers.get(botB).getActions().size());
             	double botBPerformance = botBWallet * botBActivity;
             	
             	if (botAPerformance == botBPerformance) {
@@ -197,6 +202,18 @@ public class MacdBotTrainer {
 		}
 		
 		return population;
+	}
+	
+	private HashMap<MacdBot, DebugTradeLogger> createLoggers(List<MacdBot> population) {
+		HashMap<MacdBot, DebugTradeLogger> loggers = new HashMap<MacdBot, DebugTradeLogger>();
+		
+		for (MacdBot bot : population) {
+			DebugTradeLogger logger = new DebugTradeLogger();
+			bot.addListener(logger);
+			loggers.put(bot, logger);
+		}
+		
+		return loggers;
 	}
 	
 	private List<MacdBotConfig> createRandomConfigs(int numConfigs) {

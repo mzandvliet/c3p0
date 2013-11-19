@@ -1,6 +1,6 @@
 package c3po;
 
-public interface IBot extends ITickable {
+public interface IBot extends ITickable, ITradeActionSource {
 	public long getTimestep();
-	public ITradeFloor getTradeFloor();
+	public int hashCode();
 }

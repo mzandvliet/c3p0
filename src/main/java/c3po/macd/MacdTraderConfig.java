@@ -50,4 +50,55 @@ public class MacdTraderConfig {
 				sellBackoffTimer / 1000, 
 				buyBackoffTimer / 1000);
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		long temp;
+		temp = Double.doubleToLongBits(btcToUsdTradeAmount);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result
+				+ (int) (buyBackoffTimer ^ (buyBackoffTimer >>> 32));
+		temp = Double.doubleToLongBits(minBuyDiffThreshold);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(minSellDiffThreshold);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result
+				+ (int) (sellBackoffTimer ^ (sellBackoffTimer >>> 32));
+		result = prime * result + (int) (startDelay ^ (startDelay >>> 32));
+		temp = Double.doubleToLongBits(usdToBtcTradeAmount);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		MacdTraderConfig other = (MacdTraderConfig) obj;
+		if (Double.doubleToLongBits(btcToUsdTradeAmount) != Double
+				.doubleToLongBits(other.btcToUsdTradeAmount))
+			return false;
+		if (buyBackoffTimer != other.buyBackoffTimer)
+			return false;
+		if (Double.doubleToLongBits(minBuyDiffThreshold) != Double
+				.doubleToLongBits(other.minBuyDiffThreshold))
+			return false;
+		if (Double.doubleToLongBits(minSellDiffThreshold) != Double
+				.doubleToLongBits(other.minSellDiffThreshold))
+			return false;
+		if (sellBackoffTimer != other.sellBackoffTimer)
+			return false;
+		if (startDelay != other.startDelay)
+			return false;
+		if (Double.doubleToLongBits(usdToBtcTradeAmount) != Double
+				.doubleToLongBits(other.usdToBtcTradeAmount))
+			return false;
+		return true;
+	}
 }
