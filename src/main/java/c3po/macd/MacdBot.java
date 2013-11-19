@@ -3,6 +3,8 @@ package c3po.macd;
 import c3po.*;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +12,9 @@ import org.slf4j.LoggerFactory;
 import c3po.BitstampTickerCsvSource;
 import c3po.BitstampSimulationTradeFloor;
 import c3po.IClock;
+import c3po.ISignal;
 import c3po.ITradeFloor;
+import c3po.ITradeListener;
 
 /* Todo:
  * 
@@ -100,6 +104,8 @@ public class MacdBot implements IBot {
 		// Create bot
 		
 		IBot bot = new MacdBot(config, tickerNode.getOutputLast(), tradeFloor);
+		DebugTradeLogger tradeLogger = new DebugTradeLogger();
+		bot.addListener(tradeLogger);
 		
 		// Create a clock
 		
@@ -116,7 +122,7 @@ public class MacdBot implements IBot {
 		
 		// Log results
 		
-		LOGGER.debug("Num trades: " + tradeFloor.getActions().size() + ", Profit: " + (tradeFloor.getWalletValue() - walletDollarStart));
+		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Profit: " + (tradeFloor.getWalletValue() - walletDollarStart));
 	}
 	
 	
@@ -139,7 +145,7 @@ public class MacdBot implements IBot {
     // Methods
     //================================================================================
 	
-	public MacdBot(MacdBotConfig config, ISignal ticker, ITradeFloor tradeFloor) {	
+	public MacdBot(MacdBotConfig config, ISignal ticker, ITradeFloor tradeFloor) {
 		this.config = config;
 		this.tradeFloor = tradeFloor;
 		
@@ -148,7 +154,7 @@ public class MacdBot implements IBot {
 		analysisNode = new MacdAnalysisNode(ticker, config.analysisConfig);
 		traderNode = new MacdTraderNode(analysisNode.getOutput(4), tradeFloor, config.traderConfig);
 	}
-	
+
 	@Override
 	public long getLastTick() {
 		return lastTick;
@@ -178,5 +184,40 @@ public class MacdBot implements IBot {
 
 	public String toString() {
 		return String.format("%s, %s", analysisNode.getConfig(), traderNode.getConfig());
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((config == null) ? 0 : config.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		MacdBot other = (MacdBot) obj;
+		if (config == null) {
+			if (other.config != null)
+				return false;
+		} else if (!config.equals(other.config))
+			return false;
+		return true;
+	}
+
+	@Override
+	public void addListener(ITradeListener listener) {
+		traderNode.addListener(listener);
+	}
+
+	@Override
+	public void removeListener(ITradeListener listener) {
+		traderNode.removeListener(listener);
 	}
 }

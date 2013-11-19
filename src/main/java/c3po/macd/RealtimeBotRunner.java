@@ -38,6 +38,9 @@ public class RealtimeBotRunner {
 				walletBtcStart
 		);
 		
+		final DebugTradeLogger tradeLogger = new DebugTradeLogger();
+		tradeFloor.addListener(tradeLogger);
+		
 		// Create bot config
 		
 		// todo: this is still in number-of-ticks, which means it depends on bot's timeStep, should change to units of time
@@ -65,6 +68,6 @@ public class RealtimeBotRunner {
 		
 		// Log results
 		
-		LOGGER.debug("Num trades: " + tradeFloor.getActions().size() + ", Profit: " + (tradeFloor.getWalletValue() - walletDollarStart));
+		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Profit: " + (tradeFloor.getWalletValue() - walletDollarStart));
 	}
 }

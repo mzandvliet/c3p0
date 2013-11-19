@@ -24,12 +24,12 @@ import c3po.macd.MacdTraderNode;
 
 public class BitstampSimulationTradeFloor implements ITradeFloor {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BitstampSimulationTradeFloor.class);
+	
+	private List<ITradeListener> listeners;
 	private double tradeFee = 0.05d;
 	
 	private double walletUsd;
 	private double walletBtc;
-	private List<TradeAction> actions;
-	
 	
 	ISignal lastSignal;
 	ISignal bidSignal;
@@ -42,7 +42,7 @@ public class BitstampSimulationTradeFloor implements ITradeFloor {
 		this.walletUsd = startDollars;
 		this.walletBtc = startBtc;
 		
-		this.actions = new ArrayList<TradeAction>();
+		this.listeners = new ArrayList<ITradeListener>();
 	}
 	
 	@Override
@@ -68,52 +68,68 @@ public class BitstampSimulationTradeFloor implements ITradeFloor {
 	@Override
 	public double getWalletValue() {
 		return walletUsd + toUsd(walletBtc);
-	}	
+	}
 
 	@Override
-	public double buy(long timestamp, double volume) {
+	public double buy(TradeAction action) {
 		// We get the latest ask, assuming the ticker is updated by some other part of the app
 		Sample currentAsk = askSignal.peek();
-		
+				
 		// The amount of Btc we are going to get if we buy for volume USD
-		double buyBtc = volume * ((double) 1-tradeFee);
-		
+		double buyBtc = action.volume * ((double) 1-tradeFee);
+				
 		// We assume the trade is fulfilled instantly, for the price of the ask
-		walletUsd -= currentAsk.value * volume;
+		walletUsd -= currentAsk.value * action.volume;
 		
 		// Add the bought volume to the wallet, minus the percentage from the tradefee
 		walletBtc += buyBtc;
 		
-		actions.add(new TradeAction(TradeActionType.BUY, timestamp, volume));
+		notify(action);
 		
 		return buyBtc;
 	}
 
 	@Override
-	public double sell(long timestamp, double volumeBitcoins) {
+	public double sell(TradeAction action) {
 		// We get the latest ask, assuming the ticker is updated by some other part of the app
 		Sample currentBid = bidSignal.peek();
 		
 		// We assume the trade is fulfilled instantly, for the price of the ask
-		double soldForUsd = currentBid.value * (volumeBitcoins * (1-tradeFee));
+		double soldForUsd = currentBid.value * (action.volume * (1-tradeFee)); // volume in bitcoins, yo
 		walletUsd += soldForUsd;
-		walletBtc -= volumeBitcoins;
+		walletBtc -= action.volume;
 		
-		actions.add(new TradeAction(TradeActionType.SELL, timestamp, volumeBitcoins));
+		notify(action);
 		
 		return soldForUsd;
 	}
 
+	
+	private void notify(TradeAction action) {
+		for (ITradeListener listener : listeners) {
+			listener.onTrade(action);
+		}
+	}
+
 	@Override
-	public List<TradeAction> getActions() {
-		return actions;
+	public void addListener(ITradeListener listener) {
+		listeners.add(listener);
+	}
+
+	@Override
+	public void removeListener(ITradeListener listener) {
+		listeners.remove(listener);
 	}
 	
-	public void dump() {
-		LOGGER.debug("Trades: " + actions.size());
-		LOGGER.debug("Wallet: " + walletUsd + " USD, " + walletBtc + " BTC");
-		for(TradeAction action : actions) {
-			LOGGER.debug(action.toString());
-		}
+	
+
+	@Override
+	public ITradeFloor getTradeFloor() {
+		return this;
+	}
+
+	@Override
+	public String toString() {
+		return "Wallet: " + walletUsd + " USD, " + walletBtc + " BTC";
 	}
 }
