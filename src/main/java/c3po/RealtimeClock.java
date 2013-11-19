@@ -58,7 +58,7 @@ public class RealtimeClock implements IClock, Runnable {
 			for (IBot bot : bots) {
 				if (bot.getLastTick() == 0 || currentTick - bot.getLastTick() >= bot.getTimestep()) {
 					bot.tick(currentTick);
-					LOGGER.debug("Bot : " + bot + " Tick: " + currentTick);
+					LOGGER.debug(" Tick: " + new Date(currentTick).toLocaleString() + " Bot : " + bot );
 				}
 			}
 		

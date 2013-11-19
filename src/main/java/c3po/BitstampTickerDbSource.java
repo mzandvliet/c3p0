@@ -56,7 +56,7 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 	      buffer = new ArrayList<BitstampTickerRow>();
 	      while(resultSet.next()) {
 	    	  buffer.add(new BitstampTickerRow(
-	    			  resultSet.getLong("timestamp"), 
+	    			  resultSet.getLong("timestamp") * 1000, 
 	    			  resultSet.getDouble("ask"), 
 	    			  resultSet.getDouble("last"), 
 	    			  resultSet.getDouble("low"), 
@@ -82,18 +82,11 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 	public void query(long tick) {
 		try {
 			// The first time, fill the buffer
-			do {
+			if(buffer == null)
 			  fetchData(tick); 
-			  Thread.sleep(1000);
-			} while(buffer.size() < 1);
 			
+			// Check if there is data in the buffer that is older then the timestamp, if so, return the prev row
 			BitstampTickerRow prev = buffer.get(0);
-			
-			if(buffer.size() == 1) {
-				useRow(prev);
-			    return;
-			}
-			
 			BitstampTickerRow current = null;
 			for(int index = 1; index < buffer.size(); index++) {
 				current = buffer.get(index);
@@ -103,9 +96,21 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 					useRow(prev);
 					return;
 				}
+				
+				prev = current;
 			}
 			
-			useRow(current);
+			
+			// If there is no data older, do a new query
+   	        Thread.sleep(1000);
+			fetchData(tick); 
+			
+			if(buffer.size() == 1) {
+				useRow(buffer.get(0));
+				return;
+			} else {			
+			    query(tick);
+			}
 			return;
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -167,5 +172,9 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 			this.bid = bid;
 			this.volume = volume;
 		}
+	
+	public String toString() {
+		return String.format("[Row - %s (%d)]", new Date(timestamp).toLocaleString(), timestamp);
+	}
 	}
 }
