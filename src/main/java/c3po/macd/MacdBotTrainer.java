@@ -28,16 +28,21 @@ import c3po.SimulationClock;
  * 
  * Todo:
  * 
+ * - SelfOptimizingMacdBot
+ * 
  * I'm getting the impression that no one MACD config will last us very long, and that we
  * should adapt it to context regularly.
  * 
  * You can do that manually, but why not do the following:
  * 
- * MovingGenAlgMacdBot, een macdBot die z'n eigen parameters optimaliseert met de resultaten 
+ * SelfOptimizingMacdBot, een macdBot die z'n eigen parameters optimaliseert met de resultaten 
  * van een sliding genAlg analyse window wat achter z'n real-time aanhobbelt.
  * 
  * Misschien zelfs de genAlg analyse window gedeeltelijk op een voorspelling van de toekomstige
  * koers laten lopen, zodat het zichzelf sneller voor kan bereiden op toekomstige trend veranderingen.
+ * 
+ * - Look into Particle Swarm Optimization techniques
+ * - Create general optimizers for bots with any kind of configuration space (see below)
  * 
  * ------------------
  * 
@@ -46,24 +51,25 @@ import c3po.SimulationClock;
  * 		- Bots having a private wallet but sharing a tradefloor
  * 		- Then you could return bots from simulateEpoch and sort performance externally
  * 
- * - Make IBot<IConfig> with getConfig(), and IBotTrainer<IConfig>
- * 		- This makes genetic algorithm optimization trivial since all you have to do is implement the mutate() function for your IConfig
+ * - Make IBot<TConfig> interface with getConfig(), and IBotTrainer<TConfig> interface
+ * 		- This makes genetic algorithm optimization trivial since all you have to do is implement the mutate() and related functions for your IConfig
+ * 		- Then with simple helper methods for creating random values within ranges, you've got everything you need
  * 
  * Notes:
  * 
- * - Bot timestep is not affected by genetic modification
+ * - Bot timestep is not affected by genetic modification. It is a constant.
  */
 
 public class MacdBotTrainer {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdBotTrainer.class);
 	
-//	private final static String csvPath = "resources/bitstamp_ticker_till_20131117.csv";
-//	private final static long simulationStartTime = 1384079023000l;
-//	private final static long simulationEndTime = 1384689637000l; 
-	
-	private final static String csvPath = "resources/bitstamp_ticker_till_20131117_pingpong.csv";
+	private final static String csvPath = "resources/bitstamp_ticker_till_20131117.csv";
 	private final static long simulationStartTime = 1384079023000l;
-	private final static long simulationEndTime = 1384682984000l; 
+	private final static long simulationEndTime = 1384689637000l; 
+	
+//	private final static String csvPath = "resources/bitstamp_ticker_till_20131117_pingpong.csv";
+//	private final static long simulationStartTime = 1384079023000l;
+//	private final static long simulationEndTime = 1384682984000l; 
 	
 	private final static long clockTimestep = 10000;
 	private final static long botStepTime = 60000; // Because right now we're keeping it constant, and data sampling rate is ~1 minute

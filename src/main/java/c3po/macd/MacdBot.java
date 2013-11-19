@@ -58,9 +58,11 @@ public class MacdBot implements IBot {
     //================================================================================
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdBot.class);
+	
 	private final static String jsonUrl = "http://www.bitstamp.net/api/ticker/";
-	private final static String csvPath = "resources/bitstamp_ticker_fake_down_up.csv";
-	private final static long simulationStartTime = 1383468287000l;
+	
+	private final static String csvPath = "resources/bitstamp_ticker_till_20131117.csv";
+	private final static long simulationStartTime = 1384079023000l;
 	private final static long simulationEndTime = 1384689637000l; 
 	
 	private final static long clockTimestep = 1000;
