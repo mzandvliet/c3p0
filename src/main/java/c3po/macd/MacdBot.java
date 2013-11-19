@@ -25,19 +25,24 @@ import c3po.IWallet;
  * - Encapsulate tick invalidation, it's so easy to do wrong, and it is a bunch of boilerplate
  * 		- abstract class AbstractTickable implements ITickable { protected abstract void onNewTick(); }
  * 		- That handles the if (tick > last), and just does a callback on your code when new values are needed
- * ----------------------
+ * 
  * 
  * - Manage time duration of open positions
  * 		- Build risk into macd with volatility node
  * 		- High volatility means bot should close positions faster to mitigate crash risk
+ * 
+ * - Time
+ * 		- Start using interpolation in ticker to correct sample timing error
+ * 
+ * ----------------------
+ * 
  * 
  * - Develop exit protocol and implementation
  * - Seed newly started bots with data from recorded history, then update with live feed
  * 
  * - Use varying macd configurations to fit current market context
  * 
- * - Time
- * 		- Start using interpolation to correct sample timing error
+ *
  * 
  * - Use a charting library to show results, either live or after a simulation
  * 		- Either implement charts as leaf nodes in the signal tree, or point them to leafs in the tree
