@@ -28,32 +28,20 @@ import c3po.SimulationClock;
  * 
  * Todo:
  * 
- * - SelfOptimizingMacdBot
- * 
- * I'm getting the impression that no one MACD config will last us very long, and that we
- * should adapt it to context regularly.
- * 
- * You can do that manually, but why not do the following:
- * 
- * SelfOptimizingMacdBot, een macdBot die z'n eigen parameters optimaliseert met de resultaten 
- * van een sliding genAlg analyse window wat achter z'n real-time aanhobbelt.
- * 
- * Misschien zelfs de genAlg analyse window gedeeltelijk op een voorspelling van de toekomstige
- * koers laten lopen, zodat het zichzelf sneller voor kan bereiden op toekomstige trend veranderingen.
+ * - Early out if a convergence threshold is reached
  * 
  * - Look into Particle Swarm Optimization techniques
  * - Create general optimizers for bots with any kind of configuration space (see below)
- * 
- * ------------------
  * 
  * - This would be a lot cleaner with the following network architecture changes
  * 		- Binding input signal dynamically (outside of constructor)
  * 		- Bots having a private wallet but sharing a tradefloor
  * 		- Then you could return bots from simulateEpoch and sort performance externally
  * 
- * - Make IBot<TConfig> interface with getConfig(), and IBotTrainer<TConfig> interface
+ * - Make IBot<TConfig> interface with getConfig(), and IBotTrainer<IBot<TConfig>> interface
  * 		- This makes genetic algorithm optimization trivial since all you have to do is implement the mutate() and related functions for your IConfig
  * 		- Then with simple helper methods for creating random values within ranges, you've got everything you need
+ * 		- Then you can also have SelfOptimizingBot<IBot<TConfig>>, which can optimize behaviour of any bot type while running
  * 
  * Notes:
  * 
