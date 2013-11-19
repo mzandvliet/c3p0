@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Work in progress in using the database as source
  */
-public class DbTradeLogger implements ITradeListener {
+public class DbTradeLogger implements ITradeListener, IWalletTransactionListener {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(DbTradeLogger.class);
 
@@ -21,7 +21,6 @@ public class DbTradeLogger implements ITradeListener {
 	private final String pwd;
 	
 	private Connection connect = null;
-	private Statement statement = null;
 	
 	public DbTradeLogger(IBot bot, InetSocketAddress host, String user, String pwd) {
 		this.bot = bot;
@@ -29,7 +28,9 @@ public class DbTradeLogger implements ITradeListener {
 		this.host = host;
 		this.user = user;
 		this.pwd = pwd;
+		
 		bot.addListener(this);
+		bot.getWallet().addListener(this);
 	}
 
 	@Override
@@ -42,6 +43,16 @@ public class DbTradeLogger implements ITradeListener {
 		}
 	}
 	
+	@Override
+	public void onWalletTransaction(WalletTransactionResult transaction) {
+		try {
+			log(transaction);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 	public void open() throws ClassNotFoundException, SQLException {
 		// This will load the MySQL driver, each DB has its own driver
 	      Class.forName("com.mysql.jdbc.Driver");
@@ -57,30 +68,48 @@ public class DbTradeLogger implements ITradeListener {
 		}
 	}
 	
-	public void startSession(long startTime) throws SQLException {
+	public void startSession(long startTime, double usdStart, double btcStart) throws SQLException {
 		// Send botID to database
 		  
 		// Statements allow to issue SQL queries to the database
-		statement = connect.createStatement();
+		Statement statement = connect.createStatement();
 		// Result set get the result of the SQL query
 		final String queryTemplate = "INSERT INTO  `c3po`.`bots` (`bot_id` ,`bot_type` ,`tradefloor_type` ,`start`) VALUES ('%s',  '%s',  '%s',  '%s')";
 		String query = String.format(queryTemplate, botId, "MacdBot", "BitstampSimulationTradeFloor", startTime / 1000);
-		
-		boolean result = statement.execute(query);
+		statement.execute(query);
 		  
 		LOGGER.debug(query);
+		
+		log(new WalletTransactionResult(startTime, usdStart, btcStart));
 	}
 	
 	private void log(TradeAction action) throws SQLException {
 		// Send botID + action to database
 		
 		// Statements allow to issue SQL queries to the database
-		statement = connect.createStatement();
+		Statement statement = connect.createStatement();
 		// Result set get the result of the SQL query
 		final String queryTemplate = "INSERT INTO  `c3po`.`bot_trade_action` (`bot_id` ,`timestamp` ,`action_type` ,`amount`) VALUES ('%s',  '%s',  '%s',  '%s')";
 		String query = String.format(queryTemplate, botId, action.timestamp / 1000, action.action, action.volume);
 		
-		boolean result = statement.execute(query);
+		statement.execute(query);
+		  
+		LOGGER.debug(query);
+	}
+	
+	// Todo: init call with a start amount
+	// Send updates
+	
+	private void log(WalletTransactionResult transaction) throws SQLException {
+		// Send botID + action to database
+		
+		// Statements allow to issue SQL queries to the database
+		Statement statement = connect.createStatement();
+		// Result set get the result of the SQL query
+		final String queryTemplate = "INSERT INTO  `c3po`.`bot_wallet` (`bot_id` ,`timestamp` ,`walletUsd` ,`walletBtc`) VALUES ('%s',  '%s',  '%s',  '%s')";
+		String query = String.format(queryTemplate, botId, transaction.timestamp / 1000, transaction.usdTotal, transaction.btcTotal);
+		
+		statement.execute(query);
 		  
 		LOGGER.debug(query);
 	}

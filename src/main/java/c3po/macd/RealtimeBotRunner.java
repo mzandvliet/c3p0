@@ -30,12 +30,12 @@ public class RealtimeBotRunner {
 		
 		final BitstampTickerSource tickerNode = new BitstampTickerDbSource(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
 		
+		final IWallet wallet = new Wallet(walletDollarStart, walletBtcStart);
+		
 		final ITradeFloor tradeFloor =  new BitstampSimulationTradeFloor(
 				tickerNode.getOutputLast(),
 				tickerNode.getOutputBid(),
-				tickerNode.getOutputAsk(),
-				walletDollarStart,
-				walletBtcStart
+				tickerNode.getOutputAsk()
 		);
 		
 		final DebugTradeLogger tradeLogger = new DebugTradeLogger();
@@ -51,7 +51,7 @@ public class RealtimeBotRunner {
 		
 		// Create bot
 		
-		IBot bot = new MacdBot(config, tickerNode.getOutputLast(), tradeFloor);
+		IBot bot = new MacdBot(config, tickerNode.getOutputLast(), wallet, tradeFloor);
 		
 		// Create a clock
 		
@@ -68,6 +68,6 @@ public class RealtimeBotRunner {
 		
 		// Log results
 		
-		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Profit: " + (tradeFloor.getWalletValue() - walletDollarStart));
+		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Profit: " + (tradeFloor.getWalletValueInUsd(wallet) - walletDollarStart));
 	}
 }

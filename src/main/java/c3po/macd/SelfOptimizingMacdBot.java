@@ -9,6 +9,7 @@ import c3po.IBot;
 import c3po.ISignal;
 import c3po.ITradeFloor;
 import c3po.ITradeListener;
+import c3po.IWallet;
 
 public class SelfOptimizingMacdBot implements IBot {
 	
@@ -42,9 +43,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(MacdBotTrainer.clas
 		final ITradeFloor tradeFloor =  new BitstampSimulationTradeFloor(
 				tickerNode.getOutputLast(),
 				tickerNode.getOutputBid(),
-				tickerNode.getOutputAsk(),
-				walletStartDollars,
-				0.0
+				tickerNode.getOutputAsk()
 		);
 	}
 	
@@ -97,6 +96,12 @@ private static final Logger LOGGER = LoggerFactory.getLogger(MacdBotTrainer.clas
 	public long getTimestep() {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+	
+	@Override
+	public IWallet getWallet() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override

@@ -65,6 +65,12 @@ public class RealtimeClockTest {
 		public long getTimestep() {
 			return timestep;
 		}
+		
+		@Override
+		public IWallet getWallet() {
+			// TODO Auto-generated method stub
+			return null;
+		}
 		@Override
 		public ITradeFloor getTradeFloor() {
 			return null;

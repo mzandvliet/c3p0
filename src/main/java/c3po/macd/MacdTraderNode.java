@@ -11,6 +11,7 @@ import c3po.ITickable;
 import c3po.ITradeActionSource;
 import c3po.ITradeFloor;
 import c3po.ITradeListener;
+import c3po.IWallet;
 import c3po.Sample;
 import c3po.TradeAction;
 import c3po.TradeAction.TradeActionType;
@@ -18,6 +19,7 @@ import c3po.TradeAction.TradeActionType;
 public class MacdTraderNode implements ITickable, ITradeActionSource {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdTraderNode.class);
 	private final ISignal macdDiff;
+	private final IWallet wallet;
 	private final ITradeFloor tradeFloor;
 	private final MacdTraderConfig config;
 	
@@ -31,8 +33,9 @@ public class MacdTraderNode implements ITickable, ITradeActionSource {
 	
 	private final List<ITradeListener> listeners;
 
-	public MacdTraderNode(ISignal macdDiff, ITradeFloor tradeFloor, MacdTraderConfig config) {
+	public MacdTraderNode(ISignal macdDiff, IWallet wallet, ITradeFloor tradeFloor, MacdTraderConfig config) {
 		this.macdDiff = macdDiff;
+		this.wallet = wallet;
 		this.tradeFloor = tradeFloor;
 		this.config = config;
 		this.listeners = new ArrayList<ITradeListener>();
@@ -67,23 +70,23 @@ public class MacdTraderNode implements ITickable, ITradeActionSource {
 			// We dont want to trade too often, check if we arent in the backoff period
 			boolean buyInBackOffTimer = (lastBuy > tick - config.buyBackoffTimer);
 			boolean sellInBackOffTimer = (lastSell > tick - config.sellBackoffTimer);
-			if (!buyInBackOffTimer && currentDiff.value > config.minBuyDiffThreshold && tradeFloor.getWalledUsd() > minDollars) {
+			if (!buyInBackOffTimer && currentDiff.value > config.minBuyDiffThreshold && wallet.getWalledUsd() > minDollars) {
 				// Trade half of current usdWallet
-				double dollars = tradeFloor.getWalledUsd() * config.usdToBtcTradeAmount;
+				double dollars = wallet.getWalledUsd() * config.usdToBtcTradeAmount;
 				double volume = tradeFloor.toBtc(dollars);
 				
 				TradeAction buyAction = new TradeAction(TradeActionType.BUY, tick, volume);
-				double btcBought = tradeFloor.buy(buyAction);
+				double btcBought = tradeFloor.buy(wallet, buyAction);
 				lastBuy = tick;
 				
 				notify(buyAction);
 				//LOGGER.info(String.format("Bought %s BTC for %s USD because difference %s > %s", btcBought, dollars, currentDiff.value, config.minBuyDiffThreshold));
 			}
-			else if (!sellInBackOffTimer && currentDiff.value < config.minSellDiffThreshold && tradeFloor.getWalletBtc() > tradeFloor.toBtc(minDollars)) {
+			else if (!sellInBackOffTimer && currentDiff.value < config.minSellDiffThreshold && wallet.getWalletBtc() > tradeFloor.toBtc(minDollars)) {
 				// Trade all of current btcWallet
-				double btcToSell = tradeFloor.getWalletBtc() * config.btcToUsdTradeAmount;
+				double btcToSell = wallet.getWalletBtc() * config.btcToUsdTradeAmount;
 				TradeAction sellAction = new TradeAction(TradeActionType.SELL, tick, btcToSell);
-				double soldForUSD = tradeFloor.sell(sellAction);
+				double soldForUSD = tradeFloor.sell(wallet, sellAction);
 				lastSell = tick;
 				
 				notify(sellAction);

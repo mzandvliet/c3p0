@@ -16,6 +16,7 @@ import c3po.IClock;
 import c3po.ISignal;
 import c3po.ITradeFloor;
 import c3po.ITradeListener;
+import c3po.IWallet;
 
 /* Todo:
  * 
@@ -66,9 +67,9 @@ public class MacdBot implements IBot {
 	
 	private final static String jsonUrl = "http://www.bitstamp.net/api/ticker/";
 	
-	private final static String csvPath = "resources/bitstamp_ticker_till_20131117.csv";
+	private final static String csvPath = "resources/bitstamp_ticker_till_20131119.csv";
 	private final static long simulationStartTime = 1384079023000l;
-	private final static long simulationEndTime = 1384689637000l; 
+	private final static long simulationEndTime = 1384869769000l; 
 	
 	private final static long clockTimestep = 1000;
 	private static final long botTimestep = 1000;
@@ -85,26 +86,26 @@ public class MacdBot implements IBot {
 		//final ISignalSource tickerSource = new BitstampTickerJsonSource(jsonUrl);
 		//final BitstampTickerDbSource dbTickerSource = new BitstampTickerDbSource(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
 		final BitstampTickerCsvSource tickerNode = new BitstampTickerCsvSource(csvPath);
-				
+			
+		final IWallet wallet = new Wallet(walletDollarStart, walletBtcStart);
+		
 		final ITradeFloor tradeFloor =  new BitstampSimulationTradeFloor(
 				tickerNode.getOutputLast(),
 				tickerNode.getOutputBid(),
-				tickerNode.getOutputAsk(),
-				walletDollarStart,
-				walletBtcStart
+				tickerNode.getOutputAsk()
 		);
 		
 		// Create bot config
 		
 		// todo: this is still in number-of-ticks, which means it depends on bot's timeStep, should change to units of time
 		
-		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(640,780,985); // Todo: trader.startDelay is proportional to this, maybe Max(fast,slow,signal)
-		MacdTraderConfig traderConfig = new MacdTraderConfig(985, 0.0267, 0.4547, 0.2184, 0.0037, 2440000, 4042000);
+		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(137,408,909); // Todo: trader.startDelay is proportional to this, maybe Max(fast,slow,signal)
+		MacdTraderConfig traderConfig = new MacdTraderConfig(909, 0.0277, -0.0, 0.9952, 0.2, 8098900, 5876500);
 		MacdBotConfig config = new MacdBotConfig(botTimestep, analysisConfig, traderConfig);
 		
 		// Create bot
 		
-		IBot bot = new MacdBot(config, tickerNode.getOutputLast(), tradeFloor);
+		IBot bot = new MacdBot(config, tickerNode.getOutputLast(), wallet, tradeFloor);
 		
 		// Create loggers
 		
@@ -113,7 +114,7 @@ public class MacdBot implements IBot {
 		
 		DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
 		dbTradeLogger.open();
-		dbTradeLogger.startSession(simulationStartTime);
+		dbTradeLogger.startSession(simulationStartTime, walletDollarStart, walletBtcStart);
 		
 		// Create a clock
 		
@@ -132,7 +133,7 @@ public class MacdBot implements IBot {
 		
 		// Log results
 		
-		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Profit: " + (tradeFloor.getWalletValue() - walletDollarStart));
+		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Profit: " + (tradeFloor.getWalletValueInUsd(wallet) - walletDollarStart));
 	}
 	
 	
@@ -141,6 +142,7 @@ public class MacdBot implements IBot {
     //================================================================================
 	
 	private final MacdBotConfig config;
+	private final IWallet wallet;
 	private final ITradeFloor tradeFloor;
 	
 	private long lastTick;
@@ -155,14 +157,15 @@ public class MacdBot implements IBot {
     // Methods
     //================================================================================
 	
-	public MacdBot(MacdBotConfig config, ISignal ticker, ITradeFloor tradeFloor) {
+	public MacdBot(MacdBotConfig config, ISignal ticker, IWallet wallet, ITradeFloor tradeFloor) {
 		this.config = config;
+		this.wallet = wallet;
 		this.tradeFloor = tradeFloor;
 		
 		// Define the signal tree		
 		
 		analysisNode = new MacdAnalysisNode(ticker, config.analysisConfig);
-		traderNode = new MacdTraderNode(analysisNode.getOutput(4), tradeFloor, config.traderConfig);
+		traderNode = new MacdTraderNode(analysisNode.getOutput(4), wallet, tradeFloor, config.traderConfig);
 	}
 
 	@Override
@@ -181,6 +184,11 @@ public class MacdBot implements IBot {
 	@Override
 	public long getTimestep() {
 		return config.timeStep;
+	}
+
+	@Override
+	public IWallet getWallet() {
+		return wallet;
 	}
 
 	@Override

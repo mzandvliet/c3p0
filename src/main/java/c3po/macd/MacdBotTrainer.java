@@ -20,8 +20,10 @@ import c3po.IBot;
 import c3po.IClock;
 import c3po.ISignal;
 import c3po.ITradeFloor;
+import c3po.IWallet;
 import c3po.Indicators;
 import c3po.SimulationClock;
+import c3po.Wallet;
 
 /**
  * This finds optimal MacdBot configurations for a given simulation dataset.
@@ -29,6 +31,8 @@ import c3po.SimulationClock;
  * 
  * 
  * Todo:
+ * 
+ * - Bots luuuuurrve to hold way too long-term positions, make daytraders.
  * 
  * - Early out if a convergence threshold is reached
  * 
@@ -53,9 +57,9 @@ import c3po.SimulationClock;
 public class MacdBotTrainer {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdBotTrainer.class);
 	
-	private final static String csvPath = "resources/bitstamp_ticker_till_20131117.csv";
+	private final static String csvPath = "resources/bitstamp_ticker_till_20131119.csv";
 	private final static long simulationStartTime = 1384079023000l;
-	private final static long simulationEndTime = 1384689637000l; 
+	private final static long simulationEndTime = 1384869769000l; 
 	
 //	private final static String csvPath = "resources/bitstamp_ticker_till_20131117_pingpong.csv";
 //	private final static long simulationStartTime = 1384079023000l;
@@ -105,7 +109,14 @@ public class MacdBotTrainer {
 		// Create a clock
 		
 		IClock botClock = new SimulationClock(clockTimestep, simulationStartTime, simulationEndTime);
-		List<MacdBot> population = createPopulationFromConfigs(configs, tickerNode, botClock);
+		
+		final ITradeFloor tradeFloor =  new BitstampSimulationTradeFloor(
+				tickerNode.getOutputLast(),
+				tickerNode.getOutputBid(),
+				tickerNode.getOutputAsk()
+		);
+		
+		List<MacdBot> population = createPopulationFromConfigs(configs, tickerNode, tradeFloor, botClock);
 		
 		HashMap<MacdBot, DebugTradeLogger> loggers = createLoggers(population);
 		
@@ -141,12 +152,12 @@ public class MacdBotTrainer {
 		
 		MacdBot bestBot = population.get(0);
 		LOGGER.debug("Best bot was: " + bestBot.getConfig().toString());
-		LOGGER.debug("Wallet: " + bestBot.getTradeFloor().getWalletValue());
+		LOGGER.debug("Wallet: " + bestBot.getTradeFloor().getWalletValueInUsd(bestBot.getWallet()));
 		LOGGER.debug("Trades: " + loggers.get(bestBot).getActions().size());
 
 		MacdBot worstBot = population.get(population.size()-1);
 		LOGGER.debug("Worst bot was: " + worstBot.getConfig().toString());
-		LOGGER.debug("Wallet: " + worstBot.getTradeFloor().getWalletValue());
+		LOGGER.debug("Wallet: " + worstBot.getTradeFloor().getWalletValueInUsd(worstBot.getWallet()));
 		LOGGER.debug("Trades: " + loggers.get(worstBot).getActions().size());
 		
 		LOGGER.debug("...");
@@ -165,12 +176,12 @@ public class MacdBotTrainer {
             	// Move bigger earners to the start, losers to the end
 	        	// A minimum # of trade is required, but importance of trade frequency falls off after just a couple of them
 	            	
-	        	double botAWallet = botA.getTradeFloor().getWalletValue();
-	        	double botAActivity = 0.1d + Math.log(loggers.get(botA).getActions().size()); 
+	        	double botAWallet = botA.getTradeFloor().getWalletValueInUsd(botA.getWallet());
+	        	double botAActivity = 1d;//0.1d + Math.log(loggers.get(botA).getActions().size() * 1000); 
             	double botAPerformance = botAWallet * botAActivity;
             	
-            	double botBWallet = botB.getTradeFloor().getWalletValue();
-	        	double botBActivity = 0.1d + Math.log(loggers.get(botB).getActions().size());
+            	double botBWallet = botB.getTradeFloor().getWalletValueInUsd(botB.getWallet());
+	        	double botBActivity = 1d;//0.1d + Math.log(loggers.get(botB).getActions().size() * 1000);
             	double botBPerformance = botBWallet * botBActivity;
             	
             	if (botAPerformance == botBPerformance) {
@@ -182,21 +193,14 @@ public class MacdBotTrainer {
 	    });
 	}
 	
-	private List<MacdBot> createPopulationFromConfigs(List<MacdBotConfig> configs, BitstampTickerSource ticker, IClock botClock) {
+	private List<MacdBot> createPopulationFromConfigs(List<MacdBotConfig> configs, BitstampTickerSource ticker, ITradeFloor tradeFloor, IClock botClock) {
 		ArrayList<MacdBot> population = new ArrayList<MacdBot>();
 		
 		double startBtc = walletStartBtcInUsd / ticker.getOutputLast().getSample(simulationStartTime).value;
 		
 		for (int i = 0; i < configs.size(); i++) {
-			final ITradeFloor tradeFloor =  new BitstampSimulationTradeFloor(
-					ticker.getOutputLast(),
-					ticker.getOutputBid(),
-					ticker.getOutputAsk(),
-					walletStartDollars,
-					startBtc
-			);
-			
-			MacdBot bot = new MacdBot(configs.get(i), ticker.getOutputLast(), tradeFloor);
+			IWallet wallet = new Wallet(walletStartDollars, startBtc);
+			MacdBot bot = new MacdBot(configs.get(i), ticker.getOutputLast(), wallet, tradeFloor);
 			botClock.addListener(bot);
 			population.add(bot);
 		}

@@ -12,14 +12,11 @@ import c3po.TradeAction.TradeActionType;
  */
 
 public interface ITradeFloor extends ITradeActionSource {
-	public double getWalledUsd();
-	public double getWalletBtc();
-	
 	public double toBtc(double usd);
 	public double toUsd(double btc);
 
-	public double buy(TradeAction action);
-	public double sell(TradeAction action);
+	public double buy(IWallet wallet, TradeAction action);
+	public double sell(IWallet wallet, TradeAction action);
 	
-	double getWalletValue();
+	double getWalletValueInUsd(IWallet wallet);
 }
