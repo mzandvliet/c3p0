@@ -32,7 +32,7 @@ import c3po.Wallet;
  * 
  * Todo:
  * 
- * - Bots luuuuurrve to hold way too long-term positions, make daytraders.
+ * - Bots luuuuurrve to hold way too long-term positions, make daytraders. (Build risk into macd with volatility node)
  * 
  * - Early out if a convergence threshold is reached
  * 

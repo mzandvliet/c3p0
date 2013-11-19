@@ -21,12 +21,15 @@ import c3po.IWallet;
 /* Todo:
  * 
  * ------ Important -----
- * - TickerDBSource and TickerJsonSource should use MILISECONDS!!
  * - MacdAnalysisConfig is still expressed in number-of-ticks, which means it depends on bot's timeStep. Should change to units of time.
  * - Encapsulate tick invalidation, it's so easy to do wrong, and it is a bunch of boilerplate
  * 		- abstract class AbstractTickable implements ITickable { protected abstract void onNewTick(); }
  * 		- That handles the if (tick > last), and just does a callback on your code when new values are needed
  * ----------------------
+ * 
+ * - Manage time duration of open positions
+ * 		- Build risk into macd with volatility node
+ * 		- High volatility means bot should close positions faster to mitigate crash risk
  * 
  * - Develop exit protocol and implementation
  * - Seed newly started bots with data from recorded history, then update with live feed
@@ -99,8 +102,8 @@ public class MacdBot implements IBot {
 		
 		// todo: this is still in number-of-ticks, which means it depends on bot's timeStep, should change to units of time
 		
-		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(137,408,909); // Todo: trader.startDelay is proportional to this, maybe Max(fast,slow,signal)
-		MacdTraderConfig traderConfig = new MacdTraderConfig(909, 0.0277, -0.0, 0.9952, 0.2, 8098900, 5876500);
+		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(13,40,90); // Todo: trader.startDelay is proportional to this, maybe Max(fast,slow,signal)
+		MacdTraderConfig traderConfig = new MacdTraderConfig(90, 0.0277, -0.4914, 0.9952, 0.211, 80989000, 58765000);
 		MacdBotConfig config = new MacdBotConfig(botTimestep, analysisConfig, traderConfig);
 		
 		// Create bot
