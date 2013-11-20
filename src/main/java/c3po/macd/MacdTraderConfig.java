@@ -1,7 +1,6 @@
 package c3po.macd;
 
 public class MacdTraderConfig {
-	public final long startDelay; // Used to avoid trading while macdBuffers are still empty and yield unstable signals
 	public final double minBuyDiffThreshold;
 	public final double minSellDiffThreshold;
 	public final double usdToBtcTradeAmount;
@@ -22,17 +21,15 @@ public class MacdTraderConfig {
 	public final long buyBackoffTimer;
 	
 	public MacdTraderConfig(
-			long startDelay,
-			double minBuyVelocity,
-			double minSellVelocity,
+			double minBuyThreshold,
+			double minSellThreshold,
 			double usdToBtcTradeAmount,
 			double btcToUsdTradeAmount,
 			long sellBackoffTimer,
 			long buyBackoffTimer) {
 		super();
-		this.startDelay = startDelay;
-		this.minBuyDiffThreshold = minBuyVelocity;
-		this.minSellDiffThreshold = minSellVelocity;
+		this.minBuyDiffThreshold = minBuyThreshold;
+		this.minSellDiffThreshold = minSellThreshold;
 		this.usdToBtcTradeAmount = usdToBtcTradeAmount;
 		this.btcToUsdTradeAmount = btcToUsdTradeAmount;
 		this.sellBackoffTimer = sellBackoffTimer;
@@ -41,8 +38,7 @@ public class MacdTraderConfig {
 	}
 
 	public String toString() {
-		return String.format("[TraderConfig - startDelay: %s, minBuyThreshold: %s, minSellThreshold: %s, usdToBtcTradeAmount: %s, btcToUsdTradeAmount: %s, sellBackoffTimer: %ss, buyBackoffTimer: %ss]", 
-				startDelay, 
+		return String.format("[TraderConfig - minBuyThreshold: %s, minSellThreshold: %s, usdToBtcTradeAmount: %s, btcToUsdTradeAmount: %s, sellBackoffTimer: %ss, buyBackoffTimer: %ss]", 
 				(double) Math.round(minBuyDiffThreshold * 10000) / 10000,
 				(double) Math.round(minSellDiffThreshold * 10000) / 10000,
 				(double) Math.round(usdToBtcTradeAmount * 10000) / 10000, 
@@ -66,7 +62,6 @@ public class MacdTraderConfig {
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		result = prime * result
 				+ (int) (sellBackoffTimer ^ (sellBackoffTimer >>> 32));
-		result = prime * result + (int) (startDelay ^ (startDelay >>> 32));
 		temp = Double.doubleToLongBits(usdToBtcTradeAmount);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		return result;
@@ -93,8 +88,6 @@ public class MacdTraderConfig {
 				.doubleToLongBits(other.minSellDiffThreshold))
 			return false;
 		if (sellBackoffTimer != other.sellBackoffTimer)
-			return false;
-		if (startDelay != other.startDelay)
 			return false;
 		if (Double.doubleToLongBits(usdToBtcTradeAmount) != Double
 				.doubleToLongBits(other.usdToBtcTradeAmount))

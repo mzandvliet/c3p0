@@ -245,7 +245,6 @@ public class MacdBotTrainer {
 		double minBuyThreshold = 0.0d + (Math.random() * 1.0d);
 		double minSellThreshold = -0.5d + (Math.random() * 1.0d);
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
-				max(analysisConfig),
 				minBuyThreshold,
 				minSellThreshold,
 				Math.random(),
@@ -297,7 +296,6 @@ public class MacdBotTrainer {
 				which() ? parentA.analysisConfig.signalPeriod : parentB.analysisConfig.signalPeriod);
 		
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
-				max(analysisConfig),
 				which() ? parentA.traderConfig.minBuyDiffThreshold : parentB.traderConfig.minBuyDiffThreshold,
 				which() ? parentA.traderConfig.minSellDiffThreshold : parentB.traderConfig.minSellDiffThreshold,
 				which() ? parentA.traderConfig.usdToBtcTradeAmount : parentB.traderConfig.usdToBtcTradeAmount,
@@ -331,7 +329,6 @@ public class MacdBotTrainer {
 		double minBuyThreshold = shouldMutate(0.1d) ? config.traderConfig.minBuyDiffThreshold : config.traderConfig.minBuyDiffThreshold;
 		double minSellThreshold = shouldMutate(0.1d) ? config.traderConfig.minSellDiffThreshold : config.traderConfig.minSellDiffThreshold;
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
-				max(analysisConfig),
 				minBuyThreshold,
 				minSellThreshold,
 				shouldMutate(mutationChance) ? config.traderConfig.usdToBtcTradeAmount : config.traderConfig.usdToBtcTradeAmount,
@@ -378,9 +375,5 @@ public class MacdBotTrainer {
 	
 	private long getRandomBackoffDuration(long min, long max) {
 		return min + (long)(Math.random() * (double)(max-min));
-	}
-	
-	public int max(MacdAnalysisConfig config) {
-		return Math.max(config.fastPeriod, Math.max(config.signalPeriod, config.slowPeriod));
 	}
 }

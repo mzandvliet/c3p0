@@ -17,6 +17,10 @@ public class MacdAnalysisConfig {
 		this.signalPeriod = signalPeriod;
 	}
 	
+	public int max() {
+		return Math.max(fastPeriod, Math.max(signalPeriod, slowPeriod));
+	}
+	
 	public String toString() {
 		return String.format("[AnalysisConfig - fast: %d, slow: %d, signal: %d]", fastPeriod, slowPeriod, signalPeriod);
 	}

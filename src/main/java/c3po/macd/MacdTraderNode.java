@@ -22,6 +22,7 @@ public class MacdTraderNode implements ITickable, ITradeActionSource {
 	private final IWallet wallet;
 	private final ITradeFloor tradeFloor;
 	private final MacdTraderConfig config;
+	private final long startDelay; // Used to avoid trading while macdBuffers are still empty and yield unstable signals
 	
 	private long lastTick;
 	private Sample lastDiff;
@@ -33,11 +34,12 @@ public class MacdTraderNode implements ITickable, ITradeActionSource {
 	
 	private final List<ITradeListener> listeners;
 
-	public MacdTraderNode(ISignal macdDiff, IWallet wallet, ITradeFloor tradeFloor, MacdTraderConfig config) {
+	public MacdTraderNode(ISignal macdDiff, IWallet wallet, ITradeFloor tradeFloor, MacdTraderConfig config, long startDelay) {
 		this.macdDiff = macdDiff;
 		this.wallet = wallet;
 		this.tradeFloor = tradeFloor;
 		this.config = config;
+		this.startDelay = startDelay;
 		this.listeners = new ArrayList<ITradeListener>();
 	}	
 
@@ -66,7 +68,7 @@ public class MacdTraderNode implements ITickable, ITradeActionSource {
 	public void decide(long tick) {
 		Sample currentDiff = macdDiff.getSample(tick);
 		
-		if (numSkippedTicks > config.startDelay) {
+		if (numSkippedTicks > startDelay) {
 			// We dont want to trade too often, check if we arent in the backoff period
 			boolean buyInBackOffTimer = (lastBuy > tick - config.buyBackoffTimer);
 			boolean sellInBackOffTimer = (lastSell > tick - config.sellBackoffTimer);

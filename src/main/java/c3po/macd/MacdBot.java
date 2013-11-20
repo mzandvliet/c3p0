@@ -107,8 +107,8 @@ public class MacdBot implements IBot {
 		
 		// todo: this is still in number-of-ticks, which means it depends on bot's timeStep, should change to units of time
 		
-		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(13,40,90); // Todo: trader.startDelay is proportional to this, maybe Max(fast,slow,signal)
-		MacdTraderConfig traderConfig = new MacdTraderConfig(90, 0.0277, -0.4914, 0.9952, 0.211, 80989000, 58765000);
+		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(13,40,90);
+		MacdTraderConfig traderConfig = new MacdTraderConfig(0.0277, -0.4914, 0.9952, 0.211, 80989000, 58765000);
 		MacdBotConfig config = new MacdBotConfig(botTimestep, analysisConfig, traderConfig);
 		
 		// Create bot
@@ -173,7 +173,7 @@ public class MacdBot implements IBot {
 		// Define the signal tree		
 		
 		analysisNode = new MacdAnalysisNode(ticker, config.analysisConfig);
-		traderNode = new MacdTraderNode(analysisNode.getOutput(4), wallet, tradeFloor, config.traderConfig);
+		traderNode = new MacdTraderNode(analysisNode.getOutput(4), wallet, tradeFloor, config.traderConfig, config.analysisConfig.max());
 	}
 
 	@Override
