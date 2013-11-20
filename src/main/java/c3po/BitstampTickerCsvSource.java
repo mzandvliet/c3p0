@@ -72,13 +72,4 @@ public class BitstampTickerCsvSource extends BitstampTickerSource {
 	public boolean isEmpty() {
 		return isEmpty;
 	}
-	
-	public enum SignalName {
-		LAST,
-	    HIGH,
-	    LOW,
-	    VOLUME,
-	    BID,
-	    ASK
-	}
 }

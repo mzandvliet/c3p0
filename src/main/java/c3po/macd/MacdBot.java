@@ -38,13 +38,6 @@ import c3po.IWallet;
  * 
  * - Use varying macd configurations to fit current market context
  * 
- *
- * 
- * - Use a charting library to show results, either live or after a simulation
- * 		- Either implement charts as leaf nodes in the signal tree, or point them to leafs in the tree
- * 		- http://www.jfree.org/jfreechart/samples.html
- * 		- https://code.google.com/p/charts4j/
- * 
  * - Network architecture
  * 		- INode should define setInput() to assign signals dynamically
  * 			- Constructor should not take input signals anymore
@@ -53,12 +46,9 @@ import c3po.IWallet;
  * 			- Analyse wallet & trade data streams using network methods too
  * 		- Find abstractions that reduce boilerplate for data transformation nodes
  * 			- Something akin to delegates/lambdas, you know
- * 		- Make node input/output indexing more human readable with enums
  * 
  * - Improve TradeFloor interface
  * 		- Currency abstraction
- * 		- Separate wallet concept from TradeFloor
- * 		- Costs
  * 
  */
 

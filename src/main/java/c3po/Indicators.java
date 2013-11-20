@@ -6,8 +6,8 @@ import java.util.List;
 public class Indicators {
 	public static Sample lerp(Sample oldest, Sample newest, long timestamp) {
 		long timeDelta = newest.timestamp - oldest.timestamp;
-		long localTime = newest.timestamp - timestamp;
-		double lerp = (double)localTime / (double)timeDelta;
+		long indexTimeDelta = timestamp - oldest.timestamp;
+		double lerp = (double)indexTimeDelta / (double)timeDelta;
 		double valueDelta = newest.value - oldest.value;
 		return new Sample(timestamp, valueDelta * lerp);
 	}

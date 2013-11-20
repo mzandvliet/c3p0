@@ -5,52 +5,38 @@ import java.io.IOException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class BitstampTickerJsonSource implements INode {
-	private final int numSignals = 6;
+public class BitstampTickerJsonSource extends BitstampTickerSource implements INode {
 	private final String url;
-	private OutputSignal[] signals;
-	private long lastTick = -1;
 	
 	public BitstampTickerJsonSource(String url) {
+		super();
 		this.url = url;
-		this.signals = new OutputSignal[numSignals];
-		for (int i = 0; i < numSignals; i++) {
-			this.signals[i] = new OutputSignal(this);
-		}
 	}
+	
+	@Override
+	public void open() {
+		// TODO Auto-generated method stub
 		
+	}
+
 	@Override
-	public int getNumOutputs() {
-		return signals.length;
+	public void close() {
+		// TODO Auto-generated method stub
+		
 	}
-	
+
 	@Override
-	public ISignal getOutput(int i) {
-		return signals[i];
+	public boolean isEmpty() {
+		// TODO Auto-generated method stub
+		return false;
 	}
-	
-	public enum SignalName {
-		LAST,
-	    HIGH,
-	    LOW,
-	    VOLUME,
-	    BID,
-	    ASK
-	}
-	
+
 	@Override
-	public long getLastTick() {
-		return lastTick;
+	public void onNewTick(long tick) {
+		parseJson();
+		
 	}
-	
-	@Override
-	public void tick(long tick) {
-		if (tick > lastTick) {
-			parseJson();
-		}
-		lastTick = tick;
-	}
-	
+
 	private void parseJson() {
 		try {
 			JSONObject json = JsonReader.readJsonFromUrl(url);

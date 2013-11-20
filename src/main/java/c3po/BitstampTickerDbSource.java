@@ -71,7 +71,7 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 			if(buffer == null)
 			  fetchData(tick); 
 			
-			// Check if there is data in the buffer that is older then the timestamp, if so, return the prev row
+			// Check if there is data in the buffer that is older than the timestamp, if so, return the prev row
 			BitstampTickerRow prev = buffer.get(0);
 			BitstampTickerRow current = null;
 			for(int index = 1; index < buffer.size(); index++) {
@@ -159,8 +159,8 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 			this.volume = volume;
 		}
 	
-	public String toString() {
-		return String.format("[Row - %s (%d)]", new Date(timestamp).toLocaleString(), timestamp);
-	}
+		public String toString() {
+			return String.format("[Row - %s (%d)]", new Date(timestamp).toLocaleString(), timestamp);
+		}
 	}
 }
