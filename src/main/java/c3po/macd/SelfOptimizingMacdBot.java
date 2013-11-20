@@ -3,6 +3,7 @@ package c3po.macd;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import c3po.AbstractTickable;
 import c3po.BitstampSimulationTradeFloor;
 import c3po.BitstampTickerCsvSource;
 import c3po.IBot;
@@ -11,7 +12,7 @@ import c3po.ITradeFloor;
 import c3po.ITradeListener;
 import c3po.IWallet;
 
-public class SelfOptimizingMacdBot implements IBot {
+public class SelfOptimizingMacdBot extends AbstractTickable implements IBot {
 	
 private static final Logger LOGGER = LoggerFactory.getLogger(MacdBotTrainer.class);
 	private final static String csvPath = "resources/bitstamp_ticker_till_20131117_pingpong.csv";
@@ -69,13 +70,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(MacdBotTrainer.clas
 	}
 
 	@Override
-	public long getLastTick() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public void tick(long tick) {
+	public void onNewTick(long tick) {
 		// TODO Auto-generated method stub
 		
 	}

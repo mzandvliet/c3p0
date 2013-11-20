@@ -21,11 +21,7 @@ import c3po.IWallet;
 /* Todo:
  * 
  * ------ Important -----
- * - MacdAnalysisConfig is still expressed in number-of-ticks, which means it depends on bot's timeStep. Should change to units of time.
- * - Encapsulate tick invalidation, it's so easy to do wrong, and it is a bunch of boilerplate
- * 		- abstract class AbstractTickable implements ITickable { protected abstract void onNewTick(); }
- * 		- That handles the if (tick > last), and just does a callback on your code when new values are needed
- * 
+ * - MacdAnalysisConfig is still expressed in number-of-ticks, which means it depends on bot's timeStep. Should change to units of time. * 
  * 
  * - Manage time duration of open positions
  * 		- Build risk into macd with volatility node
@@ -66,7 +62,7 @@ import c3po.IWallet;
  * 
  */
 
-public class MacdBot implements IBot {
+public class MacdBot extends AbstractTickable implements IBot {
 	//================================================================================
     // Static Properties
     //================================================================================
@@ -153,8 +149,6 @@ public class MacdBot implements IBot {
 	private final IWallet wallet;
 	private final ITradeFloor tradeFloor;
 	
-	private long lastTick;
-	
     // Debug references
 	
 	private final MacdAnalysisNode analysisNode;
@@ -177,16 +171,8 @@ public class MacdBot implements IBot {
 	}
 
 	@Override
-	public long getLastTick() {
-		return lastTick;
-	}
-	
-	@Override
-	public void tick(long tick) {
-		if (tick > lastTick) {
-			traderNode.tick(tick);
-		}
-		lastTick = tick;
+	public void onNewTick(long tick) {
+		traderNode.tick(tick);
 	}
 	
 	@Override

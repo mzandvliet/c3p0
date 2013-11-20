@@ -14,13 +14,12 @@ import org.slf4j.LoggerFactory;
  * Todo:
  * - Expose node tree for manual introspection (like chart drawing of buffers or visualizing structure)
  */
-public class MacdAnalysisNode implements INode {
+public class MacdAnalysisNode extends AbstractTickable implements INode {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdAnalysisNode.class);
 	
 	private final int numSignals = 5;
 	private ISignal[] signals;
-	private long lastTick = -1;
 	
 	INode fastNode;
 	INode slowNode;
@@ -67,16 +66,8 @@ public class MacdAnalysisNode implements INode {
 	}
 	
 	@Override
-	public long getLastTick() {
-		return lastTick;
-	}
-	
-	@Override
-	public void tick(long tick) {
-		if (tick > lastTick) {
-			diffNode.tick(tick);
-		}
-		lastTick = tick;
+	public void onNewTick(long tick) {
+		diffNode.tick(tick);
 	}
 	
 	public enum SignalNames {

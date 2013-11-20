@@ -1,10 +1,9 @@
 package c3po;
 
-public class SubtractNode implements INode {
+public class SubtractNode extends AbstractTickable implements INode {
 	private ISignal inputA;
 	private ISignal inputB;
 	private OutputSignal output;
-	private long lastTick = -1;
 	
 	public SubtractNode(ISignal inputA, ISignal inputB) {
 		this.inputA = inputA;
@@ -23,16 +22,9 @@ public class SubtractNode implements INode {
 	}
 	
 	@Override
-	public long getLastTick() {
-		return lastTick;
-	}
-
-	@Override
-	public void tick(long tick) {
-		if (tick > lastTick) {
-			Sample newest = subtract(inputA.getSample(tick), inputB.getSample(tick));
-			output.setSample(newest);
-		}
+	public void onNewTick(long tick) {
+		Sample newest = subtract(inputA.getSample(tick), inputB.getSample(tick));
+		output.setSample(newest);
 	}
 
 	private Sample subtract(Sample a, Sample b) {

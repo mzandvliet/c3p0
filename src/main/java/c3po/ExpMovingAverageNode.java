@@ -2,12 +2,11 @@ package c3po;
 
 import java.util.List;
 
-public class ExpMovingAverageNode implements INode {
+public class ExpMovingAverageNode extends AbstractTickable implements INode {
 	private ISignal input;
 	private int kernelSize;
 	private CircularArrayList<Sample> buffer;
 	private OutputSignal output;
-	private long lastTick = -1;
 	
 	public ExpMovingAverageNode(ISignal input, int kernelSize) {
 		this.input = input;
@@ -27,19 +26,7 @@ public class ExpMovingAverageNode implements INode {
 	}
 	
 	@Override
-	public long getLastTick() {
-		return lastTick;
-	}
-
-	@Override
-	public void tick(long tick) {
-		if (tick > lastTick) {
-			average(tick);
-		}
-		lastTick = tick;
-	}
-	
-	public void average(long tick) {
+	public void onNewTick(long tick) {
 		Sample newest = transform(buffer, input.getSample(tick), kernelSize);
 		buffer.add(newest);
 		output.setSample(newest);

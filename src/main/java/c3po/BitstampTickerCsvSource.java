@@ -9,7 +9,6 @@ import au.com.bytecode.opencsv.CSVReader;
 public class BitstampTickerCsvSource extends BitstampTickerSource {
 	private final String path;
 	private CSVReader reader;
-	private long lastTick = -1;
 	private boolean isEmpty = false;
 	private String[] prevLine; 
 	private String[] nextLine;
@@ -36,19 +35,7 @@ public class BitstampTickerCsvSource extends BitstampTickerSource {
 	}
 	
 	@Override
-	public long getLastTick() {
-		return lastTick;
-	}
-
-	@Override
-	public void tick(long tick) {
-		if (tick > lastTick) {
-			parseCsv(tick);
-		}
-		lastTick = tick;
-	}
-
-	private void parseCsv(long tick) {
+	public void onNewTick(long tick) {
 	    try {
 	    	if(prevLine == null)
 	          prevLine = reader.readNext();

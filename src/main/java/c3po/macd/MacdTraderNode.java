@@ -6,6 +6,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import c3po.AbstractTickable;
 import c3po.ISignal;
 import c3po.ITickable;
 import c3po.ITradeActionSource;
@@ -16,7 +17,7 @@ import c3po.Sample;
 import c3po.TradeAction;
 import c3po.TradeAction.TradeActionType;
 
-public class MacdTraderNode implements ITickable, ITradeActionSource {
+public class MacdTraderNode extends AbstractTickable implements ITickable, ITradeActionSource {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdTraderNode.class);
 	private final ISignal macdDiff;
 	private final IWallet wallet;
@@ -24,7 +25,6 @@ public class MacdTraderNode implements ITickable, ITradeActionSource {
 	private final MacdTraderConfig config;
 	private final long startDelay; // Used to avoid trading while macdBuffers are still empty and yield unstable signals
 	
-	private long lastTick;
 	private Sample lastDiff;
 	
 	private long lastBuy = 0l; // Last time we bought in milliseconds epoch
@@ -48,16 +48,8 @@ public class MacdTraderNode implements ITickable, ITradeActionSource {
 	}
 	
 	@Override
-	public long getLastTick() {
-		return lastTick;
-	}
-	
-	@Override
-	public void tick(long tick) {
-		if (tick > lastTick) {
-			decide(tick);
-		}
-		lastTick = tick;
+	public void onNewTick(long tick) {
+		decide(tick);
 	}
 	
 	private final static double minDollars = 1.0d;

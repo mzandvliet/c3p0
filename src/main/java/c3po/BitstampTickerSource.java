@@ -1,9 +1,8 @@
 package c3po;
 
-public abstract class BitstampTickerSource implements INode {
+public abstract class BitstampTickerSource extends AbstractTickable implements INode {
 	protected final int numSignals = 6;
 	protected OutputSignal[] signals;
-	protected long lastTick = -1;
 	protected boolean isEmpty = false;
 	
 	public BitstampTickerSource() {
@@ -57,15 +56,6 @@ public abstract class BitstampTickerSource implements INode {
 	 */
 	public abstract void close();
 
-	/**
-	 * Tick is used to tell to source to fill his output 
-	 * signal buffers with data that is closest to the
-	 * supplied timestamp.
-	 * 
-	 */
-	@Override
-	public abstract void tick(long timestamp);
-	
 	/**
 	 * Method that indicates whether the source has reached it's end
 	 * and has no new data.

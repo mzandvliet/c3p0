@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
  * Work in progress in using the database as source
  */
 public class BitstampTickerDbSource extends BitstampTickerSource {
-	
 	private static final Logger LOGGER = LoggerFactory.getLogger(BitstampTickerDbSource.class);
 
 	private Connection connect = null;
@@ -66,20 +65,7 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 	      }
 	}
 	
-	@Override
-	public long getLastTick() {
-		return lastTick;
-	}
-
-	@Override
-	public void tick(long tick) {
-		if (tick > lastTick) {
-			query(tick);
-		}
-		lastTick = tick;
-	}
-	
-	public void query(long tick) {
+	public void onNewTick(long tick) {
 		try {
 			// The first time, fill the buffer
 			if(buffer == null)
@@ -109,7 +95,7 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 				useRow(buffer.get(0));
 				return;
 			} else {			
-			    query(tick);
+			    onNewTick(tick);
 			}
 			return;
 		} catch (SQLException e) {
