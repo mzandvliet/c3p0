@@ -8,8 +8,8 @@ import org.json.JSONObject;
 public class BitstampTickerJsonSource extends BitstampTickerSource implements INode {
 	private final String url;
 	
-	public BitstampTickerJsonSource(String url) {
-		super();
+	public BitstampTickerJsonSource(long interpolationTime, String url) {
+		super(interpolationTime);
 		this.url = url;
 	}
 	
@@ -22,7 +22,6 @@ public class BitstampTickerJsonSource extends BitstampTickerSource implements IN
 	@Override
 	public void close() {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -32,20 +31,25 @@ public class BitstampTickerJsonSource extends BitstampTickerSource implements IN
 	}
 
 	@Override
-	public void onNewTick(long tick) {
+	public void pollServer(long clientTimestamp) {
 		parseJson();
 	}
 
 	private void parseJson() {
 		try {
 			JSONObject json = JsonReader.readJsonFromUrl(url);
-			long timestamp = json.getLong("timestamp");
-    		signals[0].setSample(new Sample(timestamp, json.getDouble("last")));
-    		signals[1].setSample(new Sample(timestamp, json.getDouble("high")));
-    		signals[2].setSample(new Sample(timestamp, json.getDouble("low")));
-    		signals[3].setSample(new Sample(timestamp, json.getDouble("volume")));
-    		signals[4].setSample(new Sample(timestamp, json.getDouble("bid")));
-    		signals[5].setSample(new Sample(timestamp, json.getDouble("ask")));
+			long serverTimestamp = json.getLong("timestamp") * 1000;
+			
+			ServerSampleEntry entry = new ServerSampleEntry(serverTimestamp, 6);
+    		entry.set(0, new Sample(serverTimestamp, json.getDouble("last")));
+    		entry.set(1, new Sample(serverTimestamp, json.getDouble("high")));
+    		entry.set(2, new Sample(serverTimestamp, json.getDouble("low")));
+    		entry.set(3, new Sample(serverTimestamp, json.getDouble("volume")));
+    		entry.set(4, new Sample(serverTimestamp, json.getDouble("bid")));
+    		entry.set(5, new Sample(serverTimestamp, json.getDouble("ask")));
+    		
+    		buffer.add(entry);
+    		
 		} catch (JSONException e) {
 			e.printStackTrace();
 		} catch (IOException e) {

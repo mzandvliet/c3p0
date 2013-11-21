@@ -21,8 +21,8 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 	ArrayList<BitstampTickerRow> buffer;
 
 	
-	public BitstampTickerDbSource(InetSocketAddress host, String user, String pwd) throws ClassNotFoundException, SQLException {
-		  super();
+	public BitstampTickerDbSource(long interpolationTime, InetSocketAddress host, String user, String pwd) throws ClassNotFoundException, SQLException {
+		  super(interpolationTime);
 		  
 		  // This will load the MySQL driver, each DB has its own driver
 	      Class.forName("com.mysql.jdbc.Driver");
@@ -38,31 +38,6 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 	@Override
 	public ISignal getOutput(int i) {
 		return signals[i];
-	}
-	
-	private void fetchData(long timestamp) throws SQLException {
-		
-		  long fetchTime = (timestamp / 1000) - 60;
-		  
-	      // Statements allow to issue SQL queries to the database
-	      statement = connect.createStatement();
-	      // Result set get the result of the SQL query
-	      String query = "select * from bitstamp_ticker WHERE `timestamp` >= " + fetchTime  + " ORDER BY timestamp ASC";
-	      ResultSet resultSet = statement.executeQuery(query);
-	      LOGGER.debug(query);
-	      
-	      // I dont understand shit of this resultSet class so I just use my own buffer
-	      buffer = new ArrayList<BitstampTickerRow>();
-	      while(resultSet.next()) {
-	    	  buffer.add(new BitstampTickerRow(
-	    			  resultSet.getLong("timestamp") * 1000, 
-	    			  resultSet.getDouble("ask"), 
-	    			  resultSet.getDouble("last"), 
-	    			  resultSet.getDouble("low"), 
-	    			  resultSet.getDouble("high"), 
-	    			  resultSet.getDouble("bid"), 
-	    			  resultSet.getLong("volume")));
-	      }
 	}
 	
 	public void onNewTick(long tick) {
@@ -103,6 +78,31 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} 
+	}
+	
+	private void fetchData(long timestamp) throws SQLException {
+		
+		  long fetchTime = (timestamp / 1000) - 60;
+		  
+	      // Statements allow to issue SQL queries to the database
+	      statement = connect.createStatement();
+	      // Result set get the result of the SQL query
+	      String query = "select * from bitstamp_ticker WHERE `timestamp` >= " + fetchTime  + " ORDER BY timestamp ASC";
+	      ResultSet resultSet = statement.executeQuery(query);
+	      LOGGER.debug(query);
+	      
+	      // I dont understand shit of this resultSet class so I just use my own buffer
+	      buffer = new ArrayList<BitstampTickerRow>();
+	      while(resultSet.next()) {
+	    	  buffer.add(new BitstampTickerRow(
+	    			  resultSet.getLong("timestamp") * 1000, 
+	    			  resultSet.getDouble("ask"), 
+	    			  resultSet.getDouble("last"), 
+	    			  resultSet.getDouble("low"), 
+	    			  resultSet.getDouble("high"), 
+	    			  resultSet.getDouble("bid"), 
+	    			  resultSet.getLong("volume")));
+	      }
 	}
 	
 	private void useRow(BitstampTickerRow row) throws SQLException {

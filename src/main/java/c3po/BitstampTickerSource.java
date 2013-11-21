@@ -1,10 +1,22 @@
 package c3po;
 
+import java.util.List;
+
+/* Todo:
+ * - Implement server timeout strategy (extrapolation for a little while, then crisis mode)
+ * - Implement high frequency polling to avoid server update misses
+ * - Prevent subclasses from accessing buffer directly to prevent programmer error
+ * 		- Polling should return a ServerSampleEntry
+ */
+
 public abstract class BitstampTickerSource extends AbstractTickable implements INode {
 	protected final int numSignals = 6;
-	protected OutputSignal[] signals;
+	private OutputSignal[] signals;
 	protected boolean isEmpty = false;
 	protected final long interpolationTime;
+	protected final CircularArrayList<ServerSampleEntry> buffer;
+	
+	private final long updateRate = 60000; // The frequency at which new data is polled, (todo: fix polling misses)
 	
 	public BitstampTickerSource(long interpolationTime) {
 		this.interpolationTime = interpolationTime;
@@ -13,8 +25,69 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 		for (int i = 0; i < numSignals; i++) {
 			this.signals[i] = new OutputSignal(this);
 		}
+		
+		int bufferLength = (int)(interpolationTime / updateRate * 2);
+		buffer = new CircularArrayList<ServerSampleEntry>(bufferLength);
 	}
 	
+	@Override
+	public void onNewTick(long clientTimestamp) {
+		pollServer(clientTimestamp);
+		updateOutputs(clientTimestamp);
+	}
+	
+	protected abstract void pollServer(long clientTimestamp);
+
+	private void updateOutputs(long clientTimestamp) {
+		/*
+		 *  If clientTime is older than most recent server entry (which happens at
+		 *   startup), just return the oldest possible value. This results in a
+		 *   constant signal until server start time is reached.
+		 */
+		if (clientTimestamp <= buffer.get(0).timestamp) {
+			ServerSampleEntry oldEntry = buffer.get(0);
+			
+			for (int j = 0; j < signals.length; j++) {
+				Sample sample = oldEntry.get(j);
+				signals[j].setSample(sample);
+			}
+			return;
+		}
+		
+		/*
+		 *  If client time falls within the buffered entries, interpolate the result
+		 */
+ 		for (int i = 0; i < buffer.size(); i++) {
+			ServerSampleEntry oldEntry = buffer.get(i);
+			
+			if (clientTimestamp > oldEntry.timestamp) {
+				ServerSampleEntry newEntry = buffer.get(i+1);
+				
+				for (int j = 0; j < signals.length; j++) {
+					Sample sample = Indicators.lerp(oldEntry.get(j), newEntry.get(j), clientTimestamp);
+					signals[j].setSample(sample);
+				}
+				
+				return;
+			}
+		}
+ 		
+ 		/*
+		 * Todo:
+		 * 
+		 * if client time is newer than server time (in case of network error or something) we
+		 * should do error handling. Either extrapolate and hope you regain connection or go
+		 *  into crisis mode. For now, just poop out the last available value...
+		 */
+ 		
+		ServerSampleEntry newestEntry = buffer.get(buffer.size()-1);
+		
+		for (int j = 0; j < signals.length; j++) {
+			Sample sample = newestEntry.get(j);
+			signals[j].setSample(sample);
+		}
+	}
+
 	@Override
 	public int getNumOutputs() {
 		return signals.length;
@@ -74,5 +147,27 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 	    VOLUME,
 	    BID,
 	    ASK
+	}
+	
+	public class ServerSampleEntry {
+		public final long timestamp;
+		public final Sample[] samples;
+		
+		public ServerSampleEntry(long timestamp, int length) {
+			this.timestamp = timestamp;
+			this.samples = new Sample[length];
+		}
+		
+		public int size() {
+			return samples.length;
+		}
+		
+		public Sample get(int i) {
+			return samples[i];
+		}
+		
+		public void set(int i, Sample sample) {
+			samples[i] = sample;
+		}
 	}
 }

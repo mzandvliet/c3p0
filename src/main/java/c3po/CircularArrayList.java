@@ -7,6 +7,11 @@ import java.util.List;
 import java.util.Queue;
 import java.util.RandomAccess;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import c3po.macd.MacdBot;
+
 /**
  * If you use this code, please retain this comment block.
  * @author Isak du Preez
@@ -14,10 +19,21 @@ import java.util.RandomAccess;
  * www.du-preez.com
  */
 
-/* Todo:
- * - Implement queue interface, since that's how we're using this.
- */
 public class CircularArrayList<E> extends AbstractList<E> implements Queue<E>,RandomAccess {
+	private static final Logger LOGGER = LoggerFactory.getLogger(CircularArrayList.class);
+	
+	// Some sanity testing
+	public static void main(String[] args) {
+		CircularArrayList<String> list = new CircularArrayList<String>(10);
+		for (int i = 0; i < 20; i++) {
+			list.add("" + i);
+		}
+		
+		for (int i = 0; i < 10; i++) {
+			LOGGER.debug("item: " + list.get(i) + ", size: " + list.size());
+		}
+	}
+	
 	private final int n; // buffer length
 	private final List<E> buf; // a List implementing RandomAccess
 	private int head = 0;
@@ -72,8 +88,7 @@ public class CircularArrayList<E> extends AbstractList<E> implements Queue<E>,Ra
 	
 	@Override
 	public boolean add(E e) {
-		int s = size();
-	    if (s == n - 1) {
+	    if (size() == n - 1) {
 	        remove();
 	    }
 		add(size(), e);
@@ -82,32 +97,42 @@ public class CircularArrayList<E> extends AbstractList<E> implements Queue<E>,Ra
 	
 	@Override
 	public void add(int i, E e) {
-	    int s = size();
-	    if (s == n - 1) {
+	    int size = size();
+	    
+	    if (size == n - 1) {
 	        throw new IllegalStateException("Cannot add element."
 	                + " CircularArrayList is filled to capacity.");
 	    }
-	    if (i < 0 || i > s) {
+	    
+	    if (i < 0 || i > size) {
 	        throw new IndexOutOfBoundsException();
 	    }
+	    
 	    tail = wrapIndex(tail + 1);
-	    if (i < s) {
-	        shiftBlock(i, s);
+	    
+	    if (i < size) {
+	        shiftBlock(i, size);
 	    }
+	    
 	    set(i, e);
 	}
 	
 	@Override
 	public E remove(int i) {
 	    int s = size();
+	    
 	    if (i < 0 || i >= s) {
 	        throw new IndexOutOfBoundsException();
 	    }
+	    
 	    E e = get(i);
+	    
 	    if (i > 0) {
 	        shiftBlock(0, i);
 	    }
+	    
 	    head = wrapIndex(head + 1);
+	    
 	    return e;
 	}
 	

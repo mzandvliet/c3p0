@@ -9,7 +9,8 @@ public class Indicators {
 		long indexTimeDelta = timestamp - oldest.timestamp;
 		double lerp = (double)indexTimeDelta / (double)timeDelta;
 		double valueDelta = newest.value - oldest.value;
-		return new Sample(timestamp, valueDelta * lerp);
+		double value = oldest.value + valueDelta * lerp;
+		return new Sample(timestamp, value);
 	}
 	
 	public static List<Sample> filterMovingAverage(final List<Sample> signals, final int kernelSize) {
