@@ -21,14 +21,14 @@ import c3po.IWallet;
 /* Todo:
  * 
  * ------ Important -----
+ * 
+ * - Implement better polling to mitigate server data misses
+ * 
  * - MacdAnalysisConfig is still expressed in number-of-ticks, which means it depends on bot's timeStep. Should change to units of time. * 
  * 
  * - Manage time duration of open positions
  * 		- Build risk into macd with volatility node
  * 		- High volatility means bot should close positions faster to mitigate crash risk
- * 
- * - Time
- * 		- Start using interpolation in ticker to correct sample timing error
  * 
  * ----------------------
  * 
@@ -61,9 +61,9 @@ public class MacdBot extends AbstractTickable implements IBot {
 	
 	//private final static String jsonUrl = "http://www.bitstamp.net/api/ticker/";
 	
-	//private final static String csvPath = "resources/bitstamp_ticker_till_20131119.csv";
+	private final static String csvPath = "resources/bitstamp_ticker_till_20131119.csv";
 	private final static long simulationStartTime = 1384079023000l;
-	private final static long simulationEndTime = 1384869769000l;
+	private final static long simulationEndTime = 1384079243000l;//1384869769000l;
 	private final static long interpolationTime = 120000; // Delay data by two minutes for interpolation
 	
 	private final static long clockTimestep = 1000;
@@ -124,7 +124,7 @@ public class MacdBot extends AbstractTickable implements IBot {
 		
 		tickerNode.close();
 		
-//		dbTradeLogger.close();
+		//dbTradeLogger.close();
 		
 		// Log results
 		

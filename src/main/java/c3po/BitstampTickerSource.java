@@ -16,7 +16,7 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 	protected final long interpolationTime;
 	protected final CircularArrayList<ServerSampleEntry> buffer;
 	
-	private final long updateRate = 60000; // The frequency at which new data is polled, (todo: fix polling misses)
+	private final long serverEntryPeriod = 60000; // Expected time between server entries
 	
 	public BitstampTickerSource(long interpolationTime) {
 		this.interpolationTime = interpolationTime;
@@ -26,7 +26,7 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 			this.signals[i] = new OutputSignal(this);
 		}
 		
-		int bufferLength = (int)(interpolationTime / updateRate * 2);
+		int bufferLength = (int)(interpolationTime / serverEntryPeriod * 2);
 		buffer = new CircularArrayList<ServerSampleEntry>(bufferLength);
 	}
 	
