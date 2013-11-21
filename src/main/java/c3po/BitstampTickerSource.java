@@ -60,7 +60,7 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
  		for (int i = 0; i < buffer.size(); i++) {
 			ServerSampleEntry oldEntry = buffer.get(i);
 			
-			if (clientTimestamp > oldEntry.timestamp) {
+			if (clientTimestamp < oldEntry.timestamp) {
 				ServerSampleEntry newEntry = buffer.get(i+1);
 				
 				for (int j = 0; j < signals.length; j++) {
