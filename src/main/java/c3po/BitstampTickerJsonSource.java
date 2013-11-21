@@ -34,7 +34,6 @@ public class BitstampTickerJsonSource extends BitstampTickerSource implements IN
 	@Override
 	public void onNewTick(long tick) {
 		parseJson();
-		
 	}
 
 	private void parseJson() {
@@ -53,4 +52,6 @@ public class BitstampTickerJsonSource extends BitstampTickerSource implements IN
 			e.printStackTrace();
 		}
 	}
+
+	
 }

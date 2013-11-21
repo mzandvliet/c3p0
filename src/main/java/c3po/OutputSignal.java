@@ -6,10 +6,10 @@ package c3po;
  * Ticks its parent when queried for new value. Parent should then supply it with latest Sample.
  */
 public class OutputSignal implements ISignal {
-	private ITickable ownerNode;
+	private INode ownerNode;
 	private Sample latestSample;
 	
-	public OutputSignal(ITickable node) {
+	public OutputSignal(INode node) {
 		this.ownerNode = node;
 	}
 	
@@ -24,18 +24,8 @@ public class OutputSignal implements ISignal {
 	
 	@Override
 	public Sample getSample(long tick) {
-		tick(tick);
+		ownerNode.tick(tick);
 		return Sample.copy(latestSample);
-	}
-	
-	@Override
-	public long getLastTick() {
-		return ownerNode.getLastTick();
-	}
-	
-	@Override
-	public void tick(long tick) {
-		ownerNode.tick(tick); // Tick the node that owns this output, which then updates this output's value
 	}
 	
 	public String toString() {

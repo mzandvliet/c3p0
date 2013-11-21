@@ -11,7 +11,7 @@ public class RealtimeClock implements IClock, Runnable {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(RealtimeClock.class);
 	
-	private List<IBot> bots;
+	private List<IClockListener> listeners;
 	private long timeStep; 
 	private long preloadTime;
 
@@ -26,7 +26,7 @@ public class RealtimeClock implements IClock, Runnable {
 	 * @param preloadTime The amount of milliseconds you want to preload for filling buffers
 	 */
 	public RealtimeClock(long timeStep, long preloadTime) {
-		this.bots = new ArrayList<IBot>();
+		this.listeners = new ArrayList<IClockListener>();
 		this.timeStep = timeStep;
 		this.preloadTime = preloadTime;
 	}
@@ -37,13 +37,13 @@ public class RealtimeClock implements IClock, Runnable {
 	}
 	
 	@Override
-	public void addListener(IBot tickable) {
-		bots.add(tickable);
+	public void addListener(IClockListener tickable) {
+		listeners.add(tickable);
 	}
 
 	@Override
-	public void removeListener(IBot tickable) {
-		bots.remove(tickable);
+	public void removeListener(IClockListener tickable) {
+		listeners.remove(tickable);
 	}
 	
 	public void run() {
@@ -55,7 +55,7 @@ public class RealtimeClock implements IClock, Runnable {
 		long currentTick = new Date().getTime() - preloadTime;
 		LOGGER.debug("Tick: " + currentTick);
 		while(currentTick < new Date().getTime()) {
-			for (IBot bot : bots) {
+			for (IClockListener bot : listeners) {
 				if (bot.getLastTick() == 0 || currentTick - bot.getLastTick() >= bot.getTimestep()) {
 					bot.tick(currentTick);
 					LOGGER.debug(" Tick: " + new Date(currentTick).toLocaleString() + " Bot : " + bot );
@@ -71,10 +71,10 @@ public class RealtimeClock implements IClock, Runnable {
 		long tickIndex = 0;
 		while (stopIt == false && (maxTicks == 0 || maxTicks > tickIndex)) {
 			currentTick = new Date().getTime();
-			for (IBot bot : bots) {
-				if (bot.getLastTick() == 0 || currentTick - bot.getLastTick() >= bot.getTimestep()) {
-					bot.tick(currentTick);
-					LOGGER.debug("Bot : " + bot + " Tick: " + currentTick);
+			for (IClockListener updatable : listeners) {
+				if (updatable.getLastTick() == 0 || currentTick - updatable.getLastTick() >= updatable.getTimestep()) {
+					updatable.tick(currentTick);
+					LOGGER.debug("Bot : " + updatable + " Tick: " + currentTick);
 				}
 			}
 			

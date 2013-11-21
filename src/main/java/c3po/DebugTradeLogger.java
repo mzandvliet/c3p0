@@ -27,7 +27,7 @@ public class DebugTradeLogger implements ITradeListener {
 		return actions;
 	}
 	
-	public void dump() {
+	public void writeLog() {
 		LOGGER.debug("Trades: " + actions.size());
 		
 		for(TradeAction action : actions) {

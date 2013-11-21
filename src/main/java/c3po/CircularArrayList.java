@@ -112,8 +112,11 @@ public class CircularArrayList<E> extends AbstractList<E> implements Queue<E>,Ra
 	}
 	
 	@Override
-	public E element() {
-		return peek();
+	public E element() throws IllegalStateException {
+		if (size() == 0)
+			throw new IllegalStateException("List is empty");
+			
+		return buf.get(head);
 	}
 
 	@Override
@@ -125,9 +128,16 @@ public class CircularArrayList<E> extends AbstractList<E> implements Queue<E>,Ra
 	@Override
 	public E peek() throws IllegalStateException {
 		if (size() == 0)
-			throw new IllegalStateException("List is empty");
+			return null;
 			
 		return buf.get(head);
+	}
+	
+	public E peekTail() throws IllegalStateException {
+		if (size() == 0)
+			throw new IllegalStateException("List is empty");
+			
+		return buf.get(tail);
 	}
 
 	@Override

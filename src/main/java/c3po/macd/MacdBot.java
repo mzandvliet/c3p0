@@ -106,9 +106,9 @@ public class MacdBot extends AbstractTickable implements IBot {
 		DebugTradeLogger tradeLogger = new DebugTradeLogger();
 		bot.addListener(tradeLogger);
 		
-		DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
-		dbTradeLogger.open();
-		dbTradeLogger.startSession(simulationStartTime, walletDollarStart, walletBtcStart);
+//		DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+//		dbTradeLogger.open();
+//		dbTradeLogger.startSession(simulationStartTime, walletDollarStart, walletBtcStart);
 		
 		// Create a clock
 		
@@ -123,11 +123,12 @@ public class MacdBot extends AbstractTickable implements IBot {
 		
 		tickerNode.close();
 		
-		dbTradeLogger.close();
+//		dbTradeLogger.close();
 		
 		// Log results
 		
 		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Profit: " + (tradeFloor.getWalletValueInUsd(wallet) - walletDollarStart));
+		tradeLogger.writeLog();
 	}
 	
 	

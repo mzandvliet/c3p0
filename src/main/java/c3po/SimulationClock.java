@@ -9,26 +9,26 @@ import java.util.List;
  */
 
 public class SimulationClock implements IClock {
-	private List<IBot> bots;
+	private List<IClockListener> listeners;
 	private long startTime;
 	private long endTime;
 	private long clockTimestep;
 	
 	public SimulationClock(long clockTimestep, long startTime, long endTime) {
-		this.bots = new ArrayList<IBot>();
+		this.listeners = new ArrayList<IClockListener>();
 		this.clockTimestep = clockTimestep;
 		this.startTime = startTime;
 		this.endTime = endTime;
 	}
 	
 	@Override
-	public void addListener(IBot tickable) {
-		bots.add(tickable);
+	public void addListener(IClockListener listener) {
+		listeners.add(listener);
 	}
 
 	@Override
-	public void removeListener(IBot tickable) {
-		bots.remove(tickable);
+	public void removeListener(IClockListener listener) {
+		listeners.remove(listener);
 	}
 
 	public void run() {
@@ -36,9 +36,9 @@ public class SimulationClock implements IClock {
 			
 			// Iterate over all tickables, see which needs to be ticked
 			
-			for (IBot bot : bots) {
-				if (currentTick - bot.getLastTick() >= bot.getTimestep()) {
-					bot.tick(currentTick);
+			for (IClockListener listener : listeners) {
+				if (currentTick - listener.getLastTick() >= listener.getTimestep()) {
+					listener.tick(currentTick);
 				}
 			}
 		}
