@@ -9,16 +9,18 @@ import java.util.List;
  */
 
 public class SimulationClock implements IClock {
-	private List<IClockListener> listeners;
-	private long startTime;
-	private long endTime;
-	private long clockTimestep;
+	private final List<IClockListener> listeners;
+	private final long startTime;
+	private final long endTime;
+	private final long clockTimestep;
+	private final long interpolationTime;
 	
-	public SimulationClock(long clockTimestep, long startTime, long endTime) {
+	public SimulationClock(long clockTimestep, long startTime, long endTime, long interpolationTime) {
 		this.listeners = new ArrayList<IClockListener>();
 		this.clockTimestep = clockTimestep;
-		this.startTime = startTime;
-		this.endTime = endTime;
+		this.startTime = startTime - interpolationTime; // Delay the network's time
+		this.endTime = endTime - interpolationTime;
+		this.interpolationTime = interpolationTime;
 	}
 	
 	@Override

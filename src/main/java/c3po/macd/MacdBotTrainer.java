@@ -68,6 +68,8 @@ public class MacdBotTrainer {
 	private final static long clockTimestep = 10000;
 	private final static long botStepTime = 60000; // Because right now we're keeping it constant, and data sampling rate is ~1 minute
 	
+	private final static long interpolationTime = 120000;
+	
 	// For a single run of random bots
 	
 //	private final static int numEpochs = 1;
@@ -102,13 +104,13 @@ public class MacdBotTrainer {
 		
 		// Create a ticker
 		
-		final BitstampTickerSource tickerNode = new BitstampTickerCsvSource(csvPath);
+		final BitstampTickerSource tickerNode = new BitstampTickerCsvSource(interpolationTime, csvPath);
 		
 		tickerNode.open();
 		
 		// Create a clock
 		
-		IClock botClock = new SimulationClock(clockTimestep, simulationStartTime, simulationEndTime);
+		IClock botClock = new SimulationClock(clockTimestep, simulationStartTime, simulationEndTime, interpolationTime);
 		
 		final ITradeFloor tradeFloor =  new BitstampSimulationTradeFloor(
 				tickerNode.getOutputLast(),

@@ -54,7 +54,7 @@ public class Sample {
 		return "Signal [timestamp=" + timestamp + ", value=" + value + "]";
 	}
 	
-	public static Sample copy(Sample signal) {
-		return new Sample(signal.timestamp, signal.value);
+	public static Sample copy(Sample sample) {
+		return new Sample(sample.timestamp, sample.value);
 	}
 }

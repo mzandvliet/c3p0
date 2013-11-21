@@ -7,7 +7,7 @@ package c3po;
  */
 public class OutputSignal implements ISignal {
 	private INode ownerNode;
-	private Sample latestSample;
+	private Sample latestSample = Sample.none;
 	
 	public OutputSignal(INode node) {
 		this.ownerNode = node;

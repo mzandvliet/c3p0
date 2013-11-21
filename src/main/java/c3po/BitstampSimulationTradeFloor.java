@@ -62,12 +62,11 @@ public class BitstampSimulationTradeFloor implements ITradeFloor {
 		Sample currentAsk = askSignal.peek();
 				
 		// The amount of Btc we are going to get if we buy for volume USD
-		double boughtBtc = action.volume * ((double) 1-tradeFee);
+		double boughtBtc = action.volume * (1.0d-tradeFee);
 		double soldUsd = action.volume * currentAsk.value;
 		
 		// We assume the trade is fulfilled instantly, for the price of the ask
 		wallet.transact(action.timestamp, -soldUsd, boughtBtc);
-		
 		
 		notify(action);
 		
@@ -80,7 +79,7 @@ public class BitstampSimulationTradeFloor implements ITradeFloor {
 		Sample currentBid = bidSignal.peek();
 		
 		// We assume the trade is fulfilled instantly, for the price of the ask
-		double boughtUsd = currentBid.value * (action.volume * (1-tradeFee)); // volume in bitcoins, yo
+		double boughtUsd = currentBid.value * (action.volume * (1.0d-tradeFee)); // volume in bitcoins
 		double soldBtc = action.volume;
 		
 		wallet.transact(action.timestamp, boughtUsd, -soldBtc);

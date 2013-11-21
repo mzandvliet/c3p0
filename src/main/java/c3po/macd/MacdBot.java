@@ -63,7 +63,8 @@ public class MacdBot extends AbstractTickable implements IBot {
 	
 	private final static String csvPath = "resources/bitstamp_ticker_till_20131119.csv";
 	private final static long simulationStartTime = 1384079023000l;
-	private final static long simulationEndTime = 1384869769000l; 
+	private final static long simulationEndTime = 1384869769000l;
+	private final static long interpolationTime = 120000; // Delay data by two minutes for interpolation
 	
 	private final static long clockTimestep = 1000;
 	private static final long botTimestep = 1000;
@@ -79,7 +80,7 @@ public class MacdBot extends AbstractTickable implements IBot {
 		
 		//final ISignalSource tickerSource = new BitstampTickerJsonSource(jsonUrl);
 		//final BitstampTickerDbSource dbTickerSource = new BitstampTickerDbSource(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
-		final BitstampTickerCsvSource tickerNode = new BitstampTickerCsvSource(csvPath);
+		final BitstampTickerCsvSource tickerNode = new BitstampTickerCsvSource(interpolationTime, csvPath);
 			
 		final IWallet wallet = new Wallet(walletDollarStart, walletBtcStart);
 		
@@ -112,7 +113,7 @@ public class MacdBot extends AbstractTickable implements IBot {
 		
 		// Create a clock
 		
-		IClock botClock = new SimulationClock(clockTimestep, simulationStartTime, simulationEndTime);
+		IClock botClock = new SimulationClock(clockTimestep, simulationStartTime, simulationEndTime, interpolationTime);
 		botClock.addListener(bot);
 		
 		// Run the program

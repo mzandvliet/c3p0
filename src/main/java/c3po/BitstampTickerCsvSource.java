@@ -6,22 +6,26 @@ import java.io.IOException;
 
 import au.com.bytecode.opencsv.CSVReader;
 
+/* Todo:
+ * - Move interpolation to base class
+ * - Implement server timeout strategy (extrapolation for a little while, then crisis mode)
+ * - Implement high frequency polling to avoid server update misses
+ */
 public class BitstampTickerCsvSource extends BitstampTickerSource {
 	private final String path;
 	private CSVReader reader;
 	private boolean isEmpty = false;
 	
-	CircularArrayList<Sample[]> interpolationBuffer;
+	CircularArrayList<ServerSampleEntry> buffer;
 	
-	private final long updateRate = 60000; // The frequency at which new data is polled
-	private final long interpolationTime = 120000; // Delay data by two minutes for interpolation
+	private final long updateRate = 60000; // The frequency at which new data is polled, (todo: fix polling misses)
 	
-	public BitstampTickerCsvSource(String path) {
-		super();
+	public BitstampTickerCsvSource(long interpolationTime, String path) {
+		super(interpolationTime);
 		this.path = path;
 		
 		int bufferLength = (int)(interpolationTime / updateRate + 1);
-		interpolationBuffer = new CircularArrayList<Sample[]>(bufferLength);
+		buffer = new CircularArrayList<ServerSampleEntry>(bufferLength);
 	}
 	
 	public void open() {
@@ -40,21 +44,14 @@ public class BitstampTickerCsvSource extends BitstampTickerSource {
 		}
 	}
 	
-	/* Todo
-	 * - write csv specific interpolation
-	 * - switch entry storate to Sample[]
-	 * - Promote interpolation logic to baseclass
-	 * - Subclasses just implement poll-and-transform-to-sample[]
-	 */
-	
 	@Override
-	public void onNewTick(long tick) {
+	public void onNewTick(long clientTimestamp) {
 	    try {
 	    	if (!isPrewarmed)
-	    		prewarm(tick);
+	    		prewarm(clientTimestamp);
 	    	
-	    	readToCurrent(tick);
-	    	updateOutputs(tick);
+	    	readToCurrent(clientTimestamp);
+	    	updateOutputs(clientTimestamp);
 	    	
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -63,74 +60,107 @@ public class BitstampTickerCsvSource extends BitstampTickerSource {
 
 	private boolean isPrewarmed = false;
 	
-	private void prewarm(long tick) throws IOException {
+	private void prewarm(long clientTimestamp) throws IOException {
 		if (isPrewarmed)
 			return;
 		
-		// Read until we've filled the buffer with enough samples for our interpolation window
-		Sample[] entry = parseCsv(reader.readNext());
-		interpolationBuffer.add(entry);
-		while (entry[0].timestamp < tick + interpolationTime) {
+		// Read until we've filled the buffer with enough samples from the simulated server for our interpolation window
+		
+		long serverTimestamp = clientTimestamp + interpolationTime;
+		
+		ServerSampleEntry entry = parseCsv(reader.readNext());
+		buffer.add(entry);
+		while (entry.timestamp <= serverTimestamp) {
 			entry = parseCsv(reader.readNext());
-			interpolationBuffer.add(entry);
+			buffer.add(entry);
 		}
 		
 		isPrewarmed = true;
 	}
 	
-	private void readToCurrent(long tick) throws IOException {
-		boolean done = false;
-    	while(!done) {
-    		Sample[] newest = interpolationBuffer.peek();
+	private void readToCurrent(long clientTimestamp) throws IOException {
+		
+		// Read to the most up-to-date server entry we can get
+		
+		long serverTimestamp = clientTimestamp + interpolationTime;
+		
+		boolean upToDate = false;
+    	while(!upToDate) {
+    		ServerSampleEntry newest = buffer.peek();
     		
-    		if (newest[0].timestamp < tick + interpolationTime) {
-	    		newest = readNewEntry();
+    		if (newest.timestamp < serverTimestamp) {
+	    		newest = tryGetNewEntry();
 	    		
-	    		if (newest == null)
-	    			done = true;
+	    		if (newest == null) // Todo: This means the simulation is over, really
+	    			upToDate = true;
 	    		else
-	    			interpolationBuffer.add(newest);
+	    			buffer.add(newest);
     		}
     		else {
-    			done = true;
+    			upToDate = true;
     		}
     	}
 	}
 	
-	private Sample[] readNewEntry() {
-		String[] newest = null;
+	private ServerSampleEntry tryGetNewEntry() {
+		String[] newestData = null;
+		
 		try {
-			newest = reader.readNext();
+			newestData = reader.readNext();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return newest != null ? parseCsv(newest) : null;
+		return newestData != null ? parseCsv(newestData) : null;
 	}
 	
-	private Sample[] parseCsv(String[] data) {
-		long timestamp = Long.parseLong(data[0]) * 1000;
-		Sample[] entry = new Sample[data.length-1];
+	private ServerSampleEntry parseCsv(String[] data) {
+		long serverTimestamp = Long.parseLong(data[0]) * 1000;
 		
-		for (int i = 0; i < entry.length; i++) {
-			entry[i] = new Sample(timestamp, Double.parseDouble(data[i+1]));
+		ServerSampleEntry entry = new ServerSampleEntry(serverTimestamp, data.length-1);
+		
+		for (int i = 0; i < entry.size(); i++) {
+			entry.set(i, new Sample(serverTimestamp, Double.parseDouble(data[i+1])));
 		}
 		
 		return entry;
 	}
 	
-	
-	private void updateOutputs(long tick) {
-		long delayedTick = tick - interpolationTime;
+	private void updateOutputs(long clientTimestamp) {
 		
-		for (int i = 0; i < interpolationBuffer.size(); i++) {
-			Sample[] oldEntry = interpolationBuffer.get(i);
+		/*
+		 *  If clientTime is older than most recent server entry (which happens at
+		 *   startup), just return the oldest possible value. This results in a
+		 *   constant signal until server start time is reached.
+		 */
+		if (clientTimestamp <= buffer.get(0).timestamp) {
+			ServerSampleEntry oldEntry = buffer.get(0);
 			
-			if (oldEntry[0].timestamp >= delayedTick) {
-				Sample[] newEntry = interpolationBuffer.get(i+1);
+			for (int j = 0; j < signals.length; j++) {
+				Sample sample = oldEntry.get(j);
+				signals[j].setSample(sample);
+			}
+		}
+		
+		/*
+		 * Todo:
+		 * 
+		 * if client time is newer than server time (in case of network error or something) we
+		 * should do error handling. Either extrapolate and hope you regain connection or go
+		 *  into crisis mode.
+		 */
+		
+		/*
+		 *  If client time falls within the buffered entries, interpolate the result
+		 */
+		for (int i = 0; i < buffer.size(); i++) {
+			ServerSampleEntry oldEntry = buffer.get(i);
+			
+			if (clientTimestamp > oldEntry.timestamp) {
+				ServerSampleEntry newEntry = buffer.get(i+1);
 				
 				for (int j = 0; j < signals.length; j++) {
-					Sample sample = Indicators.lerp(oldEntry[j], newEntry[j], delayedTick);
+					Sample sample = Indicators.lerp(oldEntry.get(j), newEntry.get(j), clientTimestamp);
 					signals[j].setSample(sample);
 				}
 				
@@ -148,5 +178,27 @@ public class BitstampTickerCsvSource extends BitstampTickerSource {
 	 */
 	public boolean isEmpty() {
 		return isEmpty;
+	}
+	
+	public class ServerSampleEntry {
+		public final long timestamp;
+		public final Sample[] samples;
+		
+		public ServerSampleEntry(long timestamp, int length) {
+			this.timestamp = timestamp;
+			this.samples = new Sample[length];
+		}
+		
+		public int size() {
+			return samples.length;
+		}
+		
+		public Sample get(int i) {
+			return samples[i];
+		}
+		
+		public void set(int i, Sample sample) {
+			samples[i] = sample;
+		}
 	}
 }

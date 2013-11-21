@@ -4,8 +4,11 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 	protected final int numSignals = 6;
 	protected OutputSignal[] signals;
 	protected boolean isEmpty = false;
+	protected final long interpolationTime;
 	
-	public BitstampTickerSource() {
+	public BitstampTickerSource(long interpolationTime) {
+		this.interpolationTime = interpolationTime;
+		
 		this.signals = new OutputSignal[numSignals];
 		for (int i = 0; i < numSignals; i++) {
 			this.signals[i] = new OutputSignal(this);
