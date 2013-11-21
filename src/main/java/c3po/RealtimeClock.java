@@ -14,6 +14,7 @@ public class RealtimeClock implements IClock, Runnable {
 	private List<IClockListener> listeners;
 	private long timeStep; 
 	private long preloadTime;
+	private long interpolationTime;
 
 	private boolean stopIt = false;
 
@@ -25,14 +26,15 @@ public class RealtimeClock implements IClock, Runnable {
 	 * @param timeStep This should be at least as small as your fastest bot's desired timeStep
 	 * @param preloadTime The amount of milliseconds you want to preload for filling buffers
 	 */
-	public RealtimeClock(long timeStep, long preloadTime) {
+	public RealtimeClock(long timeStep, long preloadTime, long interpolationTime) {
 		this.listeners = new ArrayList<IClockListener>();
 		this.timeStep = timeStep;
 		this.preloadTime = preloadTime;
+		this.interpolationTime = interpolationTime;
 	}
 	
-	public RealtimeClock(long timeStep, long preloadTime, long maxTicks) {
-		this(timeStep, preloadTime);
+	public RealtimeClock(long timeStep, long preloadTime, long maxTicks, long interpolationTime) {
+		this(timeStep, preloadTime, interpolationTime);
 		this.maxTicks = maxTicks;
 	}
 	
@@ -52,8 +54,9 @@ public class RealtimeClock implements IClock, Runnable {
 		// Todo: Whelp! How do we define our stop condition (user), and how do we check for it?
 		
 		// First run the learning period
-		long currentTick = new Date().getTime() - preloadTime;
+		long currentTick = new Date().getTime() - preloadTime - interpolationTime;
 		LOGGER.debug("Tick: " + currentTick);
+		
 		while(currentTick < new Date().getTime()) {
 			for (IClockListener bot : listeners) {
 				if (bot.getLastTick() == 0 || currentTick - bot.getLastTick() >= bot.getTimestep()) {
@@ -70,7 +73,8 @@ public class RealtimeClock implements IClock, Runnable {
 		// And now... run forever!
 		long tickIndex = 0;
 		while (stopIt == false && (maxTicks == 0 || maxTicks > tickIndex)) {
-			currentTick = new Date().getTime();
+			currentTick = new Date().getTime() - interpolationTime;
+			
 			for (IClockListener updatable : listeners) {
 				if (updatable.getLastTick() == 0 || currentTick - updatable.getLastTick() >= updatable.getTimestep()) {
 					updatable.tick(currentTick);

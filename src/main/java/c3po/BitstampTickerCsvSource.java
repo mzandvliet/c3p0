@@ -46,7 +46,7 @@ public class BitstampTickerCsvSource extends BitstampTickerSource {
 
 	private void readToCurrent(long clientTimestamp) throws IOException {
 		
-		// Read to the most up-to-date server entry we can get
+		// Read from the server data up to the end of the interpolation time
 		
 		long serverTimestamp = clientTimestamp + interpolationTime;
 		

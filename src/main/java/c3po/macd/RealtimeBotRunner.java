@@ -22,13 +22,15 @@ public class RealtimeBotRunner {
 	private final static long clockTimestep = 1000;
 	private final static long botTimestep = 1000;
 	
+	private final static long interpolationTime = 120000;
+	
 	private static final double walletDollarStart = 1000.0;
 	private static final double walletBtcStart = 0.0;
 
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		// Set up global signal tree
 		
-		final BitstampTickerSource tickerNode = new BitstampTickerDbSource(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+		final BitstampTickerSource tickerNode = new BitstampTickerDbSource(interpolationTime, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
 		
 		final IWallet wallet = new Wallet(walletDollarStart, walletBtcStart);
 		
@@ -55,7 +57,7 @@ public class RealtimeBotRunner {
 		
 		// Create a clock
 		
-		IClock botClock = new RealtimeClock(clockTimestep, 200000l);
+		IClock botClock = new RealtimeClock(clockTimestep, 200000l, interpolationTime);
 		botClock.addListener(bot);
 		
 		// Run the program

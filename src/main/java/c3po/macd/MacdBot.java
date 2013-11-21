@@ -59,9 +59,9 @@ public class MacdBot extends AbstractTickable implements IBot {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdBot.class);
 	
-	private final static String jsonUrl = "http://www.bitstamp.net/api/ticker/";
+	//private final static String jsonUrl = "http://www.bitstamp.net/api/ticker/";
 	
-	private final static String csvPath = "resources/bitstamp_ticker_till_20131119.csv";
+	//private final static String csvPath = "resources/bitstamp_ticker_till_20131119.csv";
 	private final static long simulationStartTime = 1384079023000l;
 	private final static long simulationEndTime = 1384869769000l;
 	private final static long interpolationTime = 120000; // Delay data by two minutes for interpolation
@@ -78,9 +78,9 @@ public class MacdBot extends AbstractTickable implements IBot {
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		// Set up global signal tree
 		
-		//final ISignalSource tickerSource = new BitstampTickerJsonSource(jsonUrl);
-		//final BitstampTickerDbSource dbTickerSource = new BitstampTickerDbSource(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
-		final BitstampTickerCsvSource tickerNode = new BitstampTickerCsvSource(interpolationTime, csvPath);
+		//final ISignalSource tickerNode = new BitstampTickerJsonSource(jsonUrl);
+		final BitstampTickerDbSource tickerNode = new BitstampTickerDbSource(interpolationTime, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+		//final BitstampTickerCsvSource tickerNode = new BitstampTickerCsvSource(interpolationTime, csvPath);
 			
 		final IWallet wallet = new Wallet(walletDollarStart, walletBtcStart);
 		

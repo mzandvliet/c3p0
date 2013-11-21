@@ -10,9 +10,11 @@ import org.junit.Test;
 
 public class BitstampTickerDbSourceTest {
 
+	private final static long interpolationTime = 120000;
+	
 	@Test
 	public void testRealtime() throws ClassNotFoundException, SQLException, InterruptedException {
-		BitstampTickerDbSource tickerNode = new BitstampTickerDbSource(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+		BitstampTickerDbSource tickerNode = new BitstampTickerDbSource(interpolationTime, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
 		
 		
 		tickerNode.open();

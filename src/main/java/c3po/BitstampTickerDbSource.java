@@ -1,5 +1,6 @@
 package c3po;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.sql.*;
 import java.util.ArrayList;
@@ -31,20 +32,17 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 	}
 	
 	@Override
-	public int getNumOutputs() {
-		return signals.length;
+	protected void pollServer(long clientTimestamp) {
+    	readToCurrent(clientTimestamp);	    	
 	}
 	
-	@Override
-	public ISignal getOutput(int i) {
-		return signals[i];
-	}
-	
-	public void onNewTick(long tick) {
+	private void readToCurrent(long clientTimestamp) {
 		try {
+			long serverTimestamp = clientTimestamp + interpolationTime;
+			
 			// The first time, fill the buffer
 			if(buffer == null)
-			  fetchData(tick); 
+				fetchData(serverTimestamp); 
 			
 			// Check if there is data in the buffer that is older than the timestamp, if so, return the prev row
 			BitstampTickerRow prev = buffer.get(0);
@@ -53,7 +51,7 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 				current = buffer.get(index);
 				
 				// If the next is too new, use the prev
-				if(current.timestamp > tick) {
+				if(current.timestamp > serverTimestamp) {
 					useRow(prev);
 					return;
 				}
@@ -64,13 +62,13 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 			
 			// If there is no data older, do a new query
    	        Thread.sleep(1000);
-			fetchData(tick); 
+			fetchData(serverTimestamp); 
 			
 			if(buffer.size() == 1) {
 				useRow(buffer.get(0));
 				return;
 			} else {			
-			    onNewTick(tick);
+				readToCurrent(serverTimestamp);
 			}
 			return;
 		} catch (SQLException e) {
@@ -82,12 +80,12 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 	
 	private void fetchData(long timestamp) throws SQLException {
 		
-		  long fetchTime = (timestamp / 1000) - 60;
+		  long timestampSecs = (timestamp / 1000) - 60;
 		  
 	      // Statements allow to issue SQL queries to the database
 	      statement = connect.createStatement();
 	      // Result set get the result of the SQL query
-	      String query = "select * from bitstamp_ticker WHERE `timestamp` >= " + fetchTime  + " ORDER BY timestamp ASC";
+	      String query = "select * from bitstamp_ticker WHERE `timestamp` >= " + timestampSecs  + " ORDER BY timestamp ASC";
 	      ResultSet resultSet = statement.executeQuery(query);
 	      LOGGER.debug(query);
 	      
