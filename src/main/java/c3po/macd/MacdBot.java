@@ -66,8 +66,8 @@ public class MacdBot extends AbstractTickable implements IBot {
 	private final static long simulationEndTime = 1385104422000l; 
 	private final static long interpolationTime = 120000; // Delay data by two minutes for interpolation
 	
-	private final static long clockTimestep = 1000;
-	private static final long botTimestep = 1000;
+	private final static long clockTimestep = 60000;
+	private static final long botTimestep = 60000;
 	private static final double walletDollarStart = 1000.0;
 	private static final double walletBtcStart = 0.0;
 	
@@ -79,8 +79,8 @@ public class MacdBot extends AbstractTickable implements IBot {
 		// Set up global signal tree
 		
 		//final ISignalSource tickerNode = new BitstampTickerJsonSource(jsonUrl);
-		final BitstampTickerDbSource tickerNode = new BitstampTickerDbSource(interpolationTime, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
-		//final BitstampTickerCsvSource tickerNode = new BitstampTickerCsvSource(interpolationTime, csvPath);
+		//final BitstampTickerDbSource tickerNode = new BitstampTickerDbSource(interpolationTime, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+		final BitstampTickerCsvSource tickerNode = new BitstampTickerCsvSource(interpolationTime, csvPath);
 			
 		final IWallet wallet = new Wallet(walletDollarStart, walletBtcStart);
 		
@@ -95,12 +95,18 @@ public class MacdBot extends AbstractTickable implements IBot {
 		// todo: this is still in number-of-ticks, which means it depends on bot's timeStep, should change to units of time
 		
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(13,40,90);
-		MacdTraderConfig traderConfig = new MacdTraderConfig(0.0277, -0.4914, 0.9952, 0.211, 80989000, 58765000);
+		MacdTraderConfig traderConfig = new MacdTraderConfig(0.2, -0.2, 0.33, 0.5, 500000, 500000);
 		MacdBotConfig config = new MacdBotConfig(botTimestep, analysisConfig, traderConfig);
+		
+		// Create the charter
+		
+		GraphingNode macdDiffGraph = new GraphingNode(tickerNode.getOutputLast(), "Ticker");
+		macdDiffGraph.pack();
+		macdDiffGraph.setVisible(true);
 		
 		// Create bot
 		
-		IBot bot = new MacdBot(config, tickerNode.getOutputLast(), wallet, tradeFloor);
+		MacdBot bot = new MacdBot(config, macdDiffGraph.getOutput(0), wallet, tradeFloor);
 		
 		// Create loggers
 		
@@ -180,6 +186,14 @@ public class MacdBot extends AbstractTickable implements IBot {
 	@Override
 	public ITradeFloor getTradeFloor() {
 		return tradeFloor;
+	}
+	
+	public MacdAnalysisNode getAnalysisNode() {
+		return analysisNode;
+	}
+	
+	public MacdTraderNode getTraderNode() {
+		return traderNode;
 	}
 	
 	public MacdBotConfig getConfig() {

@@ -37,13 +37,13 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 	}
 	
 	private void readToCurrent(long clientTimestamp) {
-			long serverTimestamp = clientTimestamp + interpolationTime;
-    		try {
-				tryGetNewEntry(serverTimestamp);
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		long serverTimestamp = clientTimestamp + interpolationTime;
+		try {
+			tryGetNewEntry(serverTimestamp);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	private void tryGetNewEntry(long serverTimeMax) throws SQLException {

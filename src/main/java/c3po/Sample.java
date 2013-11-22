@@ -19,7 +19,7 @@ public class Sample {
 	}
 	
 	public Date getDate() {
-		return new Date((long)timestamp*1000);
+		return new Date(timestamp);
 	}
 	
 	@Override

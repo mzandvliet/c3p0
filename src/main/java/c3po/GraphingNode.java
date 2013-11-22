@@ -31,25 +31,24 @@ import org.jfree.ui.*;
  */
 public class GraphingNode extends ApplicationFrame implements INode {
 	private static final long serialVersionUID = 8607592670062359269L;
-	private ISignal input;
-	private int kernelSize;
-	private CircularArrayList<Sample> buffer;
-	private OutputSignal output;
+	private final ISignal input;
+	private final OutputSignal output;
+	private final String title;
+
+	private final TimeSeries signalTimeSeries;
+	private final XYDataset dataset;
+	
 	private long lastTick = -1;
-	private String title;
 	
-	// Used timeseries
-	private TimeSeries s1;
-	
-	public GraphingNode(ISignal input, String title, int kernelSize) {
+	public GraphingNode(ISignal input, String title) {
 		super(title);
 		this.title = title;
 		this.input = input;
-		this.kernelSize = kernelSize;
-		this.buffer = new CircularArrayList<Sample>(kernelSize * 2);
 		this.output = new OutputSignal(this);
 		
-		ChartPanel chartPanel = (ChartPanel) createDemoPanel();
+		signalTimeSeries = new TimeSeries("Ticker");
+		dataset = createDatasetFromSeries(signalTimeSeries);
+		ChartPanel chartPanel = (ChartPanel) createDemoPanel(dataset);
 		chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
 		setContentPane(chartPanel);
 	}
@@ -68,17 +67,32 @@ public class GraphingNode extends ApplicationFrame implements INode {
 	public void tick(long tick) {
 		if (tick > lastTick) {
 			Sample newest = input.getSample(tick);
-			buffer.add(newest);
-
-			// Updates the dataset
-			System.out.println(newest.getDate());
-			s1.addOrUpdate(new Second(newest.getDate()), newest.value);
+			
+			signalTimeSeries.addOrUpdate(new Second(newest.getDate()), newest.value);
 			
 			output.setSample(newest);
 		}
 		
 		lastTick = tick;
 	}
+	
+	@Override
+	public long getLastTick() {
+		return lastTick;
+	}
+	
+	/**
+     * Creates a panel for the demo (used by SuperDemo.java).
+     *
+     * @return A panel.
+     */
+    public JPanel createDemoPanel(final XYDataset dataset) {
+        JFreeChart chart = createChart(dataset);
+        ChartPanel panel = new ChartPanel(chart);
+        panel.setFillZoomRectangle(true);
+        panel.setMouseWheelEnabled(true);
+        return panel;
+    }
 
     /**
      * Creates a chart.
@@ -87,7 +101,7 @@ public class GraphingNode extends ApplicationFrame implements INode {
      *
      * @return A chart.
      */
-    private JFreeChart createChart(XYDataset dataset) {
+    private JFreeChart createChart(final XYDataset dataset) {
 
         JFreeChart chart = ChartFactory.createTimeSeriesChart(
             title,  // title
@@ -131,30 +145,9 @@ public class GraphingNode extends ApplicationFrame implements INode {
      *
      * @return The dataset.
      */
-    private XYDataset createDataset() {
-        s1 = new TimeSeries("Ticker");
-
+    private XYDataset createDatasetFromSeries(TimeSeries series) {
         TimeSeriesCollection dataset = new TimeSeriesCollection();
-        dataset.addSeries(s1);
-
+        dataset.addSeries(series);
         return dataset;
     }
-
-    /**
-     * Creates a panel for the demo (used by SuperDemo.java).
-     *
-     * @return A panel.
-     */
-    public JPanel createDemoPanel() {
-        JFreeChart chart = createChart(createDataset());
-        ChartPanel panel = new ChartPanel(chart);
-        panel.setFillZoomRectangle(true);
-        panel.setMouseWheelEnabled(true);
-        return panel;
-    }
-
-	@Override
-	public long getLastTick() {
-		return lastTick;
-	}
 }
