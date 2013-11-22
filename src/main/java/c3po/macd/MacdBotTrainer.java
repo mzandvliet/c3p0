@@ -23,6 +23,7 @@ import c3po.ITradeFloor;
 import c3po.IWallet;
 import c3po.Indicators;
 import c3po.SimulationClock;
+import c3po.Time;
 import c3po.Wallet;
 
 /**
@@ -234,9 +235,9 @@ public class MacdBotTrainer {
 	
 	private MacdBotConfig createRandomConfig() {
 		
-		int fast = getRandomSignalperiod(1, 1000);
-		int slow = getRandomSignalperiod(1, 1000);
-		int signal = getRandomSignalperiod(1, 1000);
+		long fast = getRandomSignalperiod(1 * Time.MINUTES, 1000 * Time.MINUTES);
+		long slow = getRandomSignalperiod(1 * Time.MINUTES, 1000 * Time.MINUTES);
+		long signal = getRandomSignalperiod(1 * Time.MINUTES, 1000 * Time.MINUTES);
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
 			fast,
 			slow,
@@ -350,7 +351,7 @@ public class MacdBotTrainer {
 		
 		MacdAnalysisConfig validAnalysisConfig = new MacdAnalysisConfig(
 				config.analysisConfig.fastPeriod  > config.analysisConfig.slowPeriod ?
-						getRandomSignalperiod(1, config.analysisConfig.slowPeriod) :
+						getRandomSignalperiod(1 * Time.MINUTES, config.analysisConfig.slowPeriod) :
 						config.analysisConfig.fastPeriod,
 				config.analysisConfig.slowPeriod,
 				config.analysisConfig.signalPeriod
@@ -370,8 +371,8 @@ public class MacdBotTrainer {
 		return Math.random() < chance;
 	}
 	
-	private int getRandomSignalperiod(int min, int max) {
-		return min + (int)(Math.random() * (double)(max-min));
+	private long getRandomSignalperiod(long min, long max) {
+		return min + (long)(Math.random() * (double)(max-min));
 	}
 	
 	private long getRandomBackoffDuration(long min, long max) {
