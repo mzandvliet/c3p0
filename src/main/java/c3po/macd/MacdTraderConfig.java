@@ -1,5 +1,7 @@
 package c3po.macd;
 
+import c3po.Time;
+
 public class MacdTraderConfig {
 	public final double minBuyDiffThreshold;
 	public final double minSellDiffThreshold;
@@ -38,13 +40,13 @@ public class MacdTraderConfig {
 	}
 
 	public String toString() {
-		return String.format("[TraderConfig - minBuyThreshold: %s, minSellThreshold: %s, usdToBtcTradeAmount: %s, btcToUsdTradeAmount: %s, sellBackoffTimer: %ss, buyBackoffTimer: %ss]", 
-				(double) Math.round(minBuyDiffThreshold * 10000) / 10000,
-				(double) Math.round(minSellDiffThreshold * 10000) / 10000,
-				(double) Math.round(usdToBtcTradeAmount * 10000) / 10000, 
-				(double) Math.round(btcToUsdTradeAmount * 10000) / 10000,
-				sellBackoffTimer / 1000, 
-				buyBackoffTimer / 1000);
+		return String.format("[TraderConfig - minBuyThreshold: %,.4f, minSellThreshold: %,.4f, usdToBtcTradeAmount: %,.4f, btcToUsdTradeAmount: %,.4f, sellBackoffTimer: %d min, buyBackoffTimer: %d min]", 
+				minBuyDiffThreshold,
+				minSellDiffThreshold,
+				usdToBtcTradeAmount, 
+				btcToUsdTradeAmount,
+				(long)(sellBackoffTimer / Time.MINUTES),
+				(long)(buyBackoffTimer / Time.MINUTES));
 	}
 
 	@Override

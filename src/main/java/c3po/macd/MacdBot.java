@@ -95,11 +95,8 @@ public class MacdBot extends AbstractTickable implements IBot {
 		
 		// todo: this is still in number-of-ticks, which means it depends on bot's timeStep, should change to units of time
 		
-		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
-				(int) (24 * Time.MINUTES),
-				(int) (52 * Time.MINUTES),
-				(int) (16 * Time.MINUTES));
-		MacdTraderConfig traderConfig = new MacdTraderConfig(0, 0, 0.5, 0.0299, 10 * Time.MINUTES, 10 * Time.MINUTES);
+		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(33 * Time.MINUTES, 44 * Time.MINUTES, 367 * Time.MINUTES);
+		MacdTraderConfig traderConfig = new MacdTraderConfig(0.1208, -0.1536, 0.868, 0.0127, 60 * Time.MINUTES, 60 * Time.MINUTES);
 		MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
 		
 		// Create bot
@@ -111,26 +108,27 @@ public class MacdBot extends AbstractTickable implements IBot {
 		DebugTradeLogger tradeLogger = new DebugTradeLogger();
 		bot.addTradeListener(tradeLogger);
 		
-//		DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
-//		dbTradeLogger.open();
-//		dbTradeLogger.startSession(simulationStartTime, walletDollarStart, walletBtcStart);
+		DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+		dbTradeLogger.open();
+		dbTradeLogger.startSession(simulationStartTime, walletDollarStart, walletBtcStart);
 		
 		// Create the grapher
 		
-		GraphingNode grapher = new GraphingNode(graphInterval, "MacdBot", 
-				tickerNode.getOutputHigh(),
-				bot.getAnalysisNode().getOutput(0),
-				bot.getAnalysisNode().getOutput(1)
-				);
-		grapher.pack();
-		grapher.setVisible(true);
-		bot.addTradeListener(grapher);
+//		GraphingNode grapher = new GraphingNode(graphInterval, "MacdBot", 
+//				tickerNode.getOutputHigh(),
+//				bot.getAnalysisNode().getOutput(0),
+//				bot.getAnalysisNode().getOutput(1)
+//				);
+//		grapher.pack();
+//		grapher.setVisible(true);
+//		bot.addTradeListener(grapher);
 		
 		// Create a clock
 		
 		IClock botClock = new SimulationClock(timestep, simulationStartTime, simulationEndTime, interpolationTime);
 		botClock.addListener(bot);
-		botClock.addListener(grapher);
+
+//		botClock.addListener(grapher);
 		
 		// Run the program
 		
@@ -140,7 +138,7 @@ public class MacdBot extends AbstractTickable implements IBot {
 		
 		tickerNode.close();
 		
-//		dbTradeLogger.close();
+		dbTradeLogger.close();
 		
 		// Log results
 		
