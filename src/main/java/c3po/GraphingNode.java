@@ -29,48 +29,53 @@ import org.jfree.ui.*;
  * extend it a couple times and configure it exactly how we want to display the data. 
  * I'd rather go with the second option
  */
-public class GraphingNode extends ApplicationFrame implements INode {
+public class GraphingNode extends ApplicationFrame implements IClockListener {
 	private static final long serialVersionUID = 8607592670062359269L;
-	private final ISignal input;
-	private final OutputSignal output;
+	
+	private final long timestep;
+	
 	private final String title;
+	
+	private final ISignal[] inputs;
 
-	private final TimeSeries signalTimeSeries;
+	private final TimeSeries[] signalTimeSeries;
+	
 	private final XYDataset dataset;
 	
 	private long lastTick = -1;
 	
-	public GraphingNode(ISignal input, String title) {
+	public GraphingNode(long timestep, String title, ISignal ... inputs) {
 		super(title);
-		this.title = title;
-		this.input = input;
-		this.output = new OutputSignal(this);
 		
-		signalTimeSeries = new TimeSeries("Ticker");
+		this.timestep = timestep;
+		this.title = title;
+		
+		this.inputs = inputs;
+		
+		signalTimeSeries = new TimeSeries[inputs.length];
+		for (int i = 0; i < inputs.length; i++) {
+			signalTimeSeries[i] = new TimeSeries("Signal_" + i);
+		}
+		
 		dataset = createDatasetFromSeries(signalTimeSeries);
+		
 		ChartPanel chartPanel = (ChartPanel) createDemoPanel(dataset);
 		chartPanel.setPreferredSize(new java.awt.Dimension(1600, 900));
 		setContentPane(chartPanel);
 	}
 
 	@Override
-	public int getNumOutputs() {
-		return 1;
+	public long getTimestep() {
+		return timestep;
 	}
-
-	@Override
-	public ISignal getOutput(int i) {
-		return output;
-	}
-
+	
 	@Override
 	public void tick(long tick) {
 		if (tick > lastTick) {
-			Sample newest = input.getSample(tick);
-			
-			signalTimeSeries.addOrUpdate(new Second(newest.getDate()), newest.value);
-			
-			output.setSample(newest);
+			for (int i = 0; i < inputs.length; i++) {
+				Sample newest = inputs[i].peek();
+				signalTimeSeries[i].addOrUpdate(new Second(newest.getDate()), newest.value);
+			}
 		}
 		
 		lastTick = tick;
@@ -145,9 +150,11 @@ public class GraphingNode extends ApplicationFrame implements INode {
      *
      * @return The dataset.
      */
-    private XYDataset createDatasetFromSeries(TimeSeries series) {
+    private XYDataset createDatasetFromSeries(TimeSeries[] series) {
         TimeSeriesCollection dataset = new TimeSeriesCollection();
-        dataset.addSeries(series);
+        for (TimeSeries timeSeries : series) {
+        	dataset.addSeries(timeSeries);
+        }
         return dataset;
     }
 }
