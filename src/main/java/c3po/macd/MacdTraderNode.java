@@ -109,7 +109,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	}
 
 	@Override
-	public void addListener(ITradeListener listener) {
+	public void addTradeListener(ITradeListener listener) {
 		listeners.add(listener);
 	}
 

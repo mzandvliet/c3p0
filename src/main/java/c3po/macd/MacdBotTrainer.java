@@ -215,7 +215,7 @@ public class MacdBotTrainer {
 		
 		for (MacdBot bot : population) {
 			DebugTradeLogger logger = new DebugTradeLogger();
-			bot.addListener(logger);
+			bot.addTradeListener(logger);
 			loggers.put(bot, logger);
 		}
 		

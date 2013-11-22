@@ -97,7 +97,7 @@ public class BitstampSimulationTradeFloor implements ITradeFloor {
 	}
 
 	@Override
-	public void addListener(ITradeListener listener) {
+	public void addTradeListener(ITradeListener listener) {
 		tradeListeners.add(listener);
 	}
 

@@ -76,7 +76,7 @@ public class RealtimeClockTest {
 			return null;
 		}
 		@Override
-		public void addListener(ITradeListener listener) {
+		public void addTradeListener(ITradeListener listener) {
 			// TODO Auto-generated method stub
 			
 		}

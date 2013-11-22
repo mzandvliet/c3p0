@@ -29,7 +29,7 @@ public class DbTradeLogger implements ITradeListener, IWalletTransactionListener
 		this.user = user;
 		this.pwd = pwd;
 		
-		bot.addListener(this);
+		bot.addTradeListener(this);
 		bot.getWallet().addListener(this);
 	}
 

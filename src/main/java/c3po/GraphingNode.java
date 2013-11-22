@@ -1,8 +1,6 @@
 package c3po;
 
 import java.awt.Color;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import javax.swing.JPanel;
 
@@ -13,6 +11,7 @@ import org.jfree.chart.renderer.xy.*;
 import org.jfree.data.time.*;
 import org.jfree.data.xy.*;
 import org.jfree.ui.*;
+import org.jfree.chart.annotations.XYTextAnnotation;
 
 /*
  * 
@@ -29,18 +28,16 @@ import org.jfree.ui.*;
  * extend it a couple times and configure it exactly how we want to display the data. 
  * I'd rather go with the second option
  */
-public class GraphingNode extends ApplicationFrame implements IClockListener {
+public class GraphingNode extends ApplicationFrame implements IClockListener, ITradeListener {
 	private static final long serialVersionUID = 8607592670062359269L;
 	
 	private final long timestep;
 	
 	private final String title;
-	
 	private final ISignal[] inputs;
-
 	private final TimeSeries[] signalTimeSeries;
-	
 	private final XYDataset dataset;
+	private final JFreeChart chart;
 	
 	private long lastTick = -1;
 	
@@ -59,7 +56,8 @@ public class GraphingNode extends ApplicationFrame implements IClockListener {
 		
 		dataset = createDatasetFromSeries(signalTimeSeries);
 		
-		ChartPanel chartPanel = (ChartPanel) createDemoPanel(dataset);
+		chart = createChart(dataset);
+		ChartPanel chartPanel = (ChartPanel) createPanel(chart);
 		chartPanel.setPreferredSize(new java.awt.Dimension(1600, 900));
 		setContentPane(chartPanel);
 	}
@@ -86,13 +84,20 @@ public class GraphingNode extends ApplicationFrame implements IClockListener {
 		return lastTick;
 	}
 	
+	@Override
+	public void onTrade(TradeAction action) {
+		XYTextAnnotation annotation = new XYTextAnnotation(action.action.toString(), 10000d, 500d);
+		XYPlot plot = (XYPlot) chart.getPlot();
+		plot.addAnnotation(annotation);
+	}
+
 	/**
-     * Creates a panel for the demo (used by SuperDemo.java).
+     * Creates a panel
      *
      * @return A panel.
      */
-    public JPanel createDemoPanel(final XYDataset dataset) {
-        JFreeChart chart = createChart(dataset);
+    public JPanel createPanel(JFreeChart chart) {
+        
         ChartPanel panel = new ChartPanel(chart);
         panel.setFillZoomRectangle(true);
         panel.setMouseWheelEnabled(true);

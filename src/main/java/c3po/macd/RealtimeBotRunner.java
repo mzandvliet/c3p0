@@ -41,7 +41,7 @@ public class RealtimeBotRunner {
 		);
 		
 		final DebugTradeLogger tradeLogger = new DebugTradeLogger();
-		tradeFloor.addListener(tradeLogger);
+		tradeFloor.addTradeListener(tradeLogger);
 		
 		// Create bot config
 		

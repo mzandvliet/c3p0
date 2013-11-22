@@ -107,7 +107,7 @@ public class MacdBot extends AbstractTickable implements IBot {
 		// Create loggers
 		
 		DebugTradeLogger tradeLogger = new DebugTradeLogger();
-		bot.addListener(tradeLogger);
+		bot.addTradeListener(tradeLogger);
 		
 //		DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
 //		dbTradeLogger.open();
@@ -115,13 +115,14 @@ public class MacdBot extends AbstractTickable implements IBot {
 		
 		// Create the charter
 		
-		GraphingNode grapher = new GraphingNode(graphInterval, "Macd", 
+		GraphingNode grapher = new GraphingNode(graphInterval, "MacdBot", 
 				tickerNode.getOutputHigh(),
 				bot.getAnalysisNode().getOutput(0),
 				bot.getAnalysisNode().getOutput(1)
 				);
 		grapher.pack();
 		grapher.setVisible(true);
+		bot.addTradeListener(grapher);
 		
 		// Create a clock
 		
@@ -237,8 +238,8 @@ public class MacdBot extends AbstractTickable implements IBot {
 	}
 
 	@Override
-	public void addListener(ITradeListener listener) {
-		traderNode.addListener(listener);
+	public void addTradeListener(ITradeListener listener) {
+		traderNode.addTradeListener(listener);
 	}
 
 	@Override
