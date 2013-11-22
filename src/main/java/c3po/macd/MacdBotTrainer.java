@@ -57,9 +57,9 @@ import c3po.Wallet;
 public class MacdBotTrainer {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdBotTrainer.class);
 	
-	private final static String csvPath = "resources/bitstamp_ticker_till_20131119.csv";
+	private final static String csvPath = "resources/bitstamp_ticker_till_20131122.csv";
 	private final static long simulationStartTime = 1384079023000l;
-	private final static long simulationEndTime = 1384869769000l; 
+	private final static long simulationEndTime = 1385104422000l; 
 	
 //	private final static String csvPath = "resources/bitstamp_ticker_till_20131117_pingpong.csv";
 //	private final static long simulationStartTime = 1384079023000l;
@@ -82,8 +82,8 @@ public class MacdBotTrainer {
 	private final static int numElites = 5;
 	private final static double mutationChance = 0.33d;
 	
-	private final static double walletStartDollars = 0.0;
-	private final static double walletStartBtcInUsd = 1000.0;
+	private final static double walletStartDollars = 500.0;
+	private final static double walletStartBtcInUsd = 500.0;
 	
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		MacdBotTrainer trainer = new MacdBotTrainer();
