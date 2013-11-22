@@ -11,8 +11,8 @@ public class BitstampTickerCsvSource extends BitstampTickerSource {
 	private CSVReader reader;
 	private boolean isEmpty = false;
 	
-	public BitstampTickerCsvSource(long interpolationTime, String path) {
-		super(interpolationTime);
+	public BitstampTickerCsvSource(long timestep, long interpolationTime, String path) {
+		super(timestep, interpolationTime);
 		this.path = path;
 	}
 	

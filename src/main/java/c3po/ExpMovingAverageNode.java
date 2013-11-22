@@ -8,7 +8,8 @@ public class ExpMovingAverageNode extends AbstractTickable implements INode {
 	private CircularArrayList<Sample> buffer;
 	private OutputSignal output;
 	
-	public ExpMovingAverageNode(ISignal input, int kernelSize) {
+	public ExpMovingAverageNode(long timestep, ISignal input, int kernelSize) {
+		super(timestep);
 		this.input = input;
 		this.kernelSize = kernelSize;
 		this.buffer = new CircularArrayList<Sample>(kernelSize * 2);

@@ -1,12 +1,12 @@
 package c3po.macd;
 
 public class MacdBotConfig {
-	public final long timeStep; // Does not warrant its own class yet
+	public final long timestep; // Does not warrant its own class yet
 	public final MacdAnalysisConfig analysisConfig;
 	public final MacdTraderConfig traderConfig;
 	
 	public MacdBotConfig(long timeStep, MacdAnalysisConfig analysisConfig, MacdTraderConfig traderConfig) {
-		this.timeStep = timeStep;
+		this.timestep = timeStep;
 		this.analysisConfig = analysisConfig;
 		this.traderConfig = traderConfig;
 	}
@@ -22,7 +22,7 @@ public class MacdBotConfig {
 		int result = 1;
 		result = prime * result
 				+ ((analysisConfig == null) ? 0 : analysisConfig.hashCode());
-		result = prime * result + (int) (timeStep ^ (timeStep >>> 32));
+		result = prime * result + (int) (timestep ^ (timestep >>> 32));
 		result = prime * result
 				+ ((traderConfig == null) ? 0 : traderConfig.hashCode());
 		return result;
@@ -42,7 +42,7 @@ public class MacdBotConfig {
 				return false;
 		} else if (!analysisConfig.equals(other.analysisConfig))
 			return false;
-		if (timeStep != other.timeStep)
+		if (timestep != other.timestep)
 			return false;
 		if (traderConfig == null) {
 			if (other.traderConfig != null)

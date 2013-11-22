@@ -34,7 +34,8 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	
 	private final List<ITradeListener> listeners;
 
-	public MacdTraderNode(ISignal macdDiff, IWallet wallet, ITradeFloor tradeFloor, MacdTraderConfig config, long startDelay) {
+	public MacdTraderNode(long timestep, ISignal macdDiff, IWallet wallet, ITradeFloor tradeFloor, MacdTraderConfig config, long startDelay) {
+		super(timestep);
 		this.macdDiff = macdDiff;
 		this.wallet = wallet;
 		this.tradeFloor = tradeFloor;

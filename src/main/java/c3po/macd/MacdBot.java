@@ -66,8 +66,7 @@ public class MacdBot extends AbstractTickable implements IBot {
 	private final static long simulationEndTime = 1385104422000l; 
 	private final static long interpolationTime = 120000; // Delay data by two minutes for interpolation
 	
-	private final static long clockTimestep = 10000;
-	private final static long botTimestep = 60000;
+	private final static long timestep = 60000;
 	private final static double walletDollarStart = 1000.0;
 	private final static double walletBtcStart = 0.0;
 	
@@ -82,7 +81,7 @@ public class MacdBot extends AbstractTickable implements IBot {
 		
 		//final ISignalSource tickerNode = new BitstampTickerJsonSource(jsonUrl);
 		//final BitstampTickerDbSource tickerNode = new BitstampTickerDbSource(interpolationTime, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
-		final BitstampTickerCsvSource tickerNode = new BitstampTickerCsvSource(interpolationTime, csvPath);
+		final BitstampTickerCsvSource tickerNode = new BitstampTickerCsvSource(timestep, interpolationTime, csvPath);
 			
 		final IWallet wallet = new Wallet(walletDollarStart, walletBtcStart);
 		
@@ -98,7 +97,7 @@ public class MacdBot extends AbstractTickable implements IBot {
 		
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(154,159,392);
 		MacdTraderConfig traderConfig = new MacdTraderConfig(0.1274, -0.3628, 0.9717, 0.0299, 76323000, 29541000);
-		MacdBotConfig config = new MacdBotConfig(botTimestep, analysisConfig, traderConfig);
+		MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
 		
 		// Create bot
 		
@@ -126,7 +125,7 @@ public class MacdBot extends AbstractTickable implements IBot {
 		
 		// Create a clock
 		
-		IClock botClock = new SimulationClock(clockTimestep, simulationStartTime, simulationEndTime, interpolationTime);
+		IClock botClock = new SimulationClock(timestep, simulationStartTime, simulationEndTime, interpolationTime);
 		botClock.addListener(bot);
 		botClock.addListener(grapher);
 		
@@ -166,14 +165,15 @@ public class MacdBot extends AbstractTickable implements IBot {
     //================================================================================
 	
 	public MacdBot(MacdBotConfig config, ISignal ticker, IWallet wallet, ITradeFloor tradeFloor) {
+		super(config.timestep);
 		this.config = config;
 		this.wallet = wallet;
 		this.tradeFloor = tradeFloor;
 		
 		// Define the signal tree		
 		
-		analysisNode = new MacdAnalysisNode(ticker, config.analysisConfig);
-		traderNode = new MacdTraderNode(analysisNode.getOutput(4), wallet, tradeFloor, config.traderConfig, config.analysisConfig.max());
+		analysisNode = new MacdAnalysisNode(timestep, ticker, config.analysisConfig);
+		traderNode = new MacdTraderNode(timestep, analysisNode.getOutput(4), wallet, tradeFloor, config.traderConfig, config.analysisConfig.max());
 	}
 
 	@Override
@@ -183,7 +183,7 @@ public class MacdBot extends AbstractTickable implements IBot {
 	
 	@Override
 	public long getTimestep() {
-		return config.timeStep;
+		return config.timestep;
 	}
 
 	@Override

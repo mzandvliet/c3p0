@@ -8,11 +8,13 @@ import java.util.*;
  * When buffer length reaches max, oldest value is automatically dropped.
  */
 public class SignalBuffer extends AbstractList<Sample> implements ISignalBuffer, RandomAccess {
-	protected ISignal source;
-	protected CircularArrayList<Sample> signals;
+	protected final ISignal source;
+	protected final CircularArrayList<Sample> signals;
+	protected final long timestep;
 	protected long lastTick = -1;
 	
-	public SignalBuffer(ISignal source, int length) {
+	public SignalBuffer(long timestep, ISignal source, int length) {
+		this.timestep = timestep;
 		this.source = source;
 		this.signals = new CircularArrayList<Sample>(length);
 	}
@@ -49,7 +51,7 @@ public class SignalBuffer extends AbstractList<Sample> implements ISignalBuffer,
 		
 		return Sample.copy(signals.get(index));
 	}
-
+	
 	// Todo: inject interpolation strategy
 	@Override
 	public Sample getInterpolatedSample(long tick, long timestamp) {
@@ -72,6 +74,11 @@ public class SignalBuffer extends AbstractList<Sample> implements ISignalBuffer,
 		return Sample.copy(signals.get(signals.size()-1));
 	}
 	
+	@Override
+	public long getTimestep() {
+		return timestep;
+	}
+
 	@Override
 	public long getLastTick() {
 		return lastTick;

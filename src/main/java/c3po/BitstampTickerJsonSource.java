@@ -8,8 +8,8 @@ import org.json.JSONObject;
 public class BitstampTickerJsonSource extends BitstampTickerSource implements INode {
 	private final String url;
 	
-	public BitstampTickerJsonSource(long interpolationTime, String url) {
-		super(interpolationTime);
+	public BitstampTickerJsonSource(long timestep, long interpolationTime, String url) {
+		super(timestep, interpolationTime);
 		this.url = url;
 	}
 	

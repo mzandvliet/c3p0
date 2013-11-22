@@ -5,7 +5,8 @@ public class SubtractNode extends AbstractTickable implements INode {
 	private ISignal inputB;
 	private OutputSignal output;
 	
-	public SubtractNode(ISignal inputA, ISignal inputB) {
+	public SubtractNode(long timestep, ISignal inputA, ISignal inputB) {
+		super(timestep);
 		this.inputA = inputA;
 		this.inputB = inputB;
 		this.output = new OutputSignal(this);

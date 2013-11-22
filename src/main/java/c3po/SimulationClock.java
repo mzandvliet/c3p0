@@ -9,27 +9,27 @@ import java.util.List;
  */
 
 public class SimulationClock implements IClock {
-	private final List<IClockListener> listeners;
+	private final List<ITickable> listeners;
 	private final long startTime;
 	private final long endTime;
 	private final long clockTimestep;
 	private final long interpolationTime;
 	
 	public SimulationClock(long clockTimestep, long startTime, long endTime, long interpolationTime) {
-		this.listeners = new ArrayList<IClockListener>();
+		this.listeners = new ArrayList<ITickable>();
 		this.clockTimestep = clockTimestep;
-		this.startTime = startTime - interpolationTime; // Delay the network's time
+		this.startTime = startTime - interpolationTime; // Delay the client's time
 		this.endTime = endTime - interpolationTime;
 		this.interpolationTime = interpolationTime;
 	}
 	
 	@Override
-	public void addListener(IClockListener listener) {
+	public void addListener(ITickable listener) {
 		listeners.add(listener);
 	}
 
 	@Override
-	public void removeListener(IClockListener listener) {
+	public void removeListener(ITickable listener) {
 		listeners.remove(listener);
 	}
 
@@ -38,7 +38,7 @@ public class SimulationClock implements IClock {
 			
 			// Iterate over all tickables, see which needs to be ticked
 			
-			for (IClockListener listener : listeners) {
+			for (ITickable listener : listeners) {
 				if (currentTick - listener.getLastTick() >= listener.getTimestep()) {
 					listener.tick(currentTick);
 				}

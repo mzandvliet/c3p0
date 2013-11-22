@@ -22,8 +22,8 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 	private Connection connect = null;
 	private Statement statement = null;
 	
-	public BitstampTickerDbSource(long interpolationTime, InetSocketAddress host, String user, String pwd) throws ClassNotFoundException, SQLException {
-		  super(interpolationTime);
+	public BitstampTickerDbSource(long timestep, long interpolationTime, InetSocketAddress host, String user, String pwd) throws ClassNotFoundException, SQLException {
+		  super(timestep, interpolationTime);
 		  
 		  // This will load the MySQL driver, each DB has its own driver
 	      Class.forName("com.mysql.jdbc.Driver");

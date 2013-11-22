@@ -28,7 +28,7 @@ import org.jfree.chart.annotations.XYTextAnnotation;
  * extend it a couple times and configure it exactly how we want to display the data. 
  * I'd rather go with the second option
  */
-public class GraphingNode extends ApplicationFrame implements IClockListener, ITradeListener {
+public class GraphingNode extends ApplicationFrame implements ITickable, ITradeListener {
 	private static final long serialVersionUID = 8607592670062359269L;
 	
 	private final long timestep;

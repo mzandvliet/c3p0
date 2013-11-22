@@ -19,8 +19,7 @@ public class RealtimeBotRunner {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RealtimeBotRunner.class);
 	private final static String jsonUrl = "http://www.bitstamp.net/api/ticker/";
 
-	private final static long clockTimestep = 1000;
-	private final static long botTimestep = 1000;
+	private final static long timestep = 60000;
 	
 	private final static long interpolationTime = 120000;
 	
@@ -30,7 +29,7 @@ public class RealtimeBotRunner {
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		// Set up global signal tree
 		
-		final BitstampTickerSource tickerNode = new BitstampTickerDbSource(interpolationTime, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+		final BitstampTickerSource tickerNode = new BitstampTickerDbSource(timestep, interpolationTime, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
 		
 		final IWallet wallet = new Wallet(walletDollarStart, walletBtcStart);
 		
@@ -49,7 +48,7 @@ public class RealtimeBotRunner {
 		
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(640,780,985); // Todo: trader.startDelay is proportional to this, maybe Max(fast,slow,signal)
 		MacdTraderConfig traderConfig = new MacdTraderConfig(0.0267, 0.4547, 0.2184, 0.0037, 2440000, 4042000);
-		MacdBotConfig config = new MacdBotConfig(botTimestep, analysisConfig, traderConfig);
+		MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
 		
 		// Create bot
 		
@@ -57,7 +56,7 @@ public class RealtimeBotRunner {
 		
 		// Create a clock
 		
-		IClock botClock = new RealtimeClock(clockTimestep, 200000l, interpolationTime);
+		IClock botClock = new RealtimeClock(timestep, 200000l, interpolationTime);
 		botClock.addListener(bot);
 		
 		// Run the program

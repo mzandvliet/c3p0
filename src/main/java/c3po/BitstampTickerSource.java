@@ -18,7 +18,9 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 	
 	private final long serverPollPeriod = 60000; // Expected time between server entries
 	
-	public BitstampTickerSource(long interpolationTime) {
+	public BitstampTickerSource(long timestep, long interpolationTime) {
+		super(timestep);
+		
 		this.interpolationTime = interpolationTime;
 		
 		this.signals = new OutputSignal[numSignals];

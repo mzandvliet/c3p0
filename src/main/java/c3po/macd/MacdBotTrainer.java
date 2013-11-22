@@ -65,8 +65,7 @@ public class MacdBotTrainer {
 //	private final static long simulationStartTime = 1384079023000l;
 //	private final static long simulationEndTime = 1384682984000l; 
 	
-	private final static long clockTimestep = 10000;
-	private final static long botStepTime = 60000; // Because right now we're keeping it constant, and data sampling rate is ~1 minute
+	private final static long timestep = 60000; // Because right now we're keeping it constant, and data sampling rate is ~1 minute
 	
 	private final static long interpolationTime = 120000;
 	
@@ -104,13 +103,13 @@ public class MacdBotTrainer {
 		
 		// Create a ticker
 		
-		final BitstampTickerSource tickerNode = new BitstampTickerCsvSource(interpolationTime, csvPath);
+		final BitstampTickerSource tickerNode = new BitstampTickerCsvSource(timestep, interpolationTime, csvPath);
 		
 		tickerNode.open();
 		
 		// Create a clock
 		
-		IClock botClock = new SimulationClock(clockTimestep, simulationStartTime, simulationEndTime, interpolationTime);
+		IClock botClock = new SimulationClock(timestep, simulationStartTime, simulationEndTime, interpolationTime);
 		
 		final ITradeFloor tradeFloor =  new BitstampSimulationTradeFloor(
 				tickerNode.getOutputHigh(),
@@ -256,7 +255,7 @@ public class MacdBotTrainer {
 				
 		);
 		
-		MacdBotConfig config = new MacdBotConfig(botStepTime, analysisConfig, traderConfig);
+		MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
 		
 		return config;
 	}
@@ -306,7 +305,7 @@ public class MacdBotTrainer {
 				which() ? parentA.traderConfig.buyBackoffTimer : parentB.traderConfig.buyBackoffTimer);
 		
 		MacdBotConfig childConfig = new MacdBotConfig(
-				which() ? parentA.timeStep : parentB.timeStep,
+				which() ? parentA.timestep : parentB.timestep,
 				analysisConfig,
 				traderConfig);
 		
@@ -339,7 +338,7 @@ public class MacdBotTrainer {
 				shouldMutate(mutationChance) ? config.traderConfig.buyBackoffTimer : config.traderConfig.buyBackoffTimer
 		);
 		
-		MacdBotConfig mutatedConfig = new MacdBotConfig(config.timeStep, analysisConfig, traderConfig);
+		MacdBotConfig mutatedConfig = new MacdBotConfig(config.timestep, analysisConfig, traderConfig);
 		
 		return mutatedConfig;
 	}
@@ -357,7 +356,7 @@ public class MacdBotTrainer {
 				config.analysisConfig.signalPeriod
 			);
 			
-		MacdBotConfig validConfig = new MacdBotConfig(config.timeStep, validAnalysisConfig, config.traderConfig);
+		MacdBotConfig validConfig = new MacdBotConfig(config.timestep, validAnalysisConfig, config.traderConfig);
 		
 		return validConfig;
 	}

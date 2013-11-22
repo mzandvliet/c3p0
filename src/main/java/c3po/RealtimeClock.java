@@ -11,7 +11,7 @@ public class RealtimeClock implements IClock, Runnable {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(RealtimeClock.class);
 	
-	private List<IClockListener> listeners;
+	private List<ITickable> listeners;
 	private long timeStep; 
 	private long preloadTime;
 	private long interpolationTime;
@@ -27,7 +27,7 @@ public class RealtimeClock implements IClock, Runnable {
 	 * @param preloadTime The amount of milliseconds you want to preload for filling buffers
 	 */
 	public RealtimeClock(long timeStep, long preloadTime, long interpolationTime) {
-		this.listeners = new ArrayList<IClockListener>();
+		this.listeners = new ArrayList<ITickable>();
 		this.timeStep = timeStep;
 		this.preloadTime = preloadTime;
 		this.interpolationTime = interpolationTime;
@@ -39,12 +39,12 @@ public class RealtimeClock implements IClock, Runnable {
 	}
 	
 	@Override
-	public void addListener(IClockListener tickable) {
+	public void addListener(ITickable tickable) {
 		listeners.add(tickable);
 	}
 
 	@Override
-	public void removeListener(IClockListener tickable) {
+	public void removeListener(ITickable tickable) {
 		listeners.remove(tickable);
 	}
 	
@@ -58,10 +58,10 @@ public class RealtimeClock implements IClock, Runnable {
 		LOGGER.debug("Tick: " + currentTick);
 		
 		while(currentTick < new Date().getTime()) {
-			for (IClockListener bot : listeners) {
-				if (bot.getLastTick() == 0 || currentTick - bot.getLastTick() >= bot.getTimestep()) {
-					bot.tick(currentTick);
-					LOGGER.debug(" Tick: " + new Date(currentTick).toLocaleString() + " Bot : " + bot );
+			for (ITickable tickable : listeners) {
+				if (currentTick - tickable.getLastTick() >= tickable.getTimestep()) {
+					tickable.tick(currentTick);
+					LOGGER.debug(" Tick: " + new Date(currentTick).toLocaleString() + " Bot : " + tickable );
 				}
 			}
 		
@@ -75,10 +75,10 @@ public class RealtimeClock implements IClock, Runnable {
 		while (stopIt == false && (maxTicks == 0 || maxTicks > tickIndex)) {
 			currentTick = new Date().getTime() - interpolationTime;
 			
-			for (IClockListener updatable : listeners) {
-				if (updatable.getLastTick() == 0 || currentTick - updatable.getLastTick() >= updatable.getTimestep()) {
-					updatable.tick(currentTick);
-					LOGGER.debug("Bot : " + updatable + " Tick: " + currentTick);
+			for (ITickable tickable : listeners) {
+				if (currentTick - tickable.getLastTick() >= tickable.getTimestep()) {
+					tickable.tick(currentTick);
+					LOGGER.debug("Bot : " + tickable + " Tick: " + currentTick);
 				}
 			}
 			
