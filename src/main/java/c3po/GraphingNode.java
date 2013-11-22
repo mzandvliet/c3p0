@@ -86,9 +86,9 @@ public class GraphingNode extends ApplicationFrame implements ITickable, ITradeL
 	
 	@Override
 	public void onTrade(TradeAction action) {
-		XYTextAnnotation annotation = new XYTextAnnotation(action.action.toString(), 10000d, 500d);
-		XYPlot plot = (XYPlot) chart.getPlot();
-		plot.addAnnotation(annotation);
+//		XYTextAnnotation annotation = new XYTextAnnotation(action.action.toString(), 10000d, 500d);
+//		XYPlot plot = (XYPlot) chart.getPlot();
+//		plot.addAnnotation(annotation);
 	}
 
 	/**

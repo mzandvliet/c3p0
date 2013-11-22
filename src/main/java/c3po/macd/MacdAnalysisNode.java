@@ -35,10 +35,10 @@ public class MacdAnalysisNode extends AbstractTickable implements INode {
 		this.signals = new OutputSignal[numSignals];
 		
 		// Create internal signal tree, hook all intermediate results up to outputs
-		fastNode = new ExpMovingAverageNode(timestep, input, config.fastPeriod);
-		slowNode = new ExpMovingAverageNode(timestep, input, config.slowPeriod);
+		fastNode = new ExpMovingAverageNode(timestep, config.fastPeriod, input);
+		slowNode = new ExpMovingAverageNode(timestep, config.slowPeriod, input);
 		macdNode = new SubtractNode(timestep, fastNode.getOutput(0), slowNode.getOutput(0));
-		signalNode = new ExpMovingAverageNode(timestep, macdNode.getOutput(0), config.signalPeriod);
+		signalNode = new ExpMovingAverageNode(timestep, config.signalPeriod, macdNode.getOutput(0));
 		diffNode = new SubtractNode(timestep, macdNode.getOutput(0), signalNode.getOutput(0));
 		
 		this.signals[SignalNames.FAST.ordinal()] = fastNode.getOutput(0);
