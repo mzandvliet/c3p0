@@ -60,7 +60,7 @@ public class BitstampTickerCsvSource extends BitstampTickerSource {
 	    		if (newest == null) // Todo: This means the simulation is over, really
 	    			upToDate = true;
 	    		else
-	    			buffer.add(newest);
+	    			buffer.offer(newest);
     		}
     		else {
     			upToDate = true;

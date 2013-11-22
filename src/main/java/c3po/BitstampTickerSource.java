@@ -16,7 +16,7 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 	protected final long interpolationTime;
 	protected final CircularArrayList<ServerSampleEntry> buffer;
 	
-	private final long serverEntryPeriod = 60000; // Expected time between server entries
+	private final long serverPollPeriod = 60000; // Expected time between server entries
 	
 	public BitstampTickerSource(long interpolationTime) {
 		this.interpolationTime = interpolationTime;
@@ -26,7 +26,7 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 			this.signals[i] = new OutputSignal(this);
 		}
 		
-		int bufferLength = (int)(interpolationTime / serverEntryPeriod * 2);
+		int bufferLength = (int)(interpolationTime / serverPollPeriod * 2);
 		buffer = new CircularArrayList<ServerSampleEntry>(bufferLength);
 	}
 	
@@ -44,11 +44,10 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 		 *   startup), just return the oldest possible value. This results in a
 		 *   constant signal until server start time is reached.
 		 */
+		ServerSampleEntry oldestEntry = buffer.get(0);
 		if (clientTimestamp <= buffer.get(0).timestamp) {
-			ServerSampleEntry oldEntry = buffer.get(0);
-			
 			for (int j = 0; j < signals.length; j++) {
-				Sample sample = oldEntry.get(j);
+				Sample sample = oldestEntry.get(j);
 				signals[j].setSample(sample);
 			}
 			return;
@@ -57,7 +56,7 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 		/*
 		 *  If client time falls within the buffered entries, interpolate the result
 		 */
- 		for (int i = 0; i < buffer.size(); i++) {
+ 		for (int i = 0; i < buffer.size()-1; i++) {
 			ServerSampleEntry oldEntry = buffer.get(i);
 			
 			if (clientTimestamp < oldEntry.timestamp) {

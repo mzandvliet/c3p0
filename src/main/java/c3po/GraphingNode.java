@@ -49,7 +49,7 @@ public class GraphingNode extends ApplicationFrame implements INode {
 		signalTimeSeries = new TimeSeries("Ticker");
 		dataset = createDatasetFromSeries(signalTimeSeries);
 		ChartPanel chartPanel = (ChartPanel) createDemoPanel(dataset);
-		chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
+		chartPanel.setPreferredSize(new java.awt.Dimension(1600, 900));
 		setContentPane(chartPanel);
 	}
 

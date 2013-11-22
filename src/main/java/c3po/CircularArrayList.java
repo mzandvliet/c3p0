@@ -32,6 +32,7 @@ public class CircularArrayList<E> extends AbstractList<E> implements Queue<E>,Ra
 		for (int i = 0; i < 10; i++) {
 			LOGGER.debug("item: " + list.get(i) + ", size: " + list.size());
 		}
+		LOGGER.debug("done");
 	}
 	
 	private final int n; // buffer length
@@ -155,14 +156,14 @@ public class CircularArrayList<E> extends AbstractList<E> implements Queue<E>,Ra
 		if (size() == 0)
 			return null;
 			
-		return buf.get(head);
+		return get(size()-1);
 	}
 	
-	public E peekTail() throws IllegalStateException {
+	public E peekHead() throws IllegalStateException {
 		if (size() == 0)
 			throw new IllegalStateException("List is empty");
 			
-		return buf.get(tail);
+		return get(0);
 	}
 
 	@Override

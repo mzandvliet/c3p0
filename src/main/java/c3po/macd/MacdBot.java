@@ -66,7 +66,7 @@ public class MacdBot extends AbstractTickable implements IBot {
 	private final static long simulationEndTime = 1385104422000l; 
 	private final static long interpolationTime = 120000; // Delay data by two minutes for interpolation
 	
-	private final static long clockTimestep = 60000;
+	private final static long clockTimestep = 10000;
 	private static final long botTimestep = 60000;
 	private static final double walletDollarStart = 1000.0;
 	private static final double walletBtcStart = 0.0;
@@ -94,28 +94,28 @@ public class MacdBot extends AbstractTickable implements IBot {
 		
 		// todo: this is still in number-of-ticks, which means it depends on bot's timeStep, should change to units of time
 		
-		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(13,40,90);
-		MacdTraderConfig traderConfig = new MacdTraderConfig(0.2, -0.2, 0.33, 0.5, 500000, 500000);
+		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(154,159,392);
+		MacdTraderConfig traderConfig = new MacdTraderConfig(0.1274, -0.3628, 0.9717, 0.0299, 76323000, 29541000);
 		MacdBotConfig config = new MacdBotConfig(botTimestep, analysisConfig, traderConfig);
 		
 		// Create the charter
 		
-		GraphingNode macdDiffGraph = new GraphingNode(tickerNode.getOutputLast(), "Ticker");
-		macdDiffGraph.pack();
-		macdDiffGraph.setVisible(true);
+//		GraphingNode graph = new GraphingNode(tickerNode.getOutputHigh(), "Ticker");
+//		graph.pack();
+//		graph.setVisible(true);
 		
 		// Create bot
 		
-		MacdBot bot = new MacdBot(config, macdDiffGraph.getOutput(0), wallet, tradeFloor);
+		MacdBot bot = new MacdBot(config, tickerNode.getOutputHigh(), wallet, tradeFloor);
 		
 		// Create loggers
 		
 		DebugTradeLogger tradeLogger = new DebugTradeLogger();
 		bot.addListener(tradeLogger);
 		
-//		DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
-//		dbTradeLogger.open();
-//		dbTradeLogger.startSession(simulationStartTime, walletDollarStart, walletBtcStart);
+		DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+		dbTradeLogger.open();
+		dbTradeLogger.startSession(simulationStartTime, walletDollarStart, walletBtcStart);
 		
 		// Create a clock
 		
@@ -130,7 +130,7 @@ public class MacdBot extends AbstractTickable implements IBot {
 		
 		tickerNode.close();
 		
-		//dbTradeLogger.close();
+		dbTradeLogger.close();
 		
 		// Log results
 		

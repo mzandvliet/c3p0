@@ -113,7 +113,7 @@ public class MacdBotTrainer {
 		IClock botClock = new SimulationClock(clockTimestep, simulationStartTime, simulationEndTime, interpolationTime);
 		
 		final ITradeFloor tradeFloor =  new BitstampSimulationTradeFloor(
-				tickerNode.getOutputLast(),
+				tickerNode.getOutputHigh(),
 				tickerNode.getOutputBid(),
 				tickerNode.getOutputAsk()
 		);
@@ -198,11 +198,11 @@ public class MacdBotTrainer {
 	private List<MacdBot> createPopulationFromConfigs(List<MacdBotConfig> configs, BitstampTickerSource ticker, ITradeFloor tradeFloor, IClock botClock) {
 		ArrayList<MacdBot> population = new ArrayList<MacdBot>();
 		
-		double startBtc = walletStartBtcInUsd / ticker.getOutputLast().getSample(simulationStartTime).value;
+		double startBtc = walletStartBtcInUsd / ticker.getOutputHigh().getSample(simulationStartTime).value;
 		
 		for (int i = 0; i < configs.size(); i++) {
 			IWallet wallet = new Wallet(walletStartDollars, startBtc);
-			MacdBot bot = new MacdBot(configs.get(i), ticker.getOutputLast(), wallet, tradeFloor);
+			MacdBot bot = new MacdBot(configs.get(i), ticker.getOutputHigh(), wallet, tradeFloor);
 			botClock.addListener(bot);
 			population.add(bot);
 		}
