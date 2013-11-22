@@ -58,9 +58,9 @@ import c3po.Wallet;
 public class MacdBotTrainer {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdBotTrainer.class);
 	
-	private final static String csvPath = "resources/bitstamp_ticker_till_20131122.csv";
+	private final static String csvPath = "resources/bitstamp_ticker_till_20131122_crashed.csv";
 	private final static long simulationStartTime = 1384079023000l;
-	private final static long simulationEndTime = 1385104422000l; 
+	private final static long simulationEndTime = 1385192429000l; 
 	
 //	private final static String csvPath = "resources/bitstamp_ticker_till_20131117_pingpong.csv";
 //	private final static long simulationStartTime = 1384079023000l;
