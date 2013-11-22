@@ -131,8 +131,8 @@ public class GraphingNode extends ApplicationFrame implements IClockListener {
         XYItemRenderer r = plot.getRenderer();
         if (r instanceof XYLineAndShapeRenderer) {
             XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) r;
-            renderer.setBaseShapesVisible(true);
-            renderer.setBaseShapesFilled(true);
+            renderer.setBaseShapesVisible(false);
+            renderer.setBaseShapesFilled(false);
             renderer.setDrawSeriesLineAsPath(true);
         }
 
