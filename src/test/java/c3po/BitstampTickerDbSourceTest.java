@@ -8,6 +8,8 @@ import java.util.Date;
 
 import org.junit.Test;
 
+import c3po.bitstamp.BitstampTickerDbSource;
+
 public class BitstampTickerDbSourceTest {
 
 	private final static long timestep = 60000;

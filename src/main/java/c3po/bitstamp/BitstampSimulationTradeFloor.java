@@ -1,14 +1,10 @@
-package c3po;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+package c3po.bitstamp;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import c3po.TradeAction.TradeActionType;
-import c3po.macd.MacdTraderNode;
+import c3po.BootstrapTradeFloor;
+import c3po.*;
 
 /* Todo:
  * 
@@ -21,43 +17,17 @@ import c3po.macd.MacdTraderNode;
  * 		- Removes the need for ISignal.peek()
  * 		- So it can produce results as signals (like wallet values)
  */
-
-public class BitstampSimulationTradeFloor implements ITradeFloor {
+public class BitstampSimulationTradeFloor extends BootstrapTradeFloor {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BitstampSimulationTradeFloor.class);
-	
-	private List<ITradeListener> tradeListeners;
 
 	private double tradeFee = 0.05d;
 	
-	ISignal lastSignal;
-	ISignal bidSignal;
-	ISignal askSignal;
-	
 	public BitstampSimulationTradeFloor(ISignal last, ISignal bid, ISignal ask) {
-		this.lastSignal = last;
-		this.bidSignal = bid;
-		this.askSignal = ask;
-		
-		this.tradeListeners = new ArrayList<ITradeListener>();
+		super(last, bid, ask);
 	}
 	
 	@Override
-	public double toBtc(double usd) {
-		return usd / lastSignal.peek().value;
-	}
-
-	@Override
-	public double toUsd(double btc) {
-		return btc * lastSignal.peek().value;
-	}
-
-	@Override
-	public double getWalletValueInUsd(IWallet wallet) {
-		return wallet.getWalledUsd() + toUsd(wallet.getWalletBtc());
-	}
-
-	@Override
-	public double buy(IWallet wallet, TradeAction action) {
+	public double buyImpl(IWallet wallet, TradeAction action) {
 		// We get the latest ask, assuming the ticker is updated by some other part of the app
 		Sample currentAsk = askSignal.peek();
 				
@@ -67,14 +37,12 @@ public class BitstampSimulationTradeFloor implements ITradeFloor {
 		
 		// We assume the trade is fulfilled instantly, for the price of the ask
 		wallet.transact(action.timestamp, -soldUsd, boughtBtc);
-		
-		notify(action);
-		
+
 		return boughtBtc;
 	}
 
 	@Override
-	public double sell(IWallet wallet, TradeAction action) {
+	public double sellImpl(IWallet wallet, TradeAction action) {
 		// We get the latest ask, assuming the ticker is updated by some other part of the app
 		Sample currentBid = bidSignal.peek();
 		
@@ -83,31 +51,8 @@ public class BitstampSimulationTradeFloor implements ITradeFloor {
 		double soldBtc = action.volume;
 		
 		wallet.transact(action.timestamp, boughtUsd, -soldBtc);
-		
-		notify(action);
-		
+
 		return boughtUsd;
 	}
 
-	
-	private void notify(TradeAction action) {
-		for (ITradeListener listener : tradeListeners) {
-			listener.onTrade(action);
-		}
-	}
-
-	@Override
-	public void addTradeListener(ITradeListener listener) {
-		tradeListeners.add(listener);
-	}
-
-	@Override
-	public void removeListener(ITradeListener listener) {
-		tradeListeners.remove(listener);
-	}
-
-	@Override
-	public ITradeFloor getTradeFloor() {
-		return this;
-	}
 }

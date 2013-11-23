@@ -6,9 +6,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import c3po.TradeAction.TradeActionType;
-import c3po.macd.MacdBot;
-
 public class DebugTradeLogger implements ITradeListener {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DebugTradeLogger.class);
 	

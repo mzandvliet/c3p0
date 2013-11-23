@@ -1,9 +1,5 @@
 package c3po;
 
-import java.util.List;
-
-import c3po.TradeAction.TradeActionType;
-
 /* Todo:
  * 
  * - This is a really poor and impromptu interface, but it demonstrates the principle

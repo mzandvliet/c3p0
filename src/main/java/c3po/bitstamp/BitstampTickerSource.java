@@ -1,6 +1,6 @@
-package c3po;
+package c3po.bitstamp;
 
-import java.util.List;
+import c3po.*;
 
 /* Todo:
  * - Implement server timeout strategy (extrapolation for a little while, then crisis mode)

@@ -10,8 +10,6 @@ import java.util.RandomAccess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import c3po.macd.MacdBot;
-
 /**
  * If you use this code, please retain this comment block.
  * @author Isak du Preez

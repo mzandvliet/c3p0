@@ -8,8 +8,9 @@ import java.sql.SQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import c3po.BitstampTickerCsvSource;
-import c3po.BitstampSimulationTradeFloor;
+import c3po.bitstamp.BitstampSimulationTradeFloor;
+import c3po.bitstamp.BitstampTickerSource;
+import c3po.bitstamp.BitstampTickerDbSource;
 import c3po.IClock;
 import c3po.ITradeFloor;
 import c3po.RealtimeClock;

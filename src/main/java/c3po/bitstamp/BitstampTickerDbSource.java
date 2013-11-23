@@ -1,17 +1,11 @@
-package c3po;
+package c3po.bitstamp;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import c3po.BitstampTickerSource.ServerSampleEntry;
+import c3po.*;
 
 /**
  * Work in progress in using the database as source

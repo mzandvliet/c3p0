@@ -5,26 +5,21 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import c3po.BitstampTickerCsvSource;
-import c3po.BitstampTickerSource;
-import c3po.BitstampSimulationTradeFloor;
+import c3po.bitstamp.BitstampTickerSource;
+import c3po.bitstamp.BitstampSimulationTradeFloor;
 import c3po.DebugTradeLogger;
 import c3po.IBot;
 import c3po.IClock;
-import c3po.ISignal;
 import c3po.ITradeFloor;
 import c3po.IWallet;
-import c3po.Indicators;
 import c3po.SimulationClock;
 import c3po.Time;
 import c3po.Wallet;
+import c3po.bitstamp.BitstampTickerCsvSource;
 
 /**
  * This finds optimal MacdBot configurations for a given simulation dataset.
