@@ -1,32 +1,21 @@
-package c3po;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+package c3po.bitstamp;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import c3po.TradeAction.TradeActionType;
-import c3po.macd.MacdTraderNode;
+import c3po.BootstrapTradeFloor;
+import c3po.ISignal;
+import c3po.IWallet;
+import c3po.Sample;
+import c3po.TradeAction;
 
-/* Todo:
- * 
- * - Create currency abstraction
- * 		- A wallet can have capital in many different currencies
- * 		- A TradeAction should indicate which currency pair was used
- * - Factor in costs
- * - Perhaps this should be a node
- * 		- So it can hook up to signals and have access to bid/ask data that way
- * 		- Removes the need for ISignal.peek()
- * 		- So it can produce results as signals (like wallet values)
- */
-public class BitstampSimulationTradeFloor extends BootstrapTradeFloor {
-	private static final Logger LOGGER = LoggerFactory.getLogger(BitstampSimulationTradeFloor.class);
 
+public class BitstampTradeFloor extends BootstrapTradeFloor {
+	private static final Logger LOGGER = LoggerFactory.getLogger(BitstampTradeFloor.class);
 	private double tradeFee = 0.05d;
+
 	
-	public BitstampSimulationTradeFloor(ISignal last, ISignal bid, ISignal ask) {
+	public BitstampTradeFloor(ISignal last, ISignal bid, ISignal ask) {
 		super(last, bid, ask);
 	}
 	
@@ -41,7 +30,7 @@ public class BitstampSimulationTradeFloor extends BootstrapTradeFloor {
 		
 		// We assume the trade is fulfilled instantly, for the price of the ask
 		wallet.transact(action.timestamp, -soldUsd, boughtBtc);
-
+		
 		return boughtBtc;
 	}
 
@@ -55,8 +44,7 @@ public class BitstampSimulationTradeFloor extends BootstrapTradeFloor {
 		double soldBtc = action.volume;
 		
 		wallet.transact(action.timestamp, boughtUsd, -soldBtc);
-
+		
 		return boughtUsd;
 	}
-
 }
