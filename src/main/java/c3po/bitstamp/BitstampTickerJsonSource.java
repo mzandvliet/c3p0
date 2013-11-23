@@ -1,9 +1,11 @@
-package c3po;
+package c3po.bitstamp;
 
 import java.io.IOException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import c3po.*;
 
 public class BitstampTickerJsonSource extends BitstampTickerSource implements INode {
 	private final String url;

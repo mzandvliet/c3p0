@@ -1,9 +1,10 @@
-package c3po;
+package c3po.bitstamp;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
+import c3po.Sample;
 import au.com.bytecode.opencsv.CSVReader;
 
 public class BitstampTickerCsvSource extends BitstampTickerSource {

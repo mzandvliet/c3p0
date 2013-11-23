@@ -1,14 +1,10 @@
-package c3po;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+package c3po.bitstamp;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import c3po.TradeAction.TradeActionType;
-import c3po.macd.MacdTraderNode;
+import c3po.BootstrapTradeFloor;
+import c3po.*;
 
 /* Todo:
  * 

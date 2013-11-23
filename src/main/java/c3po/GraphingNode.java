@@ -11,7 +11,6 @@ import org.jfree.chart.renderer.xy.*;
 import org.jfree.data.time.*;
 import org.jfree.data.xy.*;
 import org.jfree.ui.*;
-import org.jfree.chart.annotations.XYTextAnnotation;
 
 /*
  * 

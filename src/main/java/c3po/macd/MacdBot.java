@@ -4,19 +4,16 @@ import c3po.*;
 
 import java.net.InetSocketAddress;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import c3po.BitstampTickerCsvSource;
-import c3po.BitstampSimulationTradeFloor;
+import c3po.bitstamp.BitstampSimulationTradeFloor;
 import c3po.IClock;
 import c3po.ISignal;
 import c3po.ITradeFloor;
 import c3po.ITradeListener;
 import c3po.IWallet;
+import c3po.bitstamp.BitstampTickerCsvSource;
 
 /* Todo:
  * 
