@@ -20,23 +20,19 @@ import c3po.IWallet;
 
 /* Todo:
  * 
- * ------ Important -----
- * 
  * - Implement better polling to mitigate server data misses
  * 
- * - MacdAnalysisConfig is still expressed in number-of-ticks, which means it depends on bot's timeStep. Should change to units of time. * 
  * 
- * - Manage time duration of open positions
- * 		- Build risk into macd with volatility node
- * 		- High volatility means bot should close positions faster to mitigate crash risk
- * 
- * ----------------------
- * 
+ * - Bot Design
+ * 		- Manage time duration of open positions
+ * 			- Build risk into macd with volatility node
+ * 			- High volatility means bot should close positions faster to mitigate crash risk
+ * 		- Use varying macd configurations to fit current market context
  * 
  * - Develop exit protocol and implementation
  * - Seed newly started bots with data from recorded history, then update with live feed
  * 
- * - Use varying macd configurations to fit current market context
+ * 
  * 
  * - Network architecture
  * 		- INode should define setInput() to assign signals dynamically
@@ -46,6 +42,7 @@ import c3po.IWallet;
  * 			- Analyse wallet & trade data streams using network methods too
  * 		- Find abstractions that reduce boilerplate for data transformation nodes
  * 			- Something akin to delegates/lambdas, you know
+ * 
  * 
  * - Improve TradeFloor interface
  * 		- Currency abstraction
@@ -70,7 +67,7 @@ public class MacdBot extends AbstractTickable implements IBot {
 	private final static double walletDollarStart = 500.0;
 	private final static double walletBtcStart = 3.0;
 	
-	private final static long graphInterval = 4 * Time.MINUTES;
+	private final static long graphInterval = 10 * Time.MINUTES;
 	
 	//================================================================================
     // Main
@@ -93,15 +90,20 @@ public class MacdBot extends AbstractTickable implements IBot {
 		
 		// Create bot config
 		
-		// todo: this is still in number-of-ticks, which means it depends on bot's timeStep, should change to units of time
 		//  Best bot was: [AnalysisConfig - fast: 158 min, slow: 165 min, signal: 903 min], [TraderConfig - 
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
-				(int) (158 * Time.MINUTES),
-				(int) (165 * Time.MINUTES),
-				(int) (903 * Time.MINUTES));
+				(int) (242 * Time.MINUTES),
+				(int) (257 * Time.MINUTES),
+				(int) (167 * Time.MINUTES));
 		
 		//minBuyThreshold: 0.761, minSellThreshold: -0.461, usdToBtcTradeAmount: 0.131, btcToUsdTradeAmount: 0.5972, sellBackoffTimer: 3717s, buyBackoffTimer: 73125s]
-		MacdTraderConfig traderConfig = new MacdTraderConfig(0.161, -0.261,  0.131, 0.5972, 3717 * Time.MINUTES, 3717 * Time.MINUTES);
+		MacdTraderConfig traderConfig = new MacdTraderConfig(
+				0.9560,
+				-0.3817,
+				0.6840,
+				0.6840,
+				192 * Time.MINUTES,
+				1170 * Time.MINUTES);
 		MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
 		
 		// Create bot
@@ -112,10 +114,10 @@ public class MacdBot extends AbstractTickable implements IBot {
 		
 		DebugTradeLogger tradeLogger = new DebugTradeLogger();
 		bot.addTradeListener(tradeLogger);
-//		
-		DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
-		dbTradeLogger.open();
-		dbTradeLogger.startSession(simulationStartTime, walletDollarStart, walletBtcStart);
+
+//		DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+//		dbTradeLogger.open();
+//		dbTradeLogger.startSession(simulationStartTime, walletDollarStart, walletBtcStart);
 		
 		// Create the grapher
 		

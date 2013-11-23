@@ -179,11 +179,11 @@ public class MacdBotTrainer {
 	        	// A minimum # of trade is required, but importance of trade frequency falls off after just a couple of them
 	            	
 	        	double botAWallet = botA.getTradeFloor().getWalletValueInUsd(botA.getWallet());
-	        	double botAActivity = 1d;//0.1d + Math.log(loggers.get(botA).getActions().size() * 1000); 
+	        	double botAActivity = 0.1d + Math.log(loggers.get(botA).getActions().size() * 10000); 
             	double botAPerformance = botAWallet * botAActivity;
             	
             	double botBWallet = botB.getTradeFloor().getWalletValueInUsd(botB.getWallet());
-	        	double botBActivity = 1d;//0.1d + Math.log(loggers.get(botB).getActions().size() * 1000);
+	        	double botBActivity = 0.1d + Math.log(loggers.get(botB).getActions().size() * 10000);
             	double botBPerformance = botBWallet * botBActivity;
             	
             	if (botAPerformance == botBPerformance) {
