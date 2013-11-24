@@ -54,4 +54,8 @@ public class BitstampSimulationTradeFloor extends AbstractTradeFloor {
 		return boughtUsd;
 	}
 
+	@Override
+	public void updateWallet(IWallet wallet) {
+		// TODO Auto-generated method stub
+	}
 }
