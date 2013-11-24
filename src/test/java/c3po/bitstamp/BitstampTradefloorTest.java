@@ -2,14 +2,9 @@ package c3po.bitstamp;
 
 import static org.junit.Assert.*;
 
-import java.net.InetSocketAddress;
-import java.sql.SQLException;
-import java.util.Date;
-
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;
-
-import c3po.bitstamp.BitstampTickerDbSource;
 
 public class BitstampTradefloorTest {
 
@@ -32,10 +27,17 @@ public class BitstampTradefloorTest {
 	
 	@Test
 	public void testAuthenticatedCall() throws Exception {
-		JSONObject result = BitstampTradeFloor.doAuthenticatedCall("https://www.bitstamp.net/api/balance/");
+		JSONObject result = new JSONObject(BitstampTradeFloor.doAuthenticatedCall("https://www.bitstamp.net/api/balance/"));
 		System.out.println(result);
 		
 		// This throws an exception if the authentication went wrong
 		result.get("fee");
+	}
+	
+	@Test
+	public void testOpenOrders() throws Exception {
+		JSONArray result = new JSONArray(BitstampTradeFloor.doAuthenticatedCall("https://www.bitstamp.net/api/open_orders/"));
+
+
 	}
 }

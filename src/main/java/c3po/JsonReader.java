@@ -55,7 +55,7 @@ public class JsonReader {
      * @throws IOException
      * @throws JSONException
      */
-	public static JSONObject readJsonFromUrl(String url, List<NameValuePair> params) throws IOException, JSONException {
+	public static String readJsonFromUrl(String url, List<NameValuePair> params) throws IOException, JSONException {
 		HttpClient httpclient = HttpClients.createDefault();
 		HttpPost httppost = new HttpPost(url);
 
@@ -68,12 +68,8 @@ public class JsonReader {
 
 		InputStream is = entity.getContent();
 		try {
-			BufferedReader rd = new BufferedReader(new InputStreamReader(is,
-					Charset.forName("UTF-8")));
-			String jsonText = readAll(rd);
-			JSONObject json = new JSONObject(jsonText);
-
-			return json;
+			BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+			return readAll(rd);
 		} finally {
 			is.close();
 		}
