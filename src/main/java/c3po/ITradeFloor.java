@@ -15,4 +15,5 @@ public interface ITradeFloor extends ITradeActionSource {
 	public double sell(IWallet wallet, TradeAction action);
 	
 	double getWalletValueInUsd(IWallet wallet);
+	void updateWallet(IWallet wallet);
 }

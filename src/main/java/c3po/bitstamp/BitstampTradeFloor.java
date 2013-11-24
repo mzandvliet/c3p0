@@ -111,20 +111,19 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 		return boughtUsd;
 	}
 	
-	/**
-	 * This method updates the wallet with the current values from Bitstamp
-	 * 
-	 * @param wallet
-	 * @throws Exception
-	 */
-	public void updateWallet(IWallet wallet) throws Exception {
-		JSONObject result = new JSONObject(doAuthenticatedCall("https://www.bitstamp.net/api/balance/"));
-		wallet.update(result.getDouble("usd_available"), result.getDouble("btc_available"));
-		
-		// Update tradeFee if needed
-		if(result.getDouble("fee") != tradeFee) {
-			LOGGER.info("Updated tradeFee. Old: " + tradeFee + " New: " + result.getDouble("fee"));
-			tradeFee = result.getDouble("fee");
+	@Override
+	public void updateWallet(IWallet wallet) {
+		try {
+			JSONObject result = new JSONObject(doAuthenticatedCall("https://www.bitstamp.net/api/balance/"));
+			wallet.update(result.getDouble("usd_available"), result.getDouble("btc_available"));
+			
+			// Update tradeFee if needed
+			if(result.getDouble("fee") != tradeFee) {
+				LOGGER.info("Updated tradeFee. Old: " + tradeFee + " New: " + result.getDouble("fee"));
+				tradeFee = result.getDouble("fee");
+			}
+		} catch (Exception e) {
+			LOGGER.error("Could not update wallet", e);
 		}
 	}
 	
