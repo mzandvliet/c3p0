@@ -2,6 +2,7 @@ package c3po.bitstamp;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.crypto.Mac;
@@ -10,6 +11,8 @@ import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +23,7 @@ import c3po.IWallet;
 import c3po.JsonReader;
 import c3po.Sample;
 import c3po.TradeAction;
+import c3po.structs.OpenOrder;
 
 
 public class BitstampTradeFloor extends AbstractTradeFloor {
@@ -63,14 +67,19 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 		return new Date().getTime();
 	}
 	
-	public static JSONObject doAuthenticatedCall(String url) throws Exception {
+	public static String doAuthenticatedCall(String url) throws Exception {
+		List<NameValuePair> params = new ArrayList<NameValuePair>();
+		return doAuthenticatedCall(url, params);
+	}
+	
+	public static String doAuthenticatedCall(String url, List<NameValuePair> params) throws Exception {
 		long nonce = generateNonce();
 		String sig = generateSignature(nonce);
-		List<NameValuePair> params = new ArrayList<NameValuePair>();
+		
 		params.add(new BasicNameValuePair("key", apiKey));
 		params.add(new BasicNameValuePair("nonce", String.valueOf(nonce)));
 		params.add(new BasicNameValuePair("signature", sig));
-		return JsonReader.readJsonFromUrl(url, params );
+		return JsonReader.readJsonFromUrl(url, params);
 	}
 
 	@Override
@@ -102,14 +111,57 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 		return boughtUsd;
 	}
 	
+	/**
+	 * This method updates the wallet with the current values from Bitstamp
+	 * 
+	 * @param wallet
+	 * @throws Exception
+	 */
 	public void updateWallet(IWallet wallet) throws Exception {
-		JSONObject result = doAuthenticatedCall("https://www.bitstamp.net/api/balance/");
+		JSONObject result = new JSONObject(doAuthenticatedCall("https://www.bitstamp.net/api/balance/"));
 		wallet.update(result.getDouble("usd_available"), result.getDouble("btc_available"));
 		
 		// Update tradeFee if needed
 		if(result.getDouble("fee") != tradeFee) {
 			LOGGER.info("Updated tradeFee. Old: " + tradeFee + " New: " + result.getDouble("fee"));
 			tradeFee = result.getDouble("fee");
+		}
+	}
+	
+	/**
+	 * Does an API call to fetch the currently open orders.
+	 * 
+	 * @return List of open orders
+	 * @throws Exception
+	 */
+	public List<OpenOrder> getOpenOrders() throws Exception {
+		JSONArray result = new JSONArray(doAuthenticatedCall("https://www.bitstamp.net/api/open_orders/"));
+		
+		List<OpenOrder> openOrders = new LinkedList<OpenOrder>();
+		for(int index = 0; index < result.length(); index++) {
+			JSONObject row = result.getJSONObject(index);
+			openOrders.add(new OpenOrder(row.getLong("id"), row.getLong("datetime"), row.getString("type"), row.getDouble("price"), row.getDouble("amount")));
+		}
+		
+		return openOrders;
+	}
+	
+	/**
+	 * This method takes a list of open orders and
+	 * tries to cancel them one by one.
+	 * 
+	 * @see getOpenOrders()
+	 * 
+	 * @param ordersToCancel
+	 * @throws JSONException
+	 * @throws Exception
+	 */
+    public void cancelOrders(List<OpenOrder> ordersToCancel) throws JSONException, Exception {
+		for(OpenOrder order : ordersToCancel) {
+			List<NameValuePair> params = new LinkedList<NameValuePair>();
+			params.add(new BasicNameValuePair("id", String.valueOf(order.getId())));
+			String result = doAuthenticatedCall("https://www.bitstamp.net/api/cancel_order/", params);
+			LOGGER.info("Cancelled order " + order + ": " + result);
 		}
 	}
 }

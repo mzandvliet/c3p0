@@ -63,8 +63,10 @@ public class Wallet implements IWallet {
 
 	@Override
 	public void update(double dollars, double btc) {
-		LOGGER.debug("Received update for the wallet. Difference " + (dollars - walletUsd) + " Btc, " + (btc - walletBtc) + " USD");
-		walletUsd = dollars;
-		walletBtc = btc;
+		if(dollars != walletUsd  || btc != walletBtc) {
+			LOGGER.info("Received update for the wallet. Difference " + (dollars - walletUsd) + " Btc, " + (btc - walletBtc) + " USD");
+			walletUsd = dollars;
+			walletBtc = btc;
+		}
 	}
 }
