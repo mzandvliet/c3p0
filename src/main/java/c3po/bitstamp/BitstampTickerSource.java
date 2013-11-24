@@ -65,7 +65,7 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 				ServerSampleEntry newEntry = buffer.get(i+1);
 				
 				for (int j = 0; j < signals.length; j++) {
-					Sample sample = Indicators.lerp(oldEntry.get(j), newEntry.get(j), clientTimestamp);
+					Sample sample = SignalMath.lerp(oldEntry.get(j), newEntry.get(j), clientTimestamp);
 					signals[j].setSample(sample);
 				}
 				

@@ -14,7 +14,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import c3po.BootstrapTradeFloor;
+import c3po.AbstractTradeFloor;
 import c3po.ISignal;
 import c3po.IWallet;
 import c3po.JsonReader;
@@ -22,7 +22,7 @@ import c3po.Sample;
 import c3po.TradeAction;
 
 
-public class BitstampTradeFloor extends BootstrapTradeFloor {
+public class BitstampTradeFloor extends AbstractTradeFloor {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BitstampTradeFloor.class);
 	private double tradeFee = 0.05d;
 	

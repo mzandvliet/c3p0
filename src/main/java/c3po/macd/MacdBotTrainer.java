@@ -28,7 +28,9 @@ import c3po.bitstamp.BitstampTickerCsvSource;
  * 
  * Todo:
  * 
- * - Bots luuuuurrve to hold way too long-term positions, make daytraders. (Build risk into macd with volatility node)
+ * - Bots luuuuurrve to hold way too long-term positions, make daytraders.
+ * 		- Build explicit risk management into macdTrader (with volatility node)
+ * 		- Build risk scoring into genetic algorithm
  * 
  * - Early out if a convergence threshold is reached
  * 
