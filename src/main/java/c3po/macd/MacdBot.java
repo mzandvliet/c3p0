@@ -4,6 +4,7 @@ import c3po.*;
 
 import java.net.InetSocketAddress;
 import java.sql.SQLException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,8 +62,9 @@ public class MacdBot extends AbstractTickable implements IBot {
 	private final static long interpolationTime = 2 * Time.MINUTES; // Delay data by two minutes for interpolation
 	
 	private final static long timestep = 1 * Time.MINUTES;
-	private final static double walletDollarStart = 500.0;
-	private final static double walletBtcStart = 3.0;
+	
+	private final static double walletDollarStart = 100.0d;
+	private final static double walletBtcStart = 0.0d;
 	
 	private final static long graphInterval = 10 * Time.MINUTES;
 	
@@ -73,8 +75,6 @@ public class MacdBot extends AbstractTickable implements IBot {
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		// Set up global signal tree
 		
-		//final ISignalSource tickerNode = new BitstampTickerJsonSource(jsonUrl);
-		//final BitstampTickerDbSource tickerNode = new BitstampTickerDbSource(interpolationTime, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
 		final BitstampTickerCsvSource tickerNode = new BitstampTickerCsvSource(timestep, interpolationTime, csvPath);
 			
 		final IWallet wallet = new Wallet(walletDollarStart, walletBtcStart);
@@ -87,20 +87,18 @@ public class MacdBot extends AbstractTickable implements IBot {
 		
 		// Create bot config
 		
-		//  Best bot was: [AnalysisConfig - fast: 158 min, slow: 165 min, signal: 903 min], [TraderConfig - 
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
-				242 * Time.MINUTES,
-				257 * Time.MINUTES,
-				167 * Time.MINUTES);
+				33 * Time.MINUTES,
+				34 * Time.MINUTES,
+				2 * Time.MINUTES);
 		
-		//minBuyThreshold: 0.761, minSellThreshold: -0.461, usdToBtcTradeAmount: 0.131, btcToUsdTradeAmount: 0.5972, sellBackoffTimer: 3717s, buyBackoffTimer: 73125s]
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
-				0.9560,
-				-0.3817,
-				0.6840,
-				0.6840,
-				192 * Time.MINUTES,
-				1170 * Time.MINUTES);
+				-0.0771,
+				1.8221,
+				0.5492,
+				0.7554,
+				1 * Time.MINUTES,
+				3 * Time.MINUTES);
 		MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
 		
 		// Create bot
@@ -111,10 +109,6 @@ public class MacdBot extends AbstractTickable implements IBot {
 		
 		DebugTradeLogger tradeLogger = new DebugTradeLogger();
 		bot.addTradeListener(tradeLogger);
-
-//		DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
-//		dbTradeLogger.open();
-//		dbTradeLogger.startSession(simulationStartTime, walletDollarStart, walletBtcStart);
 		
 		// Create the grapher
 		
@@ -136,12 +130,9 @@ public class MacdBot extends AbstractTickable implements IBot {
 		// Run the program
 		
 		tickerNode.open();
-		
 		botClock.run();
-		
 		tickerNode.close();
 		
-//		dbTradeLogger.close();
 		
 		// Log results
 		

@@ -59,28 +59,32 @@ public class MacdBotTrainer {
 	private final static long simulationStartTime = 1384079023000l;
 	private final static long simulationEndTime = 1385192429000l; 
 	
-//	private final static String csvPath = "resources/bitstamp_ticker_till_20131117_pingpong.csv";
-//	private final static long simulationStartTime = 1384079023000l;
-//	private final static long simulationEndTime = 1384682984000l; 
-	
+	// Timing
 	private final static long timestep = 60000; // Because right now we're keeping it constant, and data sampling rate is ~1 minute
-	
 	private final static long interpolationTime = 120000;
-	
-	// For a single run of random bots
-	
-//	private final static int numEpochs = 1;
-//	private final static int numBots = 1000;
-	
+
+	// Simulation and fitness test
 	private final static int numEpochs = 100;
 	private final static int numBots = 250;
 	
+	// Selection
 	private final static int numParents = 100;
-	private final static int numElites = 10;
-	private final static double mutationChance = 0.2d;
+	private final static int numElites = 5;
+	private final static double mutationChance = 0.33d;
 	
-	private final static double walletStartDollars = 500.0;
-	private final static double walletStartBtcInUsd = 500.0;
+	// Config mutation ranges
+	private final static long minAnalysisPeriod = 1 * Time.MINUTES;
+	private final static long maxAnalysisPeriod = 60 * Time.MINUTES;
+	private final static long minBackoffPeriod = 1 * Time.MINUTES;
+	private final static long maxBackoffPeriod = 60 * Time.MINUTES;
+	private final static double minTransactionAmount = 0.01d;
+	private final static double maxTransactionAmount = 1d; // NOTE: Never exceed 1.0, lol
+	private final static double minDiffThreshold = -2.0d;
+	private final static double maxDiffThreshold = 2.0d;
+	
+	// Market context
+	private final static double walletStartDollars = 100.0;
+	private final static double walletStartBtcInUsd = 0.0;
 	
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		MacdBotTrainer trainer = new MacdBotTrainer();
@@ -236,9 +240,9 @@ public class MacdBotTrainer {
 	
 	private MacdBotConfig createRandomConfig() {
 		
-		long fast = getRandomLong(1 * Time.MINUTES, 2000 * Time.MINUTES);
-		long slow = getRandomLong(1 * Time.MINUTES, 2000 * Time.MINUTES);
-		long signal = getRandomLong(1 * Time.MINUTES, 2000 * Time.MINUTES);
+		long fast = getRandomLong(minAnalysisPeriod, maxAnalysisPeriod);
+		long slow = getRandomLong(minAnalysisPeriod, maxAnalysisPeriod);
+		long signal = getRandomLong(minAnalysisPeriod, maxAnalysisPeriod);
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
 			fast,
 			slow,
@@ -246,12 +250,12 @@ public class MacdBotTrainer {
 		);
 		
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
-				getRandomDouble(-2.0d, 2.0d),
-				getRandomDouble(-2.0d, 2.0d),
-				Math.random(),
-				Math.random(),
-				getRandomLong(1 * Time.MINUTES, 2000 * Time.MINUTES),
-				getRandomLong(1 * Time.MINUTES, 2000 * Time.MINUTES)
+				getRandomDouble(minDiffThreshold, maxDiffThreshold),
+				getRandomDouble(minDiffThreshold, maxDiffThreshold),
+				getRandomDouble(minTransactionAmount, maxTransactionAmount),
+				getRandomDouble(minTransactionAmount, maxTransactionAmount),
+				getRandomLong(minBackoffPeriod, maxBackoffPeriod),
+				getRandomLong(minBackoffPeriod, maxBackoffPeriod)
 		);
 		
 		MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
@@ -316,9 +320,10 @@ public class MacdBotTrainer {
 	}
 	
 	private MacdBotConfig mutateConfig(final MacdBotConfig config, double mutationChance) {
+		// Generate a fully random config
 		MacdBotConfig randomConfig = createRandomConfig();
 		
-		// Each property has a separately evaluated chance of mutating
+		// Each property has a separately evaluated chance of changing to the above generated value
 		
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
 				shouldMutate(mutationChance) ? config.analysisConfig.fastPeriod : randomConfig.analysisConfig.fastPeriod,
