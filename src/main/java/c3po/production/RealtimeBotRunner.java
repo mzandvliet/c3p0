@@ -1,4 +1,4 @@
-package c3po.macd;
+package c3po.production;
 
 import c3po.*;
 
@@ -13,7 +13,7 @@ import c3po.bitstamp.BitstampTickerSource;
 import c3po.bitstamp.BitstampTickerDbSource;
 import c3po.IClock;
 import c3po.ITradeFloor;
-import c3po.RealtimeClock;
+import c3po.macd.*;
 
 public class RealtimeBotRunner {
 

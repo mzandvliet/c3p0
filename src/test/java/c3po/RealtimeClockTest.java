@@ -8,6 +8,7 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import c3po.production.RealtimeClock;
 import static org.mockito.Mockito.*;
 
 /**

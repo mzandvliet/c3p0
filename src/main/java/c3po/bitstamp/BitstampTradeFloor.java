@@ -104,6 +104,12 @@ public class BitstampTradeFloor extends BootstrapTradeFloor {
 	
 	public void updateWallet(IWallet wallet) throws Exception {
 		JSONObject result = doAuthenticatedCall("https://www.bitstamp.net/api/balance/");
-		wallet.
+		wallet.update(result.getDouble("usd_available"), result.getDouble("btc_available"));
+		
+		// Update tradeFee if needed
+		if(result.getDouble("fee") != tradeFee) {
+			LOGGER.info("Updated tradeFee. Old: " + tradeFee + " New: " + result.getDouble("fee"));
+			tradeFee = result.getDouble("fee");
+		}
 	}
 }
