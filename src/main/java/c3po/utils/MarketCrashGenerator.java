@@ -1,8 +1,8 @@
-package c3po;
+package c3po.utils;
 
 import java.io.IOException;
 
-public class GenCrash {
+public class MarketCrashGenerator {
 
 	//"1385156429","790.00","769.97","769.35","25376.2602582400","683.20","769.97";
 	private final static long lastTimestamp = 1385156429;

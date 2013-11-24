@@ -89,9 +89,9 @@ public class MacdBot extends AbstractTickable implements IBot {
 		
 		//  Best bot was: [AnalysisConfig - fast: 158 min, slow: 165 min, signal: 903 min], [TraderConfig - 
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
-				(int) (242 * Time.MINUTES),
-				(int) (257 * Time.MINUTES),
-				(int) (167 * Time.MINUTES));
+				242 * Time.MINUTES,
+				257 * Time.MINUTES,
+				167 * Time.MINUTES);
 		
 		//minBuyThreshold: 0.761, minSellThreshold: -0.461, usdToBtcTradeAmount: 0.131, btcToUsdTradeAmount: 0.5972, sellBackoffTimer: 3717s, buyBackoffTimer: 73125s]
 		MacdTraderConfig traderConfig = new MacdTraderConfig(

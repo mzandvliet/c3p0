@@ -3,7 +3,6 @@ package c3po.bitstamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import c3po.BootstrapTradeFloor;
 import c3po.*;
 
 /* Todo:
@@ -17,7 +16,7 @@ import c3po.*;
  * 		- Removes the need for ISignal.peek()
  * 		- So it can produce results as signals (like wallet values)
  */
-public class BitstampSimulationTradeFloor extends BootstrapTradeFloor {
+public class BitstampSimulationTradeFloor extends AbstractTradeFloor {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BitstampSimulationTradeFloor.class);
 
 	private double tradeFee = 0.05d;

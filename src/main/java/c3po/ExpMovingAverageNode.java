@@ -34,6 +34,6 @@ public class ExpMovingAverageNode extends AbstractTickable implements INode {
 	}
 
 	private Sample transform(List<Sample> lastSignals, Sample newest, int kernelSize) {
-		return Indicators.filterExpMovingAverage(lastSignals, newest, kernelSize);
+		return SignalMath.filterExpMovingAverage(lastSignals, newest, kernelSize);
 	}
 }

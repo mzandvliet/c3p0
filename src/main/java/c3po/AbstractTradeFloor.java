@@ -12,8 +12,8 @@ import org.slf4j.LoggerFactory;
  * 
  * - Hides the concept of TradeListeners and their notifies
  */
-public abstract class BootstrapTradeFloor implements ITradeFloor {
-	private static final Logger LOGGER = LoggerFactory.getLogger(BootstrapTradeFloor.class);
+public abstract class AbstractTradeFloor implements ITradeFloor {
+	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTradeFloor.class);
 	
 	private List<ITradeListener> tradeListeners;
 
@@ -21,7 +21,7 @@ public abstract class BootstrapTradeFloor implements ITradeFloor {
 	protected ISignal bidSignal;
 	protected ISignal askSignal;
 	
-	public BootstrapTradeFloor(ISignal last, ISignal bid, ISignal ask) {
+	public AbstractTradeFloor(ISignal last, ISignal bid, ISignal ask) {
 		this.lastSignal = last;
 		this.bidSignal = bid;
 		this.askSignal = ask;

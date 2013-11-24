@@ -1,9 +1,11 @@
-package c3po;
+package c3po.utils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Indicators {
+import c3po.Sample;
+
+public class SignalMath {
 	public static Sample lerp(Sample oldest, Sample newest, long timestamp) {
 		long timeDelta = newest.timestamp - oldest.timestamp;
 		long indexTimeDelta = timestamp - oldest.timestamp;
