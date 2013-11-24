@@ -101,4 +101,9 @@ public class BitstampTradeFloor extends BootstrapTradeFloor {
 		
 		return boughtUsd;
 	}
+	
+	public void updateWallet(IWallet wallet) throws Exception {
+		JSONObject result = doAuthenticatedCall("https://www.bitstamp.net/api/balance/");
+		wallet.
+	}
 }
