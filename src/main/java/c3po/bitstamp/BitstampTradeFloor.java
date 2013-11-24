@@ -1,17 +1,23 @@
 package c3po.bitstamp;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.codec.binary.Hex;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import c3po.BootstrapTradeFloor;
 import c3po.ISignal;
 import c3po.IWallet;
+import c3po.JsonReader;
 import c3po.Sample;
 import c3po.TradeAction;
 
@@ -21,8 +27,8 @@ public class BitstampTradeFloor extends BootstrapTradeFloor {
 	private double tradeFee = 0.05d;
 	
 	private static int clientId = 665206;
-	private static String apiKey = "eXD1rGdkzz77f8AtVnuRvkC5gNjYFPrm";
-	private static String apiSecret = "Qatd3bQoMtpEbth6w8SQaEdNRoxRUfvV";
+	private static String apiKey = "8C3i5RNNZ3Hvy3epS7TKRp87a3K6tX4s";
+	private static String apiSecret = "ZPS0qszXKqWtOM8PeTiLrqJuCOjLI3rl";
 
 	
 	public BitstampTradeFloor(ISignal last, ISignal bid, ISignal ask) {
@@ -39,8 +45,7 @@ public class BitstampTradeFloor extends BootstrapTradeFloor {
 	 * @return Signature
 	 * @throws Exception
 	 */
-	public static String generateSignature() throws Exception {
-		long nonce = new Date().getTime();
+	public static String generateSignature(long nonce) throws Exception {
 		String message = String.valueOf(nonce) + String.valueOf(clientId) + apiKey;
 		
 		// Initiate cipher with the apiSecret
@@ -52,6 +57,20 @@ public class BitstampTradeFloor extends BootstrapTradeFloor {
 		byte[] encryptedMessage = sha256_HMAC.doFinal(message.getBytes());
 		
 		return Hex.encodeHexString(encryptedMessage).toUpperCase();
+	}
+	
+	public static long generateNonce() {
+		return new Date().getTime();
+	}
+	
+	public static JSONObject doAuthenticatedCall(String url) throws Exception {
+		long nonce = generateNonce();
+		String sig = generateSignature(nonce);
+		List<NameValuePair> params = new ArrayList<NameValuePair>();
+		params.add(new BasicNameValuePair("key", apiKey));
+		params.add(new BasicNameValuePair("nonce", String.valueOf(nonce)));
+		params.add(new BasicNameValuePair("signature", sig));
+		return JsonReader.readJsonFromUrl(url, params );
 	}
 
 	@Override

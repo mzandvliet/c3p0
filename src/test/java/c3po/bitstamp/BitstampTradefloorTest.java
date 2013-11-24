@@ -6,6 +6,7 @@ import java.net.InetSocketAddress;
 import java.sql.SQLException;
 import java.util.Date;
 
+import org.json.JSONObject;
 import org.junit.Test;
 
 import c3po.bitstamp.BitstampTickerDbSource;
@@ -17,7 +18,10 @@ public class BitstampTradefloorTest {
 	
 	@Test
 	public void testGenerateSignature() throws Exception {
-		String signature = BitstampTradeFloor.generateSignature();
+		long nonce = BitstampTradeFloor.generateNonce();
+		String signature = BitstampTradeFloor.generateSignature(nonce);
+		
+		System.out.println("Generated sig " + signature + " for nonce " + nonce);
 		
 		// Signature must be 64 characters long
 		assertEquals(64, signature.length());
@@ -25,5 +29,13 @@ public class BitstampTradefloorTest {
 		// Signature must be uppercase
 		assertEquals(signature.toUpperCase(), signature);
 	}
-
+	
+	@Test
+	public void testAuthenticatedCall() throws Exception {
+		JSONObject result = BitstampTradeFloor.doAuthenticatedCall("https://www.bitstamp.net/api/balance/");
+		System.out.println(result);
+		
+		// This throws an exception if the authentication went wrong
+		result.get("fee");
+	}
 }
