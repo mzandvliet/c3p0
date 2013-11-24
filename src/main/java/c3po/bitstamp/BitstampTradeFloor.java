@@ -84,15 +84,24 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 
 	@Override
 	public double buyImpl(IWallet wallet, TradeAction action) {
+		double boughtBtc = 0;
+		try {
 		// We get the latest ask, assuming the ticker is updated by some other part of the app
 		Sample currentAsk = askSignal.peek();
 				
 		// The amount of Btc we are going to get if we buy for volume USD
-		double boughtBtc = action.volume * (1.0d-tradeFee);
+		boughtBtc = action.volume * (1.0d-tradeFee);
 		double soldUsd = action.volume * currentAsk.value;
+		
+		// Place the actual buy order
+		placeBuyOrder(currentAsk.value, boughtBtc);
 		
 		// We assume the trade is fulfilled instantly, for the price of the ask
 		wallet.transact(action.timestamp, -soldUsd, boughtBtc);
+		}
+		catch(Exception e) {
+			LOGGER.error("Could not buy BTC", e);
+		}
 		
 		return boughtBtc;
 	}
@@ -105,6 +114,9 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 		// We assume the trade is fulfilled instantly, for the price of the ask
 		double boughtUsd = currentBid.value * (action.volume * (1.0d-tradeFee)); // volume in bitcoins
 		double soldBtc = action.volume;
+		
+		// Place the actual sell order
+		placeSellOrder(currentBid.value, soldBtc);
 		
 		wallet.transact(action.timestamp, boughtUsd, -soldBtc);
 		
@@ -126,7 +138,62 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 			LOGGER.error("Could not update wallet", e);
 		}
 	}
+
 	
+	/**
+	 * This method looks at the currently open orders of the bot
+	 * and readjusts them if the prices are outdated. This makes
+	 * sure open orders are filled as soon as possible.
+	 */
+	public void adjustOrders() {
+		try {
+			Sample currentAsk = this.askSignal.peek();
+			Sample currentBid = this.bidSignal.peek();
+			
+			// Loop over all the open orders
+			for(OpenOrder openOrder : getOpenOrders()) {
+				// Adjust sell order if needed
+				if(openOrder.getType().equals("sell") && openOrder.getPrice() != currentBid.value) {
+					cancelOrder(openOrder);
+					placeSellOrder(currentBid.value, openOrder.getAmount());
+				}
+				
+				// Adjust buy order if needed
+				if(openOrder.getType().equals("buy") && openOrder.getPrice() != currentAsk.value) {
+					cancelOrder(openOrder);
+					placeBuyOrder(currentAsk.value, openOrder.getAmount());
+				}
+			}
+			
+		} catch(Exception e) {
+			LOGGER.error("Could not adjust orders", e);
+		}
+	}
+	
+	private void placeSellOrder(double price, double amount) {
+		try {
+			List<NameValuePair> params = new LinkedList<NameValuePair>();
+			params.add(new BasicNameValuePair("price", String.valueOf(price)));
+			params.add(new BasicNameValuePair("amount", String.valueOf(amount)));
+			String result = doAuthenticatedCall("https://www.bitstamp.net/api/sell/", params);
+			LOGGER.info("Placed sell order: Sell " + amount + " BTC for " + price + " USD. Result: " + result);
+		} catch(Exception e) {
+			LOGGER.error("Could not place sell limit order", e);
+		}
+	}
+	
+	private void placeBuyOrder(double price, double amount) {
+		try {
+			List<NameValuePair> params = new LinkedList<NameValuePair>();
+			params.add(new BasicNameValuePair("price", String.valueOf(price)));
+			params.add(new BasicNameValuePair("amount", String.valueOf(amount)));
+			String result = doAuthenticatedCall("https://www.bitstamp.net/api/buy/", params);
+			LOGGER.info("Placed buy order: Buy " + amount + " BTC for " + price + " USD. Result: " + result);
+		} catch(Exception e) {
+			LOGGER.error("Could not place buy limit order", e);
+		}
+	}
+
 	/**
 	 * Does an API call to fetch the currently open orders.
 	 * 
@@ -144,7 +211,7 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 		
 		return openOrders;
 	}
-	
+
 	/**
 	 * This method takes a list of open orders and
 	 * tries to cancel them one by one.
@@ -157,10 +224,14 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	 */
     public void cancelOrders(List<OpenOrder> ordersToCancel) throws JSONException, Exception {
 		for(OpenOrder order : ordersToCancel) {
-			List<NameValuePair> params = new LinkedList<NameValuePair>();
-			params.add(new BasicNameValuePair("id", String.valueOf(order.getId())));
-			String result = doAuthenticatedCall("https://www.bitstamp.net/api/cancel_order/", params);
-			LOGGER.info("Cancelled order " + order + ": " + result);
+			cancelOrder(order);
 		}
 	}
+    
+    public void cancelOrder(OpenOrder order) throws JSONException, Exception {
+		List<NameValuePair> params = new LinkedList<NameValuePair>();
+		params.add(new BasicNameValuePair("id", String.valueOf(order.getId())));
+		String result = doAuthenticatedCall("https://www.bitstamp.net/api/cancel_order/", params);
+		LOGGER.info("Cancelled order " + order + ": " + result);
+    }
 }
