@@ -71,11 +71,11 @@ public class MacdBotTrainer {
 //	private final static int numBots = 1000;
 	
 	private final static int numEpochs = 100;
-	private final static int numBots = 100;
+	private final static int numBots = 250;
 	
-	private final static int numParents = 50;
-	private final static int numElites = 5;
-	private final static double mutationChance = 0.33d;
+	private final static int numParents = 100;
+	private final static int numElites = 10;
+	private final static double mutationChance = 0.2d;
 	
 	private final static double walletStartDollars = 500.0;
 	private final static double walletStartBtcInUsd = 500.0;
@@ -149,12 +149,12 @@ public class MacdBotTrainer {
 		
 		MacdBot bestBot = population.get(0);
 		LOGGER.debug("Best bot was: " + bestBot.getConfig().toString());
-		LOGGER.debug("Wallet: " + bestBot.getTradeFloor().getWalletValueInUsd(bestBot.getWallet()));
+		LOGGER.debug("Wallet: " + getBotDollarValue(bestBot));
 		LOGGER.debug("Trades: " + loggers.get(bestBot).getActions().size());
 
 		MacdBot worstBot = population.get(population.size()-1);
 		LOGGER.debug("Worst bot was: " + worstBot.getConfig().toString());
-		LOGGER.debug("Wallet: " + worstBot.getTradeFloor().getWalletValueInUsd(worstBot.getWallet()));
+		LOGGER.debug("Wallet: " + getBotDollarValue(worstBot));
 		LOGGER.debug("Trades: " + loggers.get(worstBot).getActions().size());
 		
 		LOGGER.debug("...");
@@ -173,11 +173,11 @@ public class MacdBotTrainer {
             	// Move bigger earners to the start, losers to the end
 	        	// A minimum # of trade is required, but importance of trade frequency falls off after just a couple of them
 	            	
-	        	double botAWallet = botA.getTradeFloor().getWalletValueInUsd(botA.getWallet());
+	        	double botAWallet = getBotDollarValue(botA);
 	        	double botAActivity = 0.1d + Math.log(loggers.get(botA).getActions().size() * 10000); 
             	double botAPerformance = botAWallet * botAActivity;
             	
-            	double botBWallet = botB.getTradeFloor().getWalletValueInUsd(botB.getWallet());
+            	double botBWallet = getBotDollarValue(botB);
 	        	double botBActivity = 0.1d + Math.log(loggers.get(botB).getActions().size() * 10000);
             	double botBPerformance = botBWallet * botBActivity;
             	
@@ -188,6 +188,10 @@ public class MacdBotTrainer {
             	return botAPerformance > botBPerformance ? -1 : 1;
 	        }
 	    });
+	}
+	
+	private double getBotDollarValue(IBot bot) {
+		return bot.getTradeFloor().getWalletValueInUsd(bot.getWallet());
 	}
 	
 	private List<MacdBot> createPopulationFromConfigs(List<MacdBotConfig> configs, BitstampTickerSource ticker, ITradeFloor tradeFloor, IClock botClock) {
@@ -230,25 +234,22 @@ public class MacdBotTrainer {
 	
 	private MacdBotConfig createRandomConfig() {
 		
-		long fast = getRandomSignalperiod(1 * Time.MINUTES, 1000 * Time.MINUTES);
-		long slow = getRandomSignalperiod(1 * Time.MINUTES, 1000 * Time.MINUTES);
-		long signal = getRandomSignalperiod(1 * Time.MINUTES, 1000 * Time.MINUTES);
+		long fast = getRandomLong(1 * Time.MINUTES, 2000 * Time.MINUTES);
+		long slow = getRandomLong(1 * Time.MINUTES, 2000 * Time.MINUTES);
+		long signal = getRandomLong(1 * Time.MINUTES, 2000 * Time.MINUTES);
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
 			fast,
 			slow,
 			signal
 		);
 		
-		double minBuyThreshold = 0.0d + (Math.random() * 1.0d);
-		double minSellThreshold = -0.5d + (Math.random() * 1.0d);
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
-				minBuyThreshold,
-				minSellThreshold,
+				getRandomDouble(-2.0d, 2.0d),
+				getRandomDouble(-2.0d, 2.0d),
 				Math.random(),
 				Math.random(),
-				getRandomBackoffDuration(60000l, 86400000l),
-				getRandomBackoffDuration(60000l, 86400000l)
-				
+				getRandomLong(1 * Time.MINUTES, 2000 * Time.MINUTES),
+				getRandomLong(1 * Time.MINUTES, 2000 * Time.MINUTES)
 		);
 		
 		MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
@@ -346,7 +347,7 @@ public class MacdBotTrainer {
 		
 		MacdAnalysisConfig validAnalysisConfig = new MacdAnalysisConfig(
 				config.analysisConfig.fastPeriod  > config.analysisConfig.slowPeriod ?
-						getRandomSignalperiod(1 * Time.MINUTES, config.analysisConfig.slowPeriod) :
+						getRandomLong(1 * Time.MINUTES, config.analysisConfig.slowPeriod) :
 						config.analysisConfig.fastPeriod,
 				config.analysisConfig.slowPeriod,
 				config.analysisConfig.signalPeriod
@@ -366,11 +367,11 @@ public class MacdBotTrainer {
 		return Math.random() < chance;
 	}
 	
-	private long getRandomSignalperiod(long min, long max) {
-		return min + (long)(Math.random() * (double)(max-min));
+	private double getRandomDouble(double min, double max) {
+		return min + (Math.random() * (max-min));
 	}
 	
-	private long getRandomBackoffDuration(long min, long max) {
+	private long getRandomLong(long min, long max) {
 		return min + (long)(Math.random() * (double)(max-min));
 	}
 }
