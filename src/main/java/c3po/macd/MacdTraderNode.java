@@ -66,8 +66,8 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 			boolean buyBackOff = (lastBuyTime > tick - config.buyBackoffTimer);
 			boolean sellBackOff = (lastSellTime > tick - config.sellBackoffTimer);
 			
-			if (!buyBackOff && currentDiff.value > config.minBuyDiffThreshold && wallet.getWalledUsd() > minDollars) {
-				double dollars = wallet.getWalledUsd() * config.usdToBtcTradeAmount;
+			if (!buyBackOff && currentDiff.value > config.minBuyDiffThreshold && wallet.getWalletUsd() > minDollars) {
+				double dollars = wallet.getWalletUsd() * config.usdToBtcTradeAmount;
 				double volumeBtc = tradeFloor.toBtc(dollars);
 				
 				TradeAction buyAction = new TradeAction(TradeActionType.BUY, tick, volumeBtc);

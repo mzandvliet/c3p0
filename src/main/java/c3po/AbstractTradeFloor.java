@@ -41,7 +41,7 @@ public abstract class AbstractTradeFloor implements ITradeFloor {
 
 	@Override
 	public double getWalletValueInUsd(IWallet wallet) {
-		return wallet.getWalledUsd() + toUsd(wallet.getWalletBtc());
+		return wallet.getWalletUsd() + toUsd(wallet.getWalletBtc());
 	}
 
 	@Override

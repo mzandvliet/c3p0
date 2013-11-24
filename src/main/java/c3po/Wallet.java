@@ -3,13 +3,18 @@ package c3po;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import c3po.bitstamp.BitstampTradeFloor;
+
 public class Wallet implements IWallet {
+	private static final Logger LOGGER = LoggerFactory.getLogger(Wallet.class);
+	
 	private List<IWalletTransactionListener> walletListeners;
 	
 	private double walletUsd;
 	private double walletBtc;
-	
-	
 	
 	public Wallet(double walletUsd, double walletBtc) {
 		this.walletListeners = new ArrayList<IWalletTransactionListener>();
@@ -18,7 +23,7 @@ public class Wallet implements IWallet {
 	}
 
 	@Override
-	public double getWalledUsd() {
+	public double getWalletUsd() {
 		return walletUsd;
 	}
 
@@ -54,5 +59,12 @@ public class Wallet implements IWallet {
 	@Override
 	public String toString() {
 		return "Wallet: " + walletUsd + " USD, " + walletBtc + " BTC";
+	}
+
+	@Override
+	public void update(double dollars, double btc) {
+		LOGGER.debug("Received update for the wallet. Difference " + (dollars - walletUsd) + " Btc, " + (btc - walletBtc) + " USD");
+		walletUsd = dollars;
+		walletBtc = btc;
 	}
 }
