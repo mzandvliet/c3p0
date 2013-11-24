@@ -56,9 +56,14 @@ public class MacdBot extends AbstractTickable implements IBot {
 	
 	//private final static String jsonUrl = "http://www.bitstamp.net/api/ticker/";
 	
-	private final static String csvPath = "resources/bitstamp_ticker_till_20131122_crashed.csv";
+	private final static String csvPath = "resources/bitstamp_ticker_till_20131122.csv";
 	private final static long simulationStartTime = 1384079023000l;
-	private final static long simulationEndTime = 1385192429000l; 
+	private final static long simulationEndTime = 1385156429000l; 
+	
+//	private final static String csvPath = "resources/bitstamp_ticker_till_20131122_crashed.csv";
+//	private final static long simulationStartTime = 1384079023000l;
+//	private final static long simulationEndTime = 1385192429000l; 
+	
 	private final static long interpolationTime = 2 * Time.MINUTES; // Delay data by two minutes for interpolation
 	
 	private final static long timestep = 1 * Time.MINUTES;
@@ -103,7 +108,7 @@ public class MacdBot extends AbstractTickable implements IBot {
 		
 		// Create bot
 		
-		MacdBot bot = new MacdBot(config, tickerNode.getOutputHigh(), wallet, tradeFloor);
+		MacdBot bot = new MacdBot(config, tickerNode.getOutputLast(), wallet, tradeFloor);
 		
 		// Create loggers
 		
@@ -113,9 +118,9 @@ public class MacdBot extends AbstractTickable implements IBot {
 		// Create the grapher
 		
 		GraphingNode grapher = new GraphingNode(graphInterval, "MacdBot", 
-				tickerNode.getOutputHigh(),
-				bot.getAnalysisNode().getOutput(0),
-				bot.getAnalysisNode().getOutput(1)
+				tickerNode.getOutputLast(),
+				bot.analysisNode.getOutput(0),
+				bot.analysisNode.getOutput(1)
 				);
 		grapher.pack();
 		grapher.setVisible(true);

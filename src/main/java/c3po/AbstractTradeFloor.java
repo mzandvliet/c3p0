@@ -17,12 +17,12 @@ public abstract class AbstractTradeFloor implements ITradeFloor {
 	
 	private List<ITradeListener> tradeListeners;
 
-	protected ISignal lastSignal;
+	protected ISignal tickerSignal;
 	protected ISignal bidSignal;
 	protected ISignal askSignal;
 	
 	public AbstractTradeFloor(ISignal last, ISignal bid, ISignal ask) {
-		this.lastSignal = last;
+		this.tickerSignal = last;
 		this.bidSignal = bid;
 		this.askSignal = ask;
 		
@@ -31,12 +31,12 @@ public abstract class AbstractTradeFloor implements ITradeFloor {
 	
 	@Override
 	public double toBtc(double usd) {
-		return usd / lastSignal.peek().value;
+		return usd / tickerSignal.peek().value;
 	}
 
 	@Override
 	public double toUsd(double btc) {
-		return btc * lastSignal.peek().value;
+		return btc * tickerSignal.peek().value;
 	}
 
 	@Override
