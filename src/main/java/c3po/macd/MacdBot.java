@@ -27,6 +27,8 @@ import c3po.bitstamp.BitstampTickerCsvSource;
  * 
  * - Implement better polling to mitigate server data misses
  * 
+ * - Defensive Programming
+ * 		- Verify input data integrity and consistency
  * 
  * - Bot Design
  * 		- Manage time duration of open positions
@@ -100,17 +102,17 @@ public class MacdBot extends AbstractTickable implements IBot {
 		// Create bot config
 		
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
-				33 * Time.MINUTES,
-				34 * Time.MINUTES,
-				2 * Time.MINUTES);
+				22 * Time.MINUTES,
+				48 * Time.MINUTES,
+				5 * Time.MINUTES);
 		
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
-				-0.0771,
-				1.8221,
-				0.5492,
-				0.7554,
-				1 * Time.MINUTES,
-				3 * Time.MINUTES);
+				-0.5592,
+				-1.9883,
+				0.0150,
+				0.9527,
+				6 * Time.MINUTES,
+				33 * Time.MINUTES);
 		MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
 		
 		// Create bot
@@ -126,16 +128,10 @@ public class MacdBot extends AbstractTickable implements IBot {
 		
 		GraphingNode grapher = new GraphingNode(graphInterval, "MacdBot", 
 				tickerNode.getOutputLast(),
-				tickerNode.getOutputBid(),
-				tickerNode.getOutputAsk());
+				bot.analysisNode.getOutput(0),
+				bot.analysisNode.getOutput(1)
+				);
 		
-//		GraphingNode grapher = new GraphingNode(graphInterval, "MacdBot", 
-//				tickerNode.getOutputLast(),
-//				bot.analysisNode.getOutput(0),
-//				bot.analysisNode.getOutput(1)
-//				);
-		grapher.pack();
-		grapher.setVisible(true);
 		bot.addTradeListener(grapher);
 		
 		// Create a clock
@@ -152,6 +148,9 @@ public class MacdBot extends AbstractTickable implements IBot {
 		
 		
 		// Log results
+		
+		grapher.pack();
+		grapher.setVisible(true); // Show graph *after* simulation because otherwise annotation adding causes exceptions
 		
 		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Profit: " + (tradeFloor.getWalletValueInUsd(wallet) - walletDollarStart));
 		tradeLogger.writeLog();
