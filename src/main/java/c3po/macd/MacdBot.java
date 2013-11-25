@@ -18,6 +18,13 @@ import c3po.bitstamp.BitstampTickerCsvSource;
 
 /* Todo:
  * 
+ * ------------------------------------
+ * 1. FIX CSV CRASH GENERATOR
+ * 2. REMOVE ARTIFICIAL SIGNAL CLAMPER IN CSVSOURCE
+ * ------------------------------------
+ * 
+ * - Create day-trader bots
+ * 
  * - Implement better polling to mitigate server data misses
  * 
  * 
@@ -56,13 +63,13 @@ public class MacdBot extends AbstractTickable implements IBot {
 	
 	//private final static String jsonUrl = "http://www.bitstamp.net/api/ticker/";
 	
-	private final static String csvPath = "resources/bitstamp_ticker_till_20131122.csv";
-	private final static long simulationStartTime = 1384079023000l;
-	private final static long simulationEndTime = 1385156429000l; 
-	
-//	private final static String csvPath = "resources/bitstamp_ticker_till_20131122_crashed.csv";
+//	private final static String csvPath = "resources/bitstamp_ticker_till_20131122.csv";
 //	private final static long simulationStartTime = 1384079023000l;
-//	private final static long simulationEndTime = 1385192429000l; 
+//	private final static long simulationEndTime = 1385156429000l; 
+	
+	private final static String csvPath = "resources/bitstamp_ticker_till_20131122_crashed.csv";
+	private final static long simulationStartTime = 1384079023000l;
+	private final static long simulationEndTime = 1385192429000l; 
 	
 	private final static long interpolationTime = 2 * Time.MINUTES; // Delay data by two minutes for interpolation
 	
@@ -119,9 +126,14 @@ public class MacdBot extends AbstractTickable implements IBot {
 		
 		GraphingNode grapher = new GraphingNode(graphInterval, "MacdBot", 
 				tickerNode.getOutputLast(),
-				bot.analysisNode.getOutput(0),
-				bot.analysisNode.getOutput(1)
-				);
+				tickerNode.getOutputBid(),
+				tickerNode.getOutputAsk());
+		
+//		GraphingNode grapher = new GraphingNode(graphInterval, "MacdBot", 
+//				tickerNode.getOutputLast(),
+//				bot.analysisNode.getOutput(0),
+//				bot.analysisNode.getOutput(1)
+//				);
 		grapher.pack();
 		grapher.setVisible(true);
 		bot.addTradeListener(grapher);

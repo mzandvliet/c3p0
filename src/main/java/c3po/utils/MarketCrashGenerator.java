@@ -2,6 +2,17 @@ package c3po.utils;
 
 import java.io.IOException;
 
+/* 
+ * Todo:
+ * 
+ * YEAH THIS IS KINDA BROKEN :P
+ * 
+ * The correlation (distance) between the signals is lost this way, so for example the BID and ASK start drifting wildly.
+ * Also, the values can actually become negative.
+ * 
+ * Fixy fixy :)
+ */
+
 public class MarketCrashGenerator {
 
 	//"1385156429","790.00","769.97","769.35","25376.2602582400","683.20","769.97";

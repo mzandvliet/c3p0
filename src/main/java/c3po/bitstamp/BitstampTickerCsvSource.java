@@ -87,12 +87,14 @@ public class BitstampTickerCsvSource extends BitstampTickerSource {
 		
 		ServerSampleEntry entry = new ServerSampleEntry(serverTimestamp, data.length-1);
 		
-		entry.set(SignalName.LAST.ordinal(), new Sample(serverTimestamp, Double.parseDouble(data[2])));
-		entry.set(SignalName.HIGH.ordinal(), new Sample(serverTimestamp, Double.parseDouble(data[1])));
-		entry.set(SignalName.LOW.ordinal(), new Sample(serverTimestamp, Double.parseDouble(data[5])));
-		entry.set(SignalName.VOLUME.ordinal(), new Sample(serverTimestamp, Double.parseDouble(data[4])));
-		entry.set(SignalName.BID.ordinal(), new Sample(serverTimestamp, Double.parseDouble(data[3])));
-		entry.set(SignalName.ASK.ordinal(), new Sample(serverTimestamp, Double.parseDouble(data[6])));
+		// Todo: REMOVE THE CLAMPSSSS, FIX THE CSVSSSSSSSSS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		
+		entry.set(SignalName.LAST.ordinal(), new Sample(serverTimestamp, Math.max(Double.parseDouble(data[2]),100d)));
+		entry.set(SignalName.HIGH.ordinal(), new Sample(serverTimestamp, Math.max(Double.parseDouble(data[1]),100d)));
+		entry.set(SignalName.LOW.ordinal(), new Sample(serverTimestamp, Math.max(Double.parseDouble(data[5]),100d)));
+		entry.set(SignalName.VOLUME.ordinal(), new Sample(serverTimestamp, Math.max(Double.parseDouble(data[4]),100d)));
+		entry.set(SignalName.BID.ordinal(), new Sample(serverTimestamp, Math.max(Double.parseDouble(data[3]),100d)));
+		entry.set(SignalName.ASK.ordinal(), new Sample(serverTimestamp, Math.max(Double.parseDouble(data[6]),100d)));
 		
 		return entry;
 	}
