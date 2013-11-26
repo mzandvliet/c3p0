@@ -48,7 +48,7 @@ public class BitstampSimulationTradeFloor extends AbstractTradeFloor {
 		// We get the latest ask, assuming the ticker is updated by some other part of the app
 		Sample currentBid = bidSignal.peek();
 		
-		// The amount of BTC we are going to get if we buy for volume USD, with fees subtracted
+		// The amount of BTC we are going to get if we sell for volume BTC, with fees subtracted
 		double boughtUsd = action.volume * currentBid.value * (1.0d-tradeFee);
 		
 		// We assume the trade is fulfilled instantly, for the price of the bid

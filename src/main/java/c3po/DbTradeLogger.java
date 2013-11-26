@@ -2,6 +2,7 @@ package c3po;
 
 import java.net.InetSocketAddress;
 import java.sql.*;
+import java.util.Date;
 import java.util.Random;
 
 import org.slf4j.Logger;
@@ -24,7 +25,7 @@ public class DbTradeLogger implements ITradeListener, IWalletTransactionListener
 	
 	public DbTradeLogger(IBot bot, InetSocketAddress host, String user, String pwd) {
 		this.bot = bot;
-		this.botId = Math.abs(new Random().nextInt());
+		this.botId = (int) (new Date().getTime()/1000.0d);
 		this.host = host;
 		this.user = user;
 		this.pwd = pwd;
@@ -38,7 +39,6 @@ public class DbTradeLogger implements ITradeListener, IWalletTransactionListener
 		try {
 			log(action);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -79,7 +79,6 @@ public class DbTradeLogger implements ITradeListener, IWalletTransactionListener
 		statement.execute(query);
 		  
 		LOGGER.debug(query);
-		
 		log(new WalletTransactionResult(startTime, usdStart, btcStart));
 	}
 	
@@ -90,11 +89,10 @@ public class DbTradeLogger implements ITradeListener, IWalletTransactionListener
 		Statement statement = connect.createStatement();
 		// Result set get the result of the SQL query
 		final String queryTemplate = "INSERT INTO  `c3po`.`bot_trade_action` (`bot_id` ,`timestamp` ,`action_type` ,`amount`) VALUES ('%s',  '%s',  '%s',  '%s')";
-		String query = String.format(queryTemplate, botId, action.timestamp / 1000, action.action, action.volume);
+		String query = String.format(queryTemplate, botId, Math.floor(action.timestamp / 1000.0d), action.action, action.volume);
 		
-		statement.execute(query);
-		  
 		LOGGER.debug(query);
+		statement.execute(query);
 	}
 	
 	// Todo: init call with a start amount
