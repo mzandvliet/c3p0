@@ -170,6 +170,13 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 		}
 	}
 	
+
+	/**
+	 * Does the actual sell order in the Bitstamp API.
+	 * 
+	 * @param price
+	 * @param amount
+	 */
 	private void placeSellOrder(double price, double amount) {
 		try {
 			List<NameValuePair> params = new LinkedList<NameValuePair>();
@@ -182,6 +189,12 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 		}
 	}
 	
+	/**
+	 * Does the actual buy order in the Bitstamp API.
+	 * 
+	 * @param price
+	 * @param amount
+	 */
 	private void placeBuyOrder(double price, double amount) {
 		try {
 			List<NameValuePair> params = new LinkedList<NameValuePair>();
