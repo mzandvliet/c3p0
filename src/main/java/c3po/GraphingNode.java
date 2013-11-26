@@ -5,6 +5,7 @@ import java.awt.Color;
 import javax.swing.JPanel;
 
 import org.jfree.chart.*;
+import org.jfree.chart.annotations.XYPointerAnnotation;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.plot.*;
 import org.jfree.chart.renderer.xy.*;
@@ -85,9 +86,16 @@ public class GraphingNode extends ApplicationFrame implements ITickable, ITradeL
 	
 	@Override
 	public void onTrade(TradeAction action) {
-//		XYTextAnnotation annotation = new XYTextAnnotation(action.action.toString(), 10000d, 500d);
-//		XYPlot plot = (XYPlot) chart.getPlot();
-//		plot.addAnnotation(annotation);
+		XYPlot plot = (XYPlot) chart.getPlot();
+		
+		TimeSeriesDataItem item = signalTimeSeries[0].getDataItem(signalTimeSeries[0].getItemCount() - 1);
+		
+		double x = item.getPeriod().getFirstMillisecond();
+		double y = item.getValue().doubleValue();
+		final double angle = -2 * Math.PI / 8;
+		XYPointerAnnotation annotation = new XYPointerAnnotation(action.action.toString(), x, y, angle);
+		
+		plot.addAnnotation(annotation);
 	}
 
 	/**

@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import c3po.Sample;
+import c3po.bitstamp.BitstampTickerSource.SignalName;
 import au.com.bytecode.opencsv.CSVReader;
 
 public class BitstampTickerCsvSource extends BitstampTickerSource {
@@ -86,9 +87,14 @@ public class BitstampTickerCsvSource extends BitstampTickerSource {
 		
 		ServerSampleEntry entry = new ServerSampleEntry(serverTimestamp, data.length-1);
 		
-		for (int i = 0; i < entry.size(); i++) {
-			entry.set(i, new Sample(serverTimestamp, Double.parseDouble(data[i+1])));
-		}
+		// Todo: REMOVE THE CLAMPSSSS, FIX THE CSVSSSSSSSSS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		
+		entry.set(SignalName.LAST.ordinal(), new Sample(serverTimestamp, Math.max(Double.parseDouble(data[2]),100d)));
+		entry.set(SignalName.HIGH.ordinal(), new Sample(serverTimestamp, Math.max(Double.parseDouble(data[1]),100d)));
+		entry.set(SignalName.LOW.ordinal(), new Sample(serverTimestamp, Math.max(Double.parseDouble(data[5]),100d)));
+		entry.set(SignalName.VOLUME.ordinal(), new Sample(serverTimestamp, Math.max(Double.parseDouble(data[4]),100d)));
+		entry.set(SignalName.BID.ordinal(), new Sample(serverTimestamp, Math.max(Double.parseDouble(data[3]),100d)));
+		entry.set(SignalName.ASK.ordinal(), new Sample(serverTimestamp, Math.max(Double.parseDouble(data[6]),100d)));
 		
 		return entry;
 	}

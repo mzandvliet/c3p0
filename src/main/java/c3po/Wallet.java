@@ -33,8 +33,8 @@ public class Wallet implements IWallet {
 	}
 
 	@Override
-	public boolean transact(long timestamp, double dollars, double btc) {
-		walletUsd += dollars;
+	public boolean transact(long timestamp, double usd, double btc) {
+		walletUsd += usd;
 		walletBtc += btc;
 		notify(new WalletTransactionResult(timestamp, walletUsd, walletBtc));
 		return true;

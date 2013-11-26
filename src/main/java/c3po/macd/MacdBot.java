@@ -18,8 +18,17 @@ import c3po.bitstamp.BitstampTickerCsvSource;
 
 /* Todo:
  * 
+ * ------------------------------------
+ * 1. FIX CSV CRASH GENERATOR
+ * 2. REMOVE ARTIFICIAL SIGNAL CLAMPER IN CSVSOURCE
+ * ------------------------------------
+ * 
+ * - Create day-trader bots
+ * 
  * - Implement better polling to mitigate server data misses
  * 
+ * - Defensive Programming
+ * 		- Verify input data integrity and consistency
  * 
  * - Bot Design
  * 		- Manage time duration of open positions
@@ -56,9 +65,14 @@ public class MacdBot extends AbstractTickable implements IBot {
 	
 	//private final static String jsonUrl = "http://www.bitstamp.net/api/ticker/";
 	
+//	private final static String csvPath = "resources/bitstamp_ticker_till_20131122.csv";
+//	private final static long simulationStartTime = 1384079023000l;
+//	private final static long simulationEndTime = 1385156429000l; 
+	
 	private final static String csvPath = "resources/bitstamp_ticker_till_20131122_crashed.csv";
 	private final static long simulationStartTime = 1384079023000l;
 	private final static long simulationEndTime = 1385192429000l; 
+	
 	private final static long interpolationTime = 2 * Time.MINUTES; // Delay data by two minutes for interpolation
 	
 	private final static long timestep = 1 * Time.MINUTES;
@@ -88,22 +102,22 @@ public class MacdBot extends AbstractTickable implements IBot {
 		// Create bot config
 		
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
-				33 * Time.MINUTES,
-				34 * Time.MINUTES,
-				2 * Time.MINUTES);
+				22 * Time.MINUTES,
+				48 * Time.MINUTES,
+				5 * Time.MINUTES);
 		
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
-				-0.0771,
-				1.8221,
-				0.5492,
-				0.7554,
-				1 * Time.MINUTES,
-				3 * Time.MINUTES);
+				-0.5592,
+				-1.9883,
+				0.0150,
+				0.9527,
+				6 * Time.MINUTES,
+				33 * Time.MINUTES);
 		MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
 		
 		// Create bot
 		
-		MacdBot bot = new MacdBot(config, tickerNode.getOutputHigh(), wallet, tradeFloor);
+		MacdBot bot = new MacdBot(config, tickerNode.getOutputLast(), wallet, tradeFloor);
 		
 		// Create loggers
 		
@@ -113,12 +127,11 @@ public class MacdBot extends AbstractTickable implements IBot {
 		// Create the grapher
 		
 		GraphingNode grapher = new GraphingNode(graphInterval, "MacdBot", 
-				tickerNode.getOutputHigh(),
-				bot.getAnalysisNode().getOutput(0),
-				bot.getAnalysisNode().getOutput(1)
+				tickerNode.getOutputLast(),
+				bot.analysisNode.getOutput(0),
+				bot.analysisNode.getOutput(1)
 				);
-		grapher.pack();
-		grapher.setVisible(true);
+		
 		bot.addTradeListener(grapher);
 		
 		// Create a clock
@@ -135,6 +148,9 @@ public class MacdBot extends AbstractTickable implements IBot {
 		
 		
 		// Log results
+		
+		grapher.pack();
+		grapher.setVisible(true); // Show graph *after* simulation because otherwise annotation adding causes exceptions
 		
 		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Profit: " + (tradeFloor.getWalletValueInUsd(wallet) - walletDollarStart));
 		tradeLogger.writeLog();

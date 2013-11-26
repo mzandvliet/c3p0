@@ -27,29 +27,32 @@ public class BitstampSimulationTradeFloor extends AbstractTradeFloor {
 	
 	@Override
 	public double buyImpl(IWallet wallet, TradeAction action) {
+		// NOTE: This assumes action.volume is in USD		
+		
 		// We get the latest ask, assuming the ticker is updated by some other part of the app
 		Sample currentAsk = askSignal.peek();
 				
-		// The amount of Btc we are going to get if we buy for volume USD
-		double boughtBtc = action.volume * (1.0d-tradeFee);
-		double soldUsd = action.volume * currentAsk.value;
+		// The amount of BTC we are going to get if we buy for volume USD, with fees subtracted
+		double boughtBtc = action.volume / currentAsk.value * (1.0d-tradeFee);
 		
 		// We assume the trade is fulfilled instantly, for the price of the ask
-		wallet.transact(action.timestamp, -soldUsd, boughtBtc);
+		wallet.transact(action.timestamp, -action.volume, boughtBtc);
 
 		return boughtBtc;
 	}
 
 	@Override
 	public double sellImpl(IWallet wallet, TradeAction action) {
+		// NOTE: This assumes action.volume is in BTC	
+		
 		// We get the latest ask, assuming the ticker is updated by some other part of the app
 		Sample currentBid = bidSignal.peek();
 		
-		// We assume the trade is fulfilled instantly, for the price of the ask
-		double boughtUsd = currentBid.value * (action.volume * (1.0d-tradeFee)); // volume in bitcoins
-		double soldBtc = action.volume;
+		// The amount of BTC we are going to get if we buy for volume USD, with fees subtracted
+		double boughtUsd = action.volume * currentBid.value * (1.0d-tradeFee);
 		
-		wallet.transact(action.timestamp, boughtUsd, -soldBtc);
+		// We assume the trade is fulfilled instantly, for the price of the bid
+		wallet.transact(action.timestamp, boughtUsd, -action.volume);
 
 		return boughtUsd;
 	}
