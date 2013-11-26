@@ -69,9 +69,9 @@ public class MacdBot extends AbstractTickable implements IBot {
 //	private final static long simulationStartTime = 1384079023000l;
 //	private final static long simulationEndTime = 1385156429000l; 
 	
-	private final static String csvPath = "resources/bitstamp_ticker_till_20131122_crashed.csv";
+	private final static String csvPath = "resources/bitstamp_ticker_till_20131122_pingpong.csv";
 	private final static long simulationStartTime = 1384079023000l;
-	private final static long simulationEndTime = 1385192429000l; 
+	private final static long simulationEndTime = 1388379913000l; 
 	
 	private final static long interpolationTime = 2 * Time.MINUTES; // Delay data by two minutes for interpolation
 	
@@ -80,7 +80,7 @@ public class MacdBot extends AbstractTickable implements IBot {
 	private final static double walletDollarStart = 100.0d;
 	private final static double walletBtcStart = 0.0d;
 	
-	private final static long graphInterval = 10 * Time.MINUTES;
+	private final static long graphInterval = 60 * Time.MINUTES;
 	
 	//================================================================================
     // Main
@@ -152,8 +152,8 @@ public class MacdBot extends AbstractTickable implements IBot {
 		grapher.pack();
 		grapher.setVisible(true); // Show graph *after* simulation because otherwise annotation adding causes exceptions
 		
-		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Profit: " + (tradeFloor.getWalletValueInUsd(wallet) - walletDollarStart));
 		tradeLogger.writeLog();
+		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Profit: " + (tradeFloor.getWalletValueInUsd(wallet) - walletDollarStart));
 	}
 	
 	

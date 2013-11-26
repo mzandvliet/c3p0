@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,10 +28,6 @@ import c3po.bitstamp.BitstampTickerCsvSource;
  * 
  * 
  * Todo:
- * 
- * - Bots luuuuurrve to hold way too long-term positions, make daytraders.
- * 		- Build explicit risk management into macdTrader (with volatility node)
- * 		- Build risk scoring into genetic algorithm
  * 
  * - Early out if a convergence threshold is reached
  * 
@@ -57,7 +54,11 @@ public class MacdBotTrainer {
 	
 	private final static String csvPath = "resources/bitstamp_ticker_till_20131122_crashed.csv";
 	private final static long simulationStartTime = 1384079023000l;
-	private final static long simulationEndTime = 1385192429000l; 
+	private final static long simulationEndTime = 1385192429000l;
+	
+//	private final static String csvPath = "resources/bitstamp_ticker_till_20131122_pingpong.csv";
+//	private final static long simulationStartTime = 1384079023000l;
+//	private final static long simulationEndTime = 1388379913000l; 
 	
 	// Timing
 	private final static long timestep = 60000; // Because right now we're keeping it constant, and data sampling rate is ~1 minute
@@ -68,19 +69,21 @@ public class MacdBotTrainer {
 	private final static int numBots = 250;
 	
 	// Selection
-	private final static int numParents = 100;
-	private final static int numElites = 5;
+	private final static int numParents = 125;
+	private final static int numElites = 10;
 	private final static double mutationChance = 0.33d;
 	
 	// Config mutation ranges
 	private final static long minAnalysisPeriod = 1 * Time.MINUTES;
-	private final static long maxAnalysisPeriod = 60 * Time.MINUTES;
+	private final static long maxAnalysisPeriod = 12 * Time.HOURS;
 	private final static long minBackoffPeriod = 1 * Time.MINUTES;
-	private final static long maxBackoffPeriod = 60 * Time.MINUTES;
-	private final static double minTransactionAmount = 0.01d;
+	private final static long maxBackoffPeriod = 12 * Time.HOURS;
+	private final static double minTransactionAmount = 0.05d;
 	private final static double maxTransactionAmount = 1d; // NOTE: Never exceed 1.0, lol
-	private final static double minDiffThreshold = -2.0d;
-	private final static double maxDiffThreshold = 2.0d;
+	private final static double minBuyDiffThreshold = -10.0d;
+	private final static double maxBuyDiffThreshold = 10.0d;
+	private final static double minSellDiffThreshold = -10.0d;
+	private final static double maxSellDiffThreshold = 10.0d;
 	
 	// Market context
 	private final static double walletStartDollars = 100.0;
@@ -196,7 +199,7 @@ public class MacdBotTrainer {
 	    });
 	}
 	
-	private double getBotDollarValue(IBot bot) {
+	private double getBotDollarValue(final IBot bot) {
 		return bot.getTradeFloor().getWalletValueInUsd(bot.getWallet());
 	}
 	
@@ -250,8 +253,8 @@ public class MacdBotTrainer {
 		);
 		
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
-				getRandomDouble(minDiffThreshold, maxDiffThreshold),
-				getRandomDouble(minDiffThreshold, maxDiffThreshold),
+				getRandomDouble(minBuyDiffThreshold, maxBuyDiffThreshold),
+				getRandomDouble(minSellDiffThreshold, maxSellDiffThreshold),
 				getRandomDouble(minTransactionAmount, maxTransactionAmount),
 				getRandomDouble(minTransactionAmount, maxTransactionAmount),
 				getRandomLong(minBackoffPeriod, maxBackoffPeriod),
@@ -326,20 +329,18 @@ public class MacdBotTrainer {
 		// Each property has a separately evaluated chance of changing to the above generated value
 		
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
-				shouldMutate(mutationChance) ? config.analysisConfig.fastPeriod : randomConfig.analysisConfig.fastPeriod,
-				shouldMutate(mutationChance) ? config.analysisConfig.slowPeriod : randomConfig.analysisConfig.slowPeriod,
-				shouldMutate(mutationChance) ? config.analysisConfig.signalPeriod : randomConfig.analysisConfig.signalPeriod
+				shouldMutate(mutationChance) ? randomConfig.analysisConfig.fastPeriod : config.analysisConfig.fastPeriod,
+				shouldMutate(mutationChance) ? randomConfig.analysisConfig.slowPeriod : config.analysisConfig.slowPeriod,
+				shouldMutate(mutationChance) ? randomConfig.analysisConfig.signalPeriod : config.analysisConfig.signalPeriod
 			);
 			
-		double minBuyThreshold = shouldMutate(0.1d) ? config.traderConfig.minBuyDiffThreshold : config.traderConfig.minBuyDiffThreshold;
-		double minSellThreshold = shouldMutate(0.1d) ? config.traderConfig.minSellDiffThreshold : config.traderConfig.minSellDiffThreshold;
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
-				minBuyThreshold,
-				minSellThreshold,
-				shouldMutate(mutationChance) ? config.traderConfig.usdToBtcTradeAmount : config.traderConfig.usdToBtcTradeAmount,
-				shouldMutate(mutationChance) ? config.traderConfig.btcToUsdTradeAmount : config.traderConfig.btcToUsdTradeAmount,
-				shouldMutate(mutationChance) ? config.traderConfig.sellBackoffTimer : config.traderConfig.sellBackoffTimer,
-				shouldMutate(mutationChance) ? config.traderConfig.buyBackoffTimer : config.traderConfig.buyBackoffTimer
+				shouldMutate(mutationChance) ? randomConfig.traderConfig.minBuyDiffThreshold : config.traderConfig.minBuyDiffThreshold,
+				shouldMutate(mutationChance) ? randomConfig.traderConfig.minSellDiffThreshold : config.traderConfig.minSellDiffThreshold,
+				shouldMutate(mutationChance) ? randomConfig.traderConfig.usdToBtcTradeAmount : config.traderConfig.usdToBtcTradeAmount,
+				shouldMutate(mutationChance) ? randomConfig.traderConfig.btcToUsdTradeAmount : config.traderConfig.btcToUsdTradeAmount,
+				shouldMutate(mutationChance) ? randomConfig.traderConfig.sellBackoffTimer : config.traderConfig.sellBackoffTimer,
+				shouldMutate(mutationChance) ? randomConfig.traderConfig.buyBackoffTimer : config.traderConfig.buyBackoffTimer
 		);
 		
 		MacdBotConfig mutatedConfig = new MacdBotConfig(config.timestep, analysisConfig, traderConfig);
