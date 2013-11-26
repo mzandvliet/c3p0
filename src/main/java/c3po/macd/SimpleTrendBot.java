@@ -73,8 +73,8 @@ public class SimpleTrendBot extends AbstractTickable implements IBot {
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
 				0.05,
 				-0.05,
-				0.01,
 				0.1,
+				0.2,
 				10 * Time.MINUTES,
 				10 * Time.MINUTES
 		);
@@ -87,8 +87,13 @@ public class SimpleTrendBot extends AbstractTickable implements IBot {
 		DebugTradeLogger tradeLogger = new DebugTradeLogger();
 		bot.addTradeListener(tradeLogger);
 		
+		DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+		dbTradeLogger.open();
+		dbTradeLogger.startSession(simulationStartTime, walletDollarStart, walletBtcStart);
+
+		
 		// Create the grapher
-		/*
+		
 		GraphingNode grapher = new GraphingNode(graphInterval, "MacdBot", 
 				tickerNode.getOutputHigh(),
 				bot.getAnalysisNode().getOutput(0),
@@ -97,13 +102,12 @@ public class SimpleTrendBot extends AbstractTickable implements IBot {
 		grapher.pack();
 		grapher.setVisible(true);
 		bot.addTradeListener(grapher);
-		*/
 		
 		// Create a clock
 		
 		IClock botClock = new SimulationClock(timestep, simulationStartTime, simulationEndTime, interpolationTime);
 		botClock.addListener(bot);
-		//botClock.addListener(grapher);
+		botClock.addListener(grapher);
 		
 		// Run the program
 		
@@ -190,9 +194,7 @@ public class SimpleTrendBot extends AbstractTickable implements IBot {
 			
 			if (!buyBackOff && currentDiff > config.minBuyDiffThreshold && wallet.getWalletUsd() > minDollars) {
 				double dollars = wallet.getWalletUsd() * config.usdToBtcTradeAmount;
-				double volumeBtc = tradeFloor.toBtc(dollars);
-				
-				TradeAction buyAction = new TradeAction(TradeActionType.BUY, tick, volumeBtc);
+				TradeAction buyAction = new TradeAction(TradeActionType.BUY, tick, dollars);
 				double btcBought = tradeFloor.buy(wallet, buyAction);
 				
 				lastBuyTime = tick;
