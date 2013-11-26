@@ -1,5 +1,10 @@
 package c3po;
 
+/**
+ * This class abstracts away the concept of timestep and
+ * only ripples through the ticks that occur after the
+ * length of a timestep.
+ */
 public abstract class AbstractTickable implements ITickable {
 	private final long timestep;
 	private long lastTick = -1;
