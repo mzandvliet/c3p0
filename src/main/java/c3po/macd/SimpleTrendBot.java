@@ -45,8 +45,8 @@ public class SimpleTrendBot extends AbstractTickable implements IBot {
 	
 	private final static long timestep = 1 * Time.MINUTES;
 	
-	private final static double walletDollarStart = 100.0d;
-	private final static double walletBtcStart = 0.0d;
+	private final static double walletDollarStart = 500.0d;
+	private final static double walletBtcStart = 2.0d;
 	
 	private final static long graphInterval = 10 * Time.MINUTES;
 
@@ -71,16 +71,16 @@ public class SimpleTrendBot extends AbstractTickable implements IBot {
 		
 		// Create bot config
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
-				0.05,
-				-0.05,
 				0.1,
-				0.2,
-				10 * Time.MINUTES,
-				10 * Time.MINUTES
+				-0.7,
+				0.01,
+				0.9,
+				1 * Time.MINUTES,
+				1 * Time.MINUTES
 		);
 
 		// Create bot
-		SimpleTrendBot bot = new SimpleTrendBot(traderConfig, timestep, 33 * Time.MINUTES, tickerNode.getOutputHigh(), wallet, tradeFloor);
+		SimpleTrendBot bot = new SimpleTrendBot(traderConfig, timestep, 30 * Time.MINUTES, tickerNode.getOutputHigh(), wallet, tradeFloor);
 		
 		// Create loggers
 		
@@ -186,7 +186,7 @@ public class SimpleTrendBot extends AbstractTickable implements IBot {
 			double diffT = (currentAvg.timestamp - prevAvg.timestamp) / 60000.0d;
 			double currentDiff = Math.round(diffV /  diffT * 1000.0d) / 1000.0d;
 			
-			LOGGER.debug(String.format("Diff V: %s, Diff T: %s, Diff: %s", diffV, diffT, currentDiff));
+			//LOGGER.debug(String.format("Diff V: %s, Diff T: %s, Diff: %s", diffV, diffT, currentDiff));
 			
 			// We don't want to trade too often, check if we are not in the backoff period
 			boolean buyBackOff = (lastBuyTime > tick - config.buyBackoffTimer);
@@ -200,7 +200,7 @@ public class SimpleTrendBot extends AbstractTickable implements IBot {
 				lastBuyTime = tick;
 				
 				notify(buyAction);
-				LOGGER.info(String.format("Bought %s BTC for %s USD because difference %s > %s", btcBought, dollars, currentDiff, config.minBuyDiffThreshold));
+				//LOGGER.info(String.format("Bought %s BTC for %s USD because difference %s > %s", btcBought, dollars, currentDiff, config.minBuyDiffThreshold));
 			}
 			else if (!sellBackOff && currentDiff < config.minSellDiffThreshold && wallet.getWalletBtc() > tradeFloor.toBtc(minDollars)) {
 				double btcToSell = wallet.getWalletBtc() * config.btcToUsdTradeAmount;
@@ -210,12 +210,12 @@ public class SimpleTrendBot extends AbstractTickable implements IBot {
 				lastSellTime = tick;
 				
 				notify(sellAction);
-				LOGGER.info(String.format("Sold %s BTC for %s USD because difference %s < %s", btcToSell, soldForUSD, currentDiff, config.minSellDiffThreshold));
+				//LOGGER.info(String.format("Sold %s BTC for %s USD because difference %s < %s", btcToSell, soldForUSD, currentDiff, config.minSellDiffThreshold));
 			}
 
 		}
 		else {
-			LOGGER.debug("Startup delay, ignoring tick "+ tick );
+			//LOGGER.debug("Startup delay, ignoring tick "+ tick );
 		}
 		
 		
