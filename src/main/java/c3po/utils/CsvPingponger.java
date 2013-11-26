@@ -15,8 +15,8 @@ public class CsvPingponger {
     // Program
     //================================================================================
 	
-	private final static String csvSourcePath = "resources/bitstamp_ticker_till_20131117.csv";
-	private final static String csvResultPath = "resources/bitstamp_ticker_till_20131117_pingpong.csv";
+	private final static String csvSourcePath = "resources/bitstamp_ticker_till_20131122.csv";
+	private final static String csvResultPath = "resources/bitstamp_ticker_till_20131122_pingpong.csv";
 	private final static int numOscillations = 2;
 			
 	public static void main(String[] args) {
@@ -95,7 +95,7 @@ public class CsvPingponger {
 				String[] sourceLine = lines.get(j);
 				
 				String[] newLine = new String[sourceLine.length];
-				newLine[0] = "" + (startTime + timeStep * j);
+				newLine[0] = "" + (startTime + deltaTime * (i*2) + timeStep * j);
 				
 				for (int k = 1; k < sourceLine.length; k ++) {
 					newLine[k] = sourceLine[k];
@@ -110,7 +110,7 @@ public class CsvPingponger {
 				String[] sourceLine = lines.get(lineIndex);
 				
 				String[] newLine = new String[sourceLine.length];
-				newLine[0] = "" + (startTime + timeStep * j);
+				newLine[0] = "" + (startTime + deltaTime * (i*2+1) + timeStep * j);
 					
 				for (int k = 1; k < sourceLine.length; k ++) {
 					newLine[k] = sourceLine[k];
@@ -121,4 +121,27 @@ public class CsvPingponger {
 		}
 	}
 	
+	private void mirror() throws IOException {
+		final List<String[]> lines = reader.readAll();
+		
+		long startTime = Long.parseLong(lines.get(0)[0]);
+		long endTime = Long.parseLong(lines.get(lines.size()-1)[0]);
+		long deltaTime = endTime - startTime;
+		long timeStep = deltaTime / lines.size();
+				
+		// Write reversed
+		for (int j = 0; j < lines.size(); j++) {
+			int lineIndex = lines.size() - 1 - j;
+			String[] sourceLine = lines.get(lineIndex);
+			
+			String[] newLine = new String[sourceLine.length];
+			newLine[0] = "" + (startTime + timeStep * j);
+				
+			for (int k = 1; k < sourceLine.length; k ++) {
+				newLine[k] = sourceLine[k];
+			}
+			
+			writer.writeNext(newLine);
+		}
+	}
 }
