@@ -1,7 +1,7 @@
 package c3po;
 
-public interface IBot extends ITickable, ITradeActionSource {
+public interface IBot<TBotConfig extends IBotConfig> extends ITickable, ITradeActionSource {
+	public TBotConfig getConfig();
 	public IWallet getWallet();
 	public ITradeFloor getTradeFloor();
-	public int hashCode();
 }

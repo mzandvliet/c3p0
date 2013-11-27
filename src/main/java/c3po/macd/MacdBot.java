@@ -56,7 +56,7 @@ import c3po.bitstamp.BitstampTickerCsvSource;
  * 
  */
 
-public class MacdBot extends AbstractTickable implements IBot {
+public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 	//================================================================================
     // Static Properties
     //================================================================================

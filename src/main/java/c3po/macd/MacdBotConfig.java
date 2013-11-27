@@ -1,6 +1,8 @@
 package c3po.macd;
 
-public class MacdBotConfig {
+import c3po.IBotConfig;
+
+public class MacdBotConfig implements IBotConfig {
 	public final long timestep; // Does not warrant its own class yet
 	public final MacdAnalysisConfig analysisConfig;
 	public final MacdTraderConfig traderConfig;
