@@ -75,7 +75,7 @@ public class MacdBotTrainer {
 	
 	// Config mutation ranges
 	private final static long minAnalysisPeriod = 1 * Time.MINUTES;
-	private final static long maxAnalysisPeriod = 6 * Time.HOURS;
+	private final static long maxAnalysisPeriod = 12 * Time.HOURS;
 	private final static double minBuyDiffThreshold = -10.0d;
 	private final static double maxBuyDiffThreshold = 10.0d;
 	private final static double minSellDiffThreshold = -10.0d;

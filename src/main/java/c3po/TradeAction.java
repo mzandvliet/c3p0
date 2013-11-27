@@ -19,6 +19,6 @@ public class TradeAction {
 	}
 	
 	public String toString() {
-		return String.format("%s %f on %s", action, volume, new Date(timestamp));
+		return String.format("%s for %f %s on %s", action, volume, action == TradeActionType.BUY ? "Usd" : "Btc" , new Date(timestamp));
 	}
 }

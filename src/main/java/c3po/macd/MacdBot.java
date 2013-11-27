@@ -150,7 +150,7 @@ public class MacdBot extends AbstractTickable implements IBot {
 		grapher.setVisible(true); // Show graph *after* simulation because otherwise annotation adding causes exceptions
 		
 		tradeLogger.writeLog();
-		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Wallet: " + (tradeFloor.getWalletValueInUsd(wallet)));
+		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Wallet: " + tradeFloor.getWalletValueInUsd(wallet));
 	}
 	
 	
