@@ -74,7 +74,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 		
 		MacdBotMutator mutator = new MacdBotMutator(mutatorConfig);
 		
-		IBotTrainer<MacdBotConfig> trainer = new GenAlgBotTrainer<MacdBotConfig, MacdBot>(genAlgConfig, botFactory, mutator, null);
+		IBotTrainer<MacdBotConfig> trainer = new GenAlgBotTrainer<MacdBotConfig>(genAlgConfig, botFactory, mutator, null);
 		
 		SelfOptimizingMacdBot bot = new SelfOptimizingMacdBot(timestep, trainer, null);
 		

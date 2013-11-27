@@ -53,15 +53,15 @@ import c3po.bitstamp.BitstampTickerCsvSource;
  * - Bot timestep is not affected by genetic modification. It is a constant.
  */
 
-public class GenAlgBotTrainer<TBotConfig extends IBotConfig, TBot extends IBot<TBotConfig>> implements IBotTrainer<TBotConfig> {
+public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrainer<TBotConfig> {	
 	private static final Logger LOGGER = LoggerFactory.getLogger(GenAlgBotTrainer.class);
 	
 	private final GenAlgBotTrainerConfig config;
-	private final ITrainingBotFactory<TBotConfig, TBot> botFactory;
+	private final ITrainingBotFactory<TBotConfig> botFactory;
 	private final IBotConfigMutator<TBotConfig> mutator;
 	private final SimulationClock clock;
 	
-	public GenAlgBotTrainer(GenAlgBotTrainerConfig config, ITrainingBotFactory<TBotConfig, TBot> botFactory, IBotConfigMutator<TBotConfig> mutator, SimulationClock clock) {
+	public GenAlgBotTrainer(GenAlgBotTrainerConfig config, ITrainingBotFactory<TBotConfig> botFactory, IBotConfigMutator<TBotConfig> mutator, SimulationClock clock) {
 		this.config = config;
 		this.botFactory = botFactory;
 		this.mutator = mutator;
@@ -81,18 +81,18 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig, TBot extends IBot<T
 	}
 	
 	private List<TBotConfig> simulateEpoch(final List<TBotConfig> configs, final int epoch) {
-		List<TBot> population = createPopulationFromConfigs(configs);
-		HashMap<TBot, DebugTradeLogger> loggers = createLoggers(population);
+		List<IBot<TBotConfig>> population = createPopulationFromConfigs(configs);
+		HashMap<IBot<TBotConfig>, DebugTradeLogger> loggers = createLoggers(population);
 		
 		// Run the simulation
 		
-		for (TBot bot : population) {
+		for (IBot<TBotConfig> bot : population) {
 			clock.addListener(bot);
 		}
 		
 		clock.run();
 		
-		for (TBot bot : population) {
+		for (IBot<TBotConfig> bot : population) {
 			clock.removeListener(bot);
 		}
 		
@@ -101,18 +101,18 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig, TBot extends IBot<T
 		sortByScore(population, loggers);
 		
 		List<TBotConfig> sortedConfigs = new ArrayList<TBotConfig>();
-		for (TBot bot : population) {
+		for (IBot<TBotConfig> bot : population) {
 			sortedConfigs.add(bot.getConfig());
 		}
 		
 		LOGGER.debug("Finished epoch " + epoch);
 		
-		TBot bestBot = population.get(0);
+		IBot<TBotConfig> bestBot = population.get(0);
 		LOGGER.debug("Best bot was: " + bestBot.getConfig().toString());
 		LOGGER.debug("Wallet: " + getBotDollarValue(bestBot));
 		LOGGER.debug("Trades: " + loggers.get(bestBot).getActions().size());
 
-		TBot worstBot = population.get(population.size()-1);
+		IBot<TBotConfig> worstBot = population.get(population.size()-1);
 		LOGGER.debug("Worst bot was: " + worstBot.getConfig().toString());
 		LOGGER.debug("Wallet: " + getBotDollarValue(worstBot));
 		LOGGER.debug("Trades: " + loggers.get(worstBot).getActions().size());
@@ -122,11 +122,11 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig, TBot extends IBot<T
 		return sortedConfigs;
 	}
 	
-	private void sortByScore(final List<TBot> population, final HashMap<TBot, DebugTradeLogger> loggers) {
+	private void sortByScore(final List<IBot<TBotConfig>> population, final HashMap<IBot<TBotConfig>, DebugTradeLogger> loggers) {
 		
-		Collections.sort(population, new Comparator<TBot>() {
+		Collections.sort(population, new Comparator<IBot<TBotConfig>>() {
 
-	        public int compare(TBot botA, TBot botB) {
+	        public int compare(IBot<TBotConfig> botA, IBot<TBotConfig> botB) {
             	// Move bigger earners to the start, losers to the end
 	        	// A minimum # of trade is required, but importance of trade frequency falls off after just a couple of them
 	            	
@@ -147,25 +147,25 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig, TBot extends IBot<T
 	    });
 	}
 	
-	private double getBotDollarValue(final TBot bot) {
+	private double getBotDollarValue(final IBot<TBotConfig> bot) {
 		return bot.getTradeFloor().getWalletValueInUsd(bot.getWallet());
 	}
 	
-	private List<TBot> createPopulationFromConfigs(List<TBotConfig> configs) {
-		ArrayList<TBot> population = new ArrayList<TBot>();
+	private List<IBot<TBotConfig>> createPopulationFromConfigs(List<TBotConfig> configs) {
+		ArrayList<IBot<TBotConfig>> population = new ArrayList<IBot<TBotConfig>>();
 
 		for (int i = 0; i < configs.size(); i++) {
-			TBot bot = botFactory.create(configs.get(i));
+			IBot<TBotConfig> bot = botFactory.create(configs.get(i));
 			population.add(bot);
 		}
 		
 		return population;
 	}
 	
-	private HashMap<TBot, DebugTradeLogger> createLoggers(List<TBot> population) {
-		HashMap<TBot, DebugTradeLogger> loggers = new HashMap<TBot, DebugTradeLogger>();
+	private HashMap<IBot<TBotConfig>, DebugTradeLogger> createLoggers(List<IBot<TBotConfig>> population) {
+		HashMap<IBot<TBotConfig>, DebugTradeLogger> loggers = new HashMap<IBot<TBotConfig>, DebugTradeLogger>();
 		
-		for (TBot bot : population) {
+		for (IBot<TBotConfig> bot : population) {
 			DebugTradeLogger logger = new DebugTradeLogger();
 			bot.addTradeListener(logger);
 			loggers.put(bot, logger);

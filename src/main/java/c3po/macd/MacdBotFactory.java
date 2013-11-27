@@ -10,7 +10,7 @@ import c3po.Training.*;
  * AND if you could create instances of generic types, which you can't.
  */
 
-public class MacdBotFactory implements ITrainingBotFactory<MacdBotConfig, MacdBot> {
+public class MacdBotFactory implements ITrainingBotFactory<MacdBotConfig> {
 
 	private final IWallet walletPrototype;
 	private final ISignal ticker;
