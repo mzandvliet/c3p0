@@ -65,13 +65,13 @@ public class MacdBot extends AbstractTickable implements IBot {
 	
 	//private final static String jsonUrl = "http://www.bitstamp.net/api/ticker/";
 	
-	private final static String csvPath = "resources/bitstamp_ticker_till_20131122_crashed.csv";
+	private final static String csvPath = "resources/bitstamp_ticker_till_20131126.csv";
 	private final static long simulationStartTime = 1384079023000l;
-	private final static long simulationEndTime = 1385192429000l;
+	private final static long simulationEndTime = 1385501193000l;
 	
-//	private final static String csvPath = "resources/bitstamp_ticker_till_20131122_pingpong.csv";
+//	private final static String csvPath = "resources/bitstamp_ticker_till_20131122_crashed.csv";
 //	private final static long simulationStartTime = 1384079023000l;
-//	private final static long simulationEndTime = 1388379913000l; 
+//	private final static long simulationEndTime = 1385192429000l;
 	
 	private final static long interpolationTime = 2 * Time.MINUTES;
 	private final static long timestep = 1 * Time.MINUTES;

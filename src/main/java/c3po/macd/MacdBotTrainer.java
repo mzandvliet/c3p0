@@ -52,13 +52,13 @@ import c3po.bitstamp.BitstampTickerCsvSource;
 public class MacdBotTrainer {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdBotTrainer.class);
 	
-	private final static String csvPath = "resources/bitstamp_ticker_till_20131122_crashed.csv";
-	private final static long simulationStartTime = 1384079023000l;
-	private final static long simulationEndTime = 1385192429000l;
-	
-//	private final static String csvPath = "resources/bitstamp_ticker_till_20131122_pingpong.csv";
+//	private final static String csvPath = "resources/bitstamp_ticker_till_20131122_crashed.csv";
 //	private final static long simulationStartTime = 1384079023000l;
-//	private final static long simulationEndTime = 1388379913000l; 
+//	private final static long simulationEndTime = 1385192429000l;
+	
+	private final static String csvPath = "resources/bitstamp_ticker_till_20131126.csv";
+	private final static long simulationStartTime = 1384079023000l;
+	private final static long simulationEndTime = 1385501193000l;
 	
 	// Timing
 	private final static long interpolationTime = 2 * Time.MINUTES;
