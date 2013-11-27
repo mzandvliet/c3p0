@@ -103,13 +103,13 @@ public class MacdBot extends AbstractTickable implements IBot {
 		// Create bot config
 		
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
-				268 * Time.MINUTES,
-				334 * Time.MINUTES,
-				329 * Time.MINUTES);
+				223 * Time.MINUTES,
+				403 * Time.MINUTES,
+				711 * Time.MINUTES);
 		
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
-				-1.0336,
-				-3.2843);
+				4.3809,
+				-7.6297);
 		MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
 		
 		// Create bot
