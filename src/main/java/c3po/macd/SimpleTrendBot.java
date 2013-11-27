@@ -38,9 +38,9 @@ public class SimpleTrendBot extends AbstractTickable implements IBot {
 	
 	//private final static String jsonUrl = "http://www.bitstamp.net/api/ticker/";
 	
-	private final static String csvPath = "resources/bitstamp_ticker_till_20131122_crashed.csv";
+	private final static String csvPath = "resources/bitstamp_ticker_till_20131126.csv";
 	private final static long simulationStartTime = 1384079023000l;
-	private final static long simulationEndTime = 1385192429000l; 
+	private final static long simulationEndTime = 1385501193000l; 
 	private final static long interpolationTime = 2 * Time.MINUTES; // Delay data by two minutes for interpolation
 	
 	private final static long timestep = 1 * Time.MINUTES;
@@ -48,7 +48,7 @@ public class SimpleTrendBot extends AbstractTickable implements IBot {
 	private final static double walletDollarStart = 500.0d;
 	private final static double walletBtcStart = 2.0d;
 	
-	private final static long graphInterval = 10 * Time.MINUTES;
+	private final static long graphInterval = 60 * Time.MINUTES;
 
 	private static final double minDollars = 1.0;
 	
@@ -72,15 +72,11 @@ public class SimpleTrendBot extends AbstractTickable implements IBot {
 		// Create bot config
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
 				0.1,
-				-0.7,
-				0.01,
-				0.9,
-				1 * Time.MINUTES,
-				1 * Time.MINUTES
+				-2.0
 		);
 
 		// Create bot
-		SimpleTrendBot bot = new SimpleTrendBot(traderConfig, timestep, 30 * Time.MINUTES, tickerNode.getOutputHigh(), wallet, tradeFloor);
+		SimpleTrendBot bot = new SimpleTrendBot(traderConfig, timestep, 30 * Time.MINUTES, tickerNode.getOutputAsk(), wallet, tradeFloor);
 		
 		// Create loggers
 		
@@ -96,12 +92,12 @@ public class SimpleTrendBot extends AbstractTickable implements IBot {
 		
 		GraphingNode grapher = new GraphingNode(graphInterval, "MacdBot", 
 				tickerNode.getOutputHigh(),
-				bot.getAnalysisNode().getOutput(0),
-				bot.getAnalysisNode().getOutput(1)
+				bot.getAnalysisNode().getOutput(0)
 				);
 		grapher.pack();
 		grapher.setVisible(true);
 		bot.addTradeListener(grapher);
+		
 		
 		// Create a clock
 		
@@ -135,7 +131,7 @@ public class SimpleTrendBot extends AbstractTickable implements IBot {
 	
     // Debug references
 	
-	private final ExpMovingAverageNode movingAvgNode;
+	private final MovingAverageNode movingAvgNode;
 
 	private long startMoment;
 	private long window;
@@ -161,7 +157,7 @@ public class SimpleTrendBot extends AbstractTickable implements IBot {
 		this.listeners = new LinkedList<ITradeListener>();
 		
 		// Define the signal tree		
-		this.movingAvgNode = new ExpMovingAverageNode(timestep, window, ticker);
+		this.movingAvgNode = new MovingAverageNode(timestep, window, ticker);
 	}
 
 	@Override
@@ -186,14 +182,14 @@ public class SimpleTrendBot extends AbstractTickable implements IBot {
 			double diffT = (currentAvg.timestamp - prevAvg.timestamp) / 60000.0d;
 			double currentDiff = Math.round(diffV /  diffT * 1000.0d) / 1000.0d;
 			
-			//LOGGER.debug(String.format("Diff V: %s, Diff T: %s, Diff: %s", diffV, diffT, currentDiff));
+			LOGGER.debug(String.format("Diff V: %s, Diff T: %s, Diff: %s", diffV, diffT, currentDiff));
 			
 			// We don't want to trade too often, check if we are not in the backoff period
-			boolean buyBackOff = (lastBuyTime > tick - config.buyBackoffTimer);
-			boolean sellBackOff = (lastSellTime > tick - config.sellBackoffTimer);
+			//boolean buyBackOff = (lastBuyTime > tick - config.buyBackoffTimer);
+			//boolean sellBackOff = (lastSellTime > tick - config.sellBackoffTimer);
 			
-			if (!buyBackOff && currentDiff > config.minBuyDiffThreshold && wallet.getWalletUsd() > minDollars) {
-				double dollars = wallet.getWalletUsd() * config.usdToBtcTradeAmount;
+			if (currentDiff > config.minBuyDiffThreshold && wallet.getWalletUsd() > minDollars) {
+				double dollars = wallet.getWalletUsd();
 				TradeAction buyAction = new TradeAction(TradeActionType.BUY, tick, dollars);
 				double btcBought = tradeFloor.buy(wallet, buyAction);
 				
@@ -202,8 +198,8 @@ public class SimpleTrendBot extends AbstractTickable implements IBot {
 				notify(buyAction);
 				//LOGGER.info(String.format("Bought %s BTC for %s USD because difference %s > %s", btcBought, dollars, currentDiff, config.minBuyDiffThreshold));
 			}
-			else if (!sellBackOff && currentDiff < config.minSellDiffThreshold && wallet.getWalletBtc() > tradeFloor.toBtc(minDollars)) {
-				double btcToSell = wallet.getWalletBtc() * config.btcToUsdTradeAmount;
+			else if (currentDiff < config.minSellDiffThreshold && wallet.getWalletBtc() > tradeFloor.toBtc(minDollars)) {
+				double btcToSell = wallet.getWalletBtc();
 				TradeAction sellAction = new TradeAction(TradeActionType.SELL, tick, btcToSell);
 				double soldForUSD = tradeFloor.sell(wallet, sellAction);
 				
@@ -238,7 +234,7 @@ public class SimpleTrendBot extends AbstractTickable implements IBot {
 		return tradeFloor;
 	}
 	
-	public ExpMovingAverageNode getAnalysisNode() {
+	public MovingAverageNode getAnalysisNode() {
 		return movingAvgNode;
 	}
 	

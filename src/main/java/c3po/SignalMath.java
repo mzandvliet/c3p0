@@ -13,6 +13,19 @@ public class SignalMath {
 		return new Sample(timestamp, value);
 	}
 	
+	public static Sample basicMovingAverage(final List<Sample> signals, final int kernelSize) {
+		int size = signals.size();	
+
+		int sampleCount = Math.min(size, kernelSize);
+		
+		double total = 0;
+		for (int i = 0; i < sampleCount; i++) {
+			total += signals.get(i).value;
+		}
+		
+		return new Sample(signals.get(0).timestamp, total / (double) kernelSize);
+	}
+	
 	public static List<Sample> filterMovingAverage(final List<Sample> signals, final int kernelSize) {
 		int size = signals.size();
 		List<Sample> smoothSignals = new ArrayList<Sample>(size);

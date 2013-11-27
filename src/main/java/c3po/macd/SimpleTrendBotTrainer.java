@@ -244,11 +244,7 @@ public class SimpleTrendBotTrainer {
 			
 		MacdTraderConfig config = new MacdTraderConfig(
 				getRandomDouble(minDiffThreshold, maxDiffThreshold),
-				getRandomDouble(minDiffThreshold, maxDiffThreshold),
-				getRandomDouble(minTransactionAmount, maxTransactionAmount),
-				getRandomDouble(minTransactionAmount, maxTransactionAmount),
-				getRandomLong(minBackoffPeriod, maxBackoffPeriod),
-				getRandomLong(minBackoffPeriod, maxBackoffPeriod)
+				getRandomDouble(minDiffThreshold, maxDiffThreshold)
 		);
 		
 		return config;
@@ -287,11 +283,7 @@ public class SimpleTrendBotTrainer {
 
 		MacdTraderConfig childConfig = new MacdTraderConfig(
 				which() ? parentA.minBuyDiffThreshold : parentB.minBuyDiffThreshold,
-				which() ? parentA.minSellDiffThreshold : parentB.minSellDiffThreshold,
-				which() ? parentA.usdToBtcTradeAmount : parentB.usdToBtcTradeAmount,
-				which() ? parentA.btcToUsdTradeAmount : parentB.btcToUsdTradeAmount,
-				which() ? parentA.sellBackoffTimer : parentB.sellBackoffTimer,
-				which() ? parentA.buyBackoffTimer : parentB.buyBackoffTimer);
+				which() ? parentA.minSellDiffThreshold : parentB.minSellDiffThreshold);
 		
 		
 		// Mutate
@@ -311,11 +303,7 @@ public class SimpleTrendBotTrainer {
 		double minSellThreshold = shouldMutate(0.1d) ? config.minSellDiffThreshold : config.minSellDiffThreshold;
 		MacdTraderConfig mutatedConfig = new MacdTraderConfig(
 				minBuyThreshold,
-				minSellThreshold,
-				shouldMutate(mutationChance) ? config.usdToBtcTradeAmount : config.usdToBtcTradeAmount,
-				shouldMutate(mutationChance) ? config.btcToUsdTradeAmount : config.btcToUsdTradeAmount,
-				shouldMutate(mutationChance) ? config.sellBackoffTimer : config.sellBackoffTimer,
-				shouldMutate(mutationChance) ? config.buyBackoffTimer : config.buyBackoffTimer
+				minSellThreshold
 		);
 
 		
