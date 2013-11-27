@@ -13,6 +13,7 @@ import c3po.bitstamp.BitstampTickerSource;
 import c3po.bitstamp.BitstampTickerDbSource;
 import c3po.IClock;
 import c3po.ITradeFloor;
+import c3po.Time;
 import c3po.macd.*;
 
 public class RealtimeBotRunner {
@@ -20,11 +21,10 @@ public class RealtimeBotRunner {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RealtimeBotRunner.class);
 	private final static String jsonUrl = "http://www.bitstamp.net/api/ticker/";
 
-	private final static long timestep = 60000;
+	private final static long interpolationTime = 2 * Time.MINUTES;
+	private final static long timestep = 1 * Time.MINUTES;
 	
-	private final static long interpolationTime = 120000;
-	
-	private static final double walletDollarStart = 1000.0;
+	private static final double walletDollarStart = 0.0;
 	private static final double walletBtcStart = 0.0;
 
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
@@ -46,18 +46,23 @@ public class RealtimeBotRunner {
 		// Create bot config
 		
 		// todo: this is still in number-of-ticks, which means it depends on bot's timeStep, should change to units of time
+		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
+				223 * Time.MINUTES,
+				403 * Time.MINUTES,
+				711 * Time.MINUTES);
 		
-		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(640,780,985); // Todo: trader.startDelay is proportional to this, maybe Max(fast,slow,signal)
-		MacdTraderConfig traderConfig = new MacdTraderConfig(0.0267, 0.4547);
+		MacdTraderConfig traderConfig = new MacdTraderConfig(
+				4.3809,
+				-7.6297);
+		
 		MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
 		
 		// Create bot
-		
 		IBot bot = new MacdBot(config, tickerNode.getOutputLast(), wallet, tradeFloor);
 		
 		// Create a clock
 		
-		IClock botClock = new RealtimeClock(timestep, 200000l, interpolationTime);
+		IClock botClock = new RealtimeClock(timestep, Math.max(analysisConfig.slowPeriod, analysisConfig.signalPeriod), interpolationTime);
 		botClock.addListener(bot);
 		
 		// Run the program
