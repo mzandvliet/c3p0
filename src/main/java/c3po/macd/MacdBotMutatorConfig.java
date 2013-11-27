@@ -1,6 +1,6 @@
 package c3po.macd;
 
-import c3po.IBotMutationConfig;
+import c3po.Training.IBotMutationConfig;
 
 public class MacdBotMutatorConfig implements IBotMutationConfig<MacdBotConfig>{
 	public final double mutationChance;
@@ -30,4 +30,59 @@ public class MacdBotMutatorConfig implements IBotMutationConfig<MacdBotConfig>{
 		this.minSellDiffThreshold = minSellDiffThreshold;
 		this.maxSellDiffThreshold = maxSellDiffThreshold;
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ (int) (maxAnalysisPeriod ^ (maxAnalysisPeriod >>> 32));
+		long temp;
+		temp = Double.doubleToLongBits(maxBuyDiffThreshold);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(maxSellDiffThreshold);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result
+				+ (int) (minAnalysisPeriod ^ (minAnalysisPeriod >>> 32));
+		temp = Double.doubleToLongBits(minBuyDiffThreshold);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(minSellDiffThreshold);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(mutationChance);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		MacdBotMutatorConfig other = (MacdBotMutatorConfig) obj;
+		if (maxAnalysisPeriod != other.maxAnalysisPeriod)
+			return false;
+		if (Double.doubleToLongBits(maxBuyDiffThreshold) != Double
+				.doubleToLongBits(other.maxBuyDiffThreshold))
+			return false;
+		if (Double.doubleToLongBits(maxSellDiffThreshold) != Double
+				.doubleToLongBits(other.maxSellDiffThreshold))
+			return false;
+		if (minAnalysisPeriod != other.minAnalysisPeriod)
+			return false;
+		if (Double.doubleToLongBits(minBuyDiffThreshold) != Double
+				.doubleToLongBits(other.minBuyDiffThreshold))
+			return false;
+		if (Double.doubleToLongBits(minSellDiffThreshold) != Double
+				.doubleToLongBits(other.minSellDiffThreshold))
+			return false;
+		if (Double.doubleToLongBits(mutationChance) != Double
+				.doubleToLongBits(other.mutationChance))
+			return false;
+		return true;
+	}
+	
+	
 }

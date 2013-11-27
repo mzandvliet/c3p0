@@ -3,19 +3,33 @@ package c3po.macd;
 import c3po.*;
 import c3po.Training.*;
 
-public class SelfOptimizingMacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
-	private final IBotTrainer<MacdBotConfig> trainer;
-	private final MacdBot bot;
+public class SelfOptimizingMacdBot extends AbstractTickable implements IBot<SelfOptimizingMacdBotConfig> {
+	private final SelfOptimizingMacdBotConfig config;
+	private final ISignal ticker;
+	private final IWallet wallet;
+	private final ITradeFloor tradeFloor;
 	
-	public SelfOptimizingMacdBot(long timestep,
-			IBotTrainer<MacdBotConfig> trainer,
-			MacdBot bot) {
-		super(timestep);
+	private final IBotTrainer<MacdBotConfig> trainer;
+	
+	private MacdBot bot;
+	
+	private long lastOptimizationTime = -1;
+	
+	public SelfOptimizingMacdBot(SelfOptimizingMacdBotConfig config, ISignal ticker, IWallet wallet, ITradeFloor tradeFloor) {
+		super(config.timestep);
 		
-		this.bot = bot;
-		this.trainer = trainer;
+		this.config = config;
+		this.ticker = ticker;
+		this.wallet = wallet;
+		this.tradeFloor = tradeFloor;
+		
+		this.trainer = new GenAlgBotTrainer<MacdBotConfig>(config.genAlgConfig, null, null, null);
+		
+		MacdBotConfig initialConfig = trainer.train(); // Todo: train on data from *before* the current time
+		
+		this.bot = new MacdBot(initialConfig, ticker, wallet, tradeFloor);
 	}
-
+	
 	@Override
 	public void addTradeListener(ITradeListener listener) {
 		bot.addTradeListener(listener);
@@ -27,27 +41,29 @@ public class SelfOptimizingMacdBot extends AbstractTickable implements IBot<Macd
 	}
 	
 	@Override
-	public MacdBotConfig getConfig() {
-		return bot.getConfig(); // Todo: This is not consistent with bot interface, should probably return hyperconfig that includes trainer & bot config.
+	public SelfOptimizingMacdBotConfig getConfig() {
+		return config; // Todo: This is not consistent with bot interface, should probably return hyperconfig that includes trainer & bot config.
 	}
 
 	@Override
 	public IWallet getWallet() {
-		return bot.getWallet();
+		return wallet;
 	}
 
 	@Override
 	public ITradeFloor getTradeFloor() {
-		return bot.getTradeFloor();
+		return tradeFloor;
 	}
 
 	@Override
 	public void onNewTick(long tick) {
+		// TODO Refactor to support asynchronous optimization, since it's rather costly
 		
-		// Todo: Run genalg every one in a while, AND REMEMBER TO SUPPORT NON-BLOCKING CALCULATION
-		
-		MacdBotConfig newConfig = trainer.train();
-		bot = new MacdBot(newConfig, , null, null); // Todo: are Bots immutable or mutable? Either way, we need to apply the new config to our wrapped bot
+		if (tick > lastOptimizationTime) {
+			MacdBotConfig newConfig = trainer.train();
+			bot = new MacdBot(newConfig, ticker, wallet, tradeFloor); // Todo: are Bots immutable or mutable? Either way, we need to apply the new config to our wrapped bot
+		}
+		lastOptimizationTime = tick;
 		
 		bot.onNewTick(tick);
 	}

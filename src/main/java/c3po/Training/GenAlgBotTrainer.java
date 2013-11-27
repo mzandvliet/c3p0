@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import c3po.bitstamp.BitstampTickerSource;
 import c3po.bitstamp.BitstampSimulationTradeFloor;
-import c3po.GenAlgBotTrainerConfig;
 import c3po.DebugTradeLogger;
 import c3po.IBot;
 import c3po.IBotConfig;
@@ -61,7 +60,7 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 	private final IBotConfigMutator<TBotConfig> mutator;
 	private final SimulationClock clock;
 	
-	public GenAlgBotTrainer(GenAlgBotTrainerConfig config, ITrainingBotFactory<TBotConfig> botFactory, IBotConfigMutator<TBotConfig> mutator, SimulationClock clock) {
+	public GenAlgBotTrainer(GenAlgBotTrainerConfig config, IBotConfigMutator<TBotConfig> mutator, ITrainingBotFactory<TBotConfig> botFactory, SimulationClock clock) {
 		this.config = config;
 		this.botFactory = botFactory;
 		this.mutator = mutator;

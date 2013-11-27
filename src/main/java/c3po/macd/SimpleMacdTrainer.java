@@ -1,17 +1,22 @@
-package c3po.simulation;
-
-import java.sql.SQLException;
+package c3po.macd;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import c3po.*;
-import c3po.macd.*;
-import c3po.Training.*;
-import c3po.bitstamp.*;
+import c3po.IClock;
+import c3po.ITradeFloor;
+import c3po.IWallet;
+import c3po.SimulationClock;
+import c3po.Time;
+import c3po.Wallet;
+import c3po.Training.GenAlgBotTrainer;
+import c3po.Training.GenAlgBotTrainerConfig;
+import c3po.bitstamp.BitstampSimulationTradeFloor;
+import c3po.bitstamp.BitstampTickerCsvSource;
+import c3po.simulation.SimulationBotRunner;
 
-public class SimulationBotRunner {
-	private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner.class);
+public class SimpleMacdTrainer {
+private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner.class);
 	
 	private final static String csvPath = "resources/bitstamp_ticker_till_20131126.csv";
 	private final static long simulationStartTime = 1384079023000l;
@@ -20,7 +25,6 @@ public class SimulationBotRunner {
 	// Timing
 	private final static long interpolationTime = 2 * Time.MINUTES;
 	private final static long timestep = 1 * Time.MINUTES;
-	private final static long optimizationTimestep = 12 * Time.HOURS;
 
 	// Simulation and fitness test
 	private final static int numEpochs = 100;
@@ -42,10 +46,30 @@ public class SimulationBotRunner {
 	// Market context
 	private final static double walletStartUsd = 1000.0d;
 	private final static double walletStartBtcInUsd = 0.0d;
-	
-	public static void main(String[] args) throws ClassNotFoundException, SQLException {
+
+	public static void main(String[] args) {
+		MacdBotMutatorConfig mutatorConfig = new MacdBotMutatorConfig(
+				mutationChance,
+				minAnalysisPeriod,
+				maxAnalysisPeriod,
+				minBuyDiffThreshold,
+				maxBuyDiffThreshold,
+				minSellDiffThreshold,
+				maxSellDiffThreshold);
+		
+		MacdBotMutator mutator = new MacdBotMutator(mutatorConfig);
+		
+		GenAlgBotTrainerConfig genAlgConfig = new GenAlgBotTrainerConfig(
+				numEpochs,
+				numBots,
+				numParents,
+				numElites,
+				mutationChance);
+		
+		GenAlgBotTrainer<MacdBotConfig> trainer = new GenAlgBotTrainer<MacdBotConfig>(genAlgConfig, mutator, null, null);
+		
 		final BitstampTickerCsvSource tickerNode = new BitstampTickerCsvSource(timestep, interpolationTime, csvPath);
-		tickerNode.open();
+		
 		
 		final ITradeFloor tradeFloor =  new BitstampSimulationTradeFloor(
 				tickerNode.getOutputLast(),
@@ -56,39 +80,14 @@ public class SimulationBotRunner {
 		double walletStartBtc = walletStartBtcInUsd / tickerNode.getOutputLast().getSample(simulationStartTime).value;
 		final IWallet wallet = new Wallet(walletStartUsd, walletStartBtc);
 		
-		// Create the bot
+		tickerNode.open();
 		
-		final SelfOptimizingMacdBot bot = new SelfOptimizingMacdBot(createConfig(), tickerNode.getOutputLast(), wallet, tradeFloor);
+		IClock botClock = new SimulationClock(timestep, simulationStartTime, simulationEndTime, interpolationTime);
 		
-		// Run the bot
-		
-		final IClock botClock = new SimulationClock(timestep, simulationStartTime, simulationEndTime, interpolationTime);
-		botClock.addListener(bot);
-		
+		// Run the program
+
 		botClock.run();
 		
 		tickerNode.close();
-		
-		// Display the results
-	}
-	
-	private static SelfOptimizingMacdBotConfig createConfig() {
-		MacdBotMutatorConfig mutatorConfig = new MacdBotMutatorConfig(
-				mutationChance,
-				minAnalysisPeriod,
-				maxAnalysisPeriod,
-				minBuyDiffThreshold,
-				maxBuyDiffThreshold,
-				minSellDiffThreshold,
-				maxSellDiffThreshold);
-		
-		GenAlgBotTrainerConfig genAlgConfig = new GenAlgBotTrainerConfig(
-				numEpochs,
-				numBots,
-				numParents,
-				numElites,
-				mutationChance);
-		
-		return new SelfOptimizingMacdBotConfig(timestep, optimizationTimestep, genAlgConfig, mutatorConfig);
 	}
 }

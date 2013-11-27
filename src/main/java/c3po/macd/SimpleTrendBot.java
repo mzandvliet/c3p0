@@ -239,8 +239,8 @@ public class SimpleTrendBot extends AbstractTickable implements IBot {
 	}
 	
 	
-	public MacdTraderConfig getConfig() {
-		return config;
+	public IBotConfig getConfig() {
+		return null;
 	}
 
 	public String toString() {
