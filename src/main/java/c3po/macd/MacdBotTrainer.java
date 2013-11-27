@@ -75,9 +75,7 @@ public class MacdBotTrainer {
 	
 	// Config mutation ranges
 	private final static long minAnalysisPeriod = 1 * Time.MINUTES;
-	private final static long maxAnalysisPeriod = 12 * Time.HOURS;
-	private final static long minBackoffPeriod = 1 * Time.MINUTES;
-	private final static long maxBackoffPeriod = 12 * Time.HOURS;
+	private final static long maxAnalysisPeriod = 6 * Time.HOURS;
 	private final static double minTransactionAmount = 0.05d;
 	private final static double maxTransactionAmount = 1d; // NOTE: Never exceed 1.0, lol
 	private final static double minBuyDiffThreshold = -10.0d;
@@ -86,7 +84,7 @@ public class MacdBotTrainer {
 	private final static double maxSellDiffThreshold = 10.0d;
 	
 	// Market context
-	private final static double walletStartDollars = 100.0;
+	private final static double walletStartDollars = 1000.0;
 	private final static double walletStartBtcInUsd = 0.0;
 	
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
@@ -254,11 +252,7 @@ public class MacdBotTrainer {
 		
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
 				getRandomDouble(minBuyDiffThreshold, maxBuyDiffThreshold),
-				getRandomDouble(minSellDiffThreshold, maxSellDiffThreshold),
-				getRandomDouble(minTransactionAmount, maxTransactionAmount),
-				getRandomDouble(minTransactionAmount, maxTransactionAmount),
-				getRandomLong(minBackoffPeriod, maxBackoffPeriod),
-				getRandomLong(minBackoffPeriod, maxBackoffPeriod)
+				getRandomDouble(minSellDiffThreshold, maxSellDiffThreshold)
 		);
 		
 		MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
@@ -300,15 +294,13 @@ public class MacdBotTrainer {
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
 				which() ? parentA.analysisConfig.fastPeriod : parentB.analysisConfig.fastPeriod,
 				which() ? parentA.analysisConfig.slowPeriod : parentB.analysisConfig.slowPeriod,
-				which() ? parentA.analysisConfig.signalPeriod : parentB.analysisConfig.signalPeriod);
+				which() ? parentA.analysisConfig.signalPeriod : parentB.analysisConfig.signalPeriod
+		);
 		
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
 				which() ? parentA.traderConfig.minBuyDiffThreshold : parentB.traderConfig.minBuyDiffThreshold,
-				which() ? parentA.traderConfig.minSellDiffThreshold : parentB.traderConfig.minSellDiffThreshold,
-				which() ? parentA.traderConfig.usdToBtcTradeAmount : parentB.traderConfig.usdToBtcTradeAmount,
-				which() ? parentA.traderConfig.btcToUsdTradeAmount : parentB.traderConfig.btcToUsdTradeAmount,
-				which() ? parentA.traderConfig.sellBackoffTimer : parentB.traderConfig.sellBackoffTimer,
-				which() ? parentA.traderConfig.buyBackoffTimer : parentB.traderConfig.buyBackoffTimer);
+				which() ? parentA.traderConfig.minSellDiffThreshold : parentB.traderConfig.minSellDiffThreshold
+		);
 		
 		MacdBotConfig childConfig = new MacdBotConfig(
 				which() ? parentA.timestep : parentB.timestep,
@@ -332,15 +324,11 @@ public class MacdBotTrainer {
 				shouldMutate(mutationChance) ? randomConfig.analysisConfig.fastPeriod : config.analysisConfig.fastPeriod,
 				shouldMutate(mutationChance) ? randomConfig.analysisConfig.slowPeriod : config.analysisConfig.slowPeriod,
 				shouldMutate(mutationChance) ? randomConfig.analysisConfig.signalPeriod : config.analysisConfig.signalPeriod
-			);
+		);
 			
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
 				shouldMutate(mutationChance) ? randomConfig.traderConfig.minBuyDiffThreshold : config.traderConfig.minBuyDiffThreshold,
-				shouldMutate(mutationChance) ? randomConfig.traderConfig.minSellDiffThreshold : config.traderConfig.minSellDiffThreshold,
-				shouldMutate(mutationChance) ? randomConfig.traderConfig.usdToBtcTradeAmount : config.traderConfig.usdToBtcTradeAmount,
-				shouldMutate(mutationChance) ? randomConfig.traderConfig.btcToUsdTradeAmount : config.traderConfig.btcToUsdTradeAmount,
-				shouldMutate(mutationChance) ? randomConfig.traderConfig.sellBackoffTimer : config.traderConfig.sellBackoffTimer,
-				shouldMutate(mutationChance) ? randomConfig.traderConfig.buyBackoffTimer : config.traderConfig.buyBackoffTimer
+				shouldMutate(mutationChance) ? randomConfig.traderConfig.minSellDiffThreshold : config.traderConfig.minSellDiffThreshold
 		);
 		
 		MacdBotConfig mutatedConfig = new MacdBotConfig(config.timestep, analysisConfig, traderConfig);
@@ -359,7 +347,7 @@ public class MacdBotTrainer {
 						config.analysisConfig.fastPeriod,
 				config.analysisConfig.slowPeriod,
 				config.analysisConfig.signalPeriod
-			);
+		);
 			
 		MacdBotConfig validConfig = new MacdBotConfig(config.timestep, validAnalysisConfig, config.traderConfig);
 		

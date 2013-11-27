@@ -48,7 +48,7 @@ public class RealtimeBotRunner {
 		// todo: this is still in number-of-ticks, which means it depends on bot's timeStep, should change to units of time
 		
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(640,780,985); // Todo: trader.startDelay is proportional to this, maybe Max(fast,slow,signal)
-		MacdTraderConfig traderConfig = new MacdTraderConfig(0.0267, 0.4547, 0.2184, 0.0037, 2440000, 4042000);
+		MacdTraderConfig traderConfig = new MacdTraderConfig(0.0267, 0.4547);
 		MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
 		
 		// Create bot

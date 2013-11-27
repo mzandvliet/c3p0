@@ -65,13 +65,13 @@ public class MacdBot extends AbstractTickable implements IBot {
 	
 	//private final static String jsonUrl = "http://www.bitstamp.net/api/ticker/";
 	
-//	private final static String csvPath = "resources/bitstamp_ticker_till_20131122.csv";
-//	private final static long simulationStartTime = 1384079023000l;
-//	private final static long simulationEndTime = 1385156429000l; 
-	
-	private final static String csvPath = "resources/bitstamp_ticker_till_20131122_pingpong.csv";
+	private final static String csvPath = "resources/bitstamp_ticker_till_20131122_crashed.csv";
 	private final static long simulationStartTime = 1384079023000l;
-	private final static long simulationEndTime = 1388379913000l; 
+	private final static long simulationEndTime = 1385192429000l;
+	
+//	private final static String csvPath = "resources/bitstamp_ticker_till_20131122_pingpong.csv";
+//	private final static long simulationStartTime = 1384079023000l;
+//	private final static long simulationEndTime = 1388379913000l; 
 	
 	private final static long interpolationTime = 2 * Time.MINUTES; // Delay data by two minutes for interpolation
 	
@@ -102,17 +102,13 @@ public class MacdBot extends AbstractTickable implements IBot {
 		// Create bot config
 		
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
-				22 * Time.MINUTES,
-				48 * Time.MINUTES,
-				5 * Time.MINUTES);
+				202 * Time.MINUTES,
+				358 * Time.MINUTES,
+				286 * Time.MINUTES);
 		
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
-				-0.5592,
-				-1.9883,
-				0.0150,
-				0.9527,
-				6 * Time.MINUTES,
-				33 * Time.MINUTES);
+				-0.3633,
+				-5.1765);
 		MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
 		
 		// Create bot
