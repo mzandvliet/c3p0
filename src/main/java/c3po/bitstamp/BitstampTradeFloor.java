@@ -154,12 +154,14 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 			for(OpenOrder openOrder : getOpenOrders()) {
 				// Adjust sell order if needed
 				if(openOrder.getType().equals("sell") && openOrder.getPrice() != currentBid.value) {
+					LOGGER.info("Adjusting "+ openOrder + " to match price " + currentBid.value);
 					cancelOrder(openOrder);
 					placeSellOrder(currentBid.value, openOrder.getAmount());
 				}
 				
 				// Adjust buy order if needed
 				if(openOrder.getType().equals("buy") && openOrder.getPrice() != currentAsk.value) {
+					LOGGER.info("Adjusting "+ openOrder + " to match price " + currentBid.value);
 					cancelOrder(openOrder);
 					placeBuyOrder(currentAsk.value, openOrder.getAmount());
 				}

@@ -34,4 +34,10 @@ public class OpenOrder {
 	public double getAmount() {
 		return amount;
 	}
+	
+	
+	
+	public String toString() {
+		return String.format("OpenOrder %s #%d: %s for %s", type, id, amount, price);
+	}
 }
