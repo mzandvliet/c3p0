@@ -71,7 +71,7 @@ public class MacdBotTrainer {
 	// Selection
 	private final static int numParents = 125;
 	private final static int numElites = 10;
-	private final static double mutationChance = 0.33d;
+	private final static double mutationChance = 0.5d;
 	
 	// Config mutation ranges
 	private final static long minAnalysisPeriod = 1 * Time.MINUTES;
