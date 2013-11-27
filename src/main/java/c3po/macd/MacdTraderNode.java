@@ -39,7 +39,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		this.config = config;
 		this.startDelay = startDelay;
 		this.listeners = new ArrayList<ITradeListener>();
-		this.state = TradePosition.Closed;
+		this.state = TradePosition.CLOSED;
 	}	
 
 	public MacdTraderConfig getConfig() {
@@ -61,10 +61,10 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		
 		if (numSkippedTicks > startDelay) {
 			switch (state) {
-			case Closed:
-				tryOpenPosition(tick, currentDiff);
-			case Opened:
-				tryClosePosition(tick, currentDiff);
+			case CLOSED:
+				tryToOpenPosition(tick, currentDiff);
+			case OPEN:
+				tryToClosePosition(tick, currentDiff);
 			default:
 				break;
 			}
@@ -74,7 +74,23 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		}
 	}
 
-	private void tryClosePosition(long tick, Sample currentDiff) {
+	private void tryToOpenPosition(long tick, Sample currentDiff) {
+		boolean enoughDollarsToBuy = wallet.getWalletUsd() > minDollars;
+		boolean buyThresholdReached = currentDiff.value > config.minBuyDiffThreshold;
+		
+		if (state == TradePosition.CLOSED && enoughDollarsToBuy && buyThresholdReached) {
+			double usdToSell = wallet.getWalletUsd(); // All-in
+			TradeAction buyAction = new TradeAction(TradeActionType.BUY, tick, usdToSell);
+			double btcReceived = tradeFloor.buy(wallet, buyAction);
+
+			notify(buyAction);
+			//LOGGER.info(String.format("Bought %s BTC for %s USD because difference %s > %s", btcReceived, usdToSell, currentDiff.value, config.minBuyDiffThreshold));
+			
+			state = TradePosition.OPEN;
+		}
+	}
+	
+	private void tryToClosePosition(long tick, Sample currentDiff) {
 		boolean enoughBtcToSell = wallet.getWalletBtc() > tradeFloor.toBtc(minDollars);
 		boolean sellThresholdReached = currentDiff.value < config.minSellDiffThreshold;
 		
@@ -85,23 +101,11 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 			
 			notify(sellAction);
 			//LOGGER.info(String.format("Sold %s BTC for %s USD because difference %s < %s", btcToSell, usdReceived, currentDiff.value, config.minSellDiffThreshold));
+			
+			state = TradePosition.CLOSED;
 		}
 	}
 
-	private void tryOpenPosition(long tick, Sample currentDiff) {
-		boolean enoughDollarsToBuy = wallet.getWalletUsd() > minDollars;
-		boolean buyThresholdReached = currentDiff.value > config.minBuyDiffThreshold;
-		
-		if (state == TradePosition.Closed && enoughDollarsToBuy && buyThresholdReached) {
-			double usdToSell = wallet.getWalletUsd(); // All-in
-			TradeAction buyAction = new TradeAction(TradeActionType.BUY, tick, usdToSell);
-			double btcReceived = tradeFloor.buy(wallet, buyAction);
-
-			notify(buyAction);
-			//LOGGER.info(String.format("Bought %s BTC for %s USD because difference %s > %s", btcReceived, usdToSell, currentDiff.value, config.minBuyDiffThreshold));
-		}
-	}
-	
 	@Override
 	public ITradeFloor getTradeFloor() {
 		return tradeFloor;
@@ -124,7 +128,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	}
 	
 	public enum TradePosition {
-		Opened,
-		Closed
+		OPEN,
+		CLOSED
 	}
 }
