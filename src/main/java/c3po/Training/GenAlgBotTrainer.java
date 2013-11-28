@@ -124,6 +124,8 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 		for (IBot<TBotConfig> bot : population) {
 			simContext.getClock().removeListener(bot);
 		}
+		
+		simContext.reset();
 	}
 	
 	private void sortByScore(List<IBot<TBotConfig>> population, final HashMap<IBot<TBotConfig>, DebugTradeLogger> loggers) {

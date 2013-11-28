@@ -5,6 +5,8 @@ import java.net.InetSocketAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import c3po.DebugTradeLogger;
+import c3po.GraphingNode;
 import c3po.IClock;
 import c3po.ITradeFloor;
 import c3po.IWallet;
@@ -57,8 +59,10 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 	private final static double maxSellDiffThreshold = 10.0d;
 	
 	// Market context
-	private final static double walletStartUsd = 1000.0d;
+	private final static double walletStartUsd = 400.0d;
 	private final static double walletStartBtcInUsd = 0.0d;
+	
+	private final static long graphInterval = 60 * Time.MINUTES;
 
 	public static void main(String[] args) {
 		IClock botClock = new SimulationClock(timestep, simulationStartTime, simulationEndTime, interpolationTime);
@@ -107,13 +111,36 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 		// TODO: Needs a simulation context to optimize against
 		GenAlgBotTrainer<MacdBotConfig> trainer = new GenAlgBotTrainer<MacdBotConfig>(genAlgConfig, mutator, botFactory, simContext);
 		MacdBotConfig winningConfig = trainer.train();
+		
+		
 		// TODO: Run the WINNING BOT again, Graph the results for manual evaluation
 
 		MacdBot winningBot = new MacdBot(winningConfig, tickerNode.getOutputLast(), wallet, tradeFloor);
 		botClock.addListener(winningBot);
 		
+		DebugTradeLogger tradeLogger = new DebugTradeLogger();
+		winningBot.addTradeListener(tradeLogger);
+		
+		// Create the grapher
+		
+		GraphingNode grapher = new GraphingNode(graphInterval, "MacdBot", 
+				tickerNode.getOutputLast(),
+				winningBot.getAnalysisNode().getOutput(0),
+				winningBot.getAnalysisNode().getOutput(1)
+				);
+		winningBot.addTradeListener(grapher);
+		
 		botClock.run();
 		
+		simContext.reset();
 		tickerNode.close();
+		
+		// Log results
+		
+		grapher.pack();
+		grapher.setVisible(true);
+		
+		tradeLogger.writeLog();
+		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Wallet: " + tradeFloor.getWalletValueInUsd(wallet));
 	}
 }

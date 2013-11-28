@@ -137,7 +137,6 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 				bot.analysisNode.getOutput(0),
 				bot.analysisNode.getOutput(1)
 				);
-		
 		bot.addTradeListener(grapher);
 		
 		// Create a clock
