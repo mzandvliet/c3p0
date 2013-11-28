@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import c3po.bitstamp.BitstampSimulationTradeFloor;
+import c3po.bitstamp.BitstampTickerSimulationDbSource;
 import c3po.IClock;
 import c3po.ISignal;
 import c3po.ITradeFloor;
@@ -63,9 +64,7 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdBot.class);
 	
-	//private final static String jsonUrl = "http://www.bitstamp.net/api/ticker/";
-	
-	private final static String csvPath = "resources/bitstamp_ticker_till_20131126.csv";
+//	private final static String csvPath = "resources/bitstamp_ticker_till_20131126.csv";
 	private final static long simulationStartTime = 1384079023000l;
 	private final static long simulationEndTime = 1385501193000l;
 	
@@ -88,7 +87,16 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		// Set up global signal tree
 		
-		final BitstampTickerCsvSource tickerNode = new BitstampTickerCsvSource(timestep, interpolationTime, csvPath);
+		//final BitstampTickerCsvSource tickerNode = new BitstampTickerCsvSource(timestep, interpolationTime, csvPath);
+		final BitstampTickerSimulationDbSource tickerNode = new BitstampTickerSimulationDbSource(
+				timestep,
+				interpolationTime,
+				new InetSocketAddress("94.208.87.249", 3309),
+				"c3po",
+				"D7xpJwzGJEWf5qWB",
+				simulationStartTime,
+				simulationEndTime
+				);
 		tickerNode.open();
 		
 		final ITradeFloor tradeFloor =  new BitstampSimulationTradeFloor(

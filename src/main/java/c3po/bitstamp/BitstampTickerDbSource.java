@@ -2,10 +2,12 @@ package c3po.bitstamp;
 
 import java.net.InetSocketAddress;
 import java.sql.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import c3po.*;
+import c3po.bitstamp.BitstampTickerSource.SignalName;
 
 /**
  * Work in progress in using the database as source
@@ -56,12 +58,13 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 	    while(resultSet.next()) {
 	    	long serverTimestamp = resultSet.getLong("timestamp") * 1000;
 	    	ServerSampleEntry entry = new ServerSampleEntry(serverTimestamp, 6);
-	    	entry.set(0, new Sample(serverTimestamp, resultSet.getDouble("ask")));
-	    	entry.set(1, new Sample(serverTimestamp, resultSet.getDouble("last")));
-	    	entry.set(2, new Sample(serverTimestamp, resultSet.getDouble("low")));
-	    	entry.set(3, new Sample(serverTimestamp, resultSet.getDouble("high")));
-	    	entry.set(4, new Sample(serverTimestamp, resultSet.getDouble("bid")));
-	    	entry.set(5, new Sample(serverTimestamp, resultSet.getDouble("volume")));
+	    	
+	    	entry.set(SignalName.LAST.ordinal(), new Sample(serverTimestamp, resultSet.getDouble("last")));
+			entry.set(SignalName.HIGH.ordinal(), new Sample(serverTimestamp, resultSet.getDouble("high")));
+			entry.set(SignalName.LOW.ordinal(), new Sample(serverTimestamp, resultSet.getDouble("low")));
+			entry.set(SignalName.VOLUME.ordinal(), new Sample(serverTimestamp, resultSet.getDouble("volume")));
+			entry.set(SignalName.BID.ordinal(), new Sample(serverTimestamp, resultSet.getDouble("bid")));
+			entry.set(SignalName.ASK.ordinal(), new Sample(serverTimestamp, resultSet.getDouble("ask")));
 	    	
 	    	buffer.add(entry);
 	    }
