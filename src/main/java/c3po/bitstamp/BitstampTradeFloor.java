@@ -67,12 +67,12 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 		return new Date().getTime();
 	}
 	
-	public static String doAuthenticatedCall(String url) throws Exception {
+	public String doAuthenticatedCall(String url) throws Exception {
 		List<NameValuePair> params = new ArrayList<NameValuePair>();
 		return doAuthenticatedCall(url, params);
 	}
 	
-	public static String doAuthenticatedCall(String url, List<NameValuePair> params) throws Exception {
+	public String doAuthenticatedCall(String url, List<NameValuePair> params) throws Exception {
 		long nonce = generateNonce();
 		String sig = generateSignature(nonce);
 		
@@ -197,7 +197,7 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	 * @param price
 	 * @param amount
 	 */
-	private void placeBuyOrder(double price, double amount) {
+	public void placeBuyOrder(double price, double amount) {
 		try {
 			List<NameValuePair> params = new LinkedList<NameValuePair>();
 			params.add(new BasicNameValuePair("price", String.valueOf(price)));
