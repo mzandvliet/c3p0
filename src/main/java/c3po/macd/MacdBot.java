@@ -4,6 +4,7 @@ import c3po.*;
 
 import java.net.InetSocketAddress;
 import java.sql.SQLException;
+import java.util.Date;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,7 +67,7 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 	
 //	private final static String csvPath = "resources/bitstamp_ticker_till_20131126.csv";
 	private final static long simulationStartTime = 1384079023000l;
-	private final static long simulationEndTime = 1385501193000l;
+	private final static long simulationEndTime = new Date().getTime();
 	
 //	private final static String csvPath = "resources/bitstamp_ticker_till_20131122_crashed.csv";
 //	private final static long simulationStartTime = 1384079023000l;
@@ -75,7 +76,7 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 	private final static long interpolationTime = 2 * Time.MINUTES;
 	private final static long timestep = 1 * Time.MINUTES;
 	
-	private final static double walletStartUsd = 1000.0d;
+	private final static double walletStartUsd = 400.0d;
 	private final static double walletStartBtcInUsd = 0.0d;
 	
 	private final static long graphInterval = 60 * Time.MINUTES;
@@ -111,12 +112,12 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 		// Create bot config
 		
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
-				223 * Time.MINUTES,
-				403 * Time.MINUTES,
-				711 * Time.MINUTES);
+				62 * Time.MINUTES,
+				80 * Time.MINUTES,
+				91 * Time.MINUTES);
 		
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
-				4.3809,
+				2.3809,
 				-7.6297);
 		MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
 		

@@ -39,7 +39,9 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		this.config = config;
 		this.startDelay = startDelay;
 		this.listeners = new ArrayList<ITradeListener>();
-		this.state = TradePosition.CLOSED;
+	
+		// Position depends on wallet status, bitcoins mean shit is on
+		this.state = (wallet.getWalletBtc() > 0.0d ? TradePosition.OPEN : TradePosition.CLOSED);
 	}	
 
 	public MacdTraderConfig getConfig() {
@@ -60,13 +62,12 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		Sample currentDiff = macdDiff.getSample(tick);
 		
 		if (numSkippedTicks > startDelay) {
-			switch (state) {
-			case CLOSED:
+			if(wallet.getWalletUsd() > 1.0d) {
 				tryToOpenPosition(tick, currentDiff);
-			case OPEN:
+			}
+			
+			if(wallet.getWalletBtc() > 0.0d) {
 				tryToClosePosition(tick, currentDiff);
-			default:
-				break;
 			}
 		}
 		else {

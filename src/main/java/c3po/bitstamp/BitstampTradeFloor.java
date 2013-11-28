@@ -37,6 +37,7 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	private static String apiSecret = "ZPS0qszXKqWtOM8PeTiLrqJuCOjLI3rl";
 	
 	SimpleDateFormat sdf  = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
+	private long lastWalletUpdate;
 	
 	public BitstampTradeFloor(ISignal last, ISignal bid, ISignal ask) {
 		super(last, bid, ask);
@@ -135,17 +136,22 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	
 	@Override
 	public void updateWallet(IWallet wallet) {
-		try {
-			JSONObject result = new JSONObject(doAuthenticatedCall("https://www.bitstamp.net/api/balance/"));
-			wallet.update(result.getDouble("usd_available"), result.getDouble("btc_available"));
-			
-			// Update tradeFee if needed
-			if(result.getDouble("fee") != tradeFee) {
-				LOGGER.info("Updated tradeFee. Old: " + tradeFee + " New: " + result.getDouble("fee"));
-				tradeFee = result.getDouble("fee");
+		
+		if(lastWalletUpdate + 60000l < new Date().getTime()) {
+			try {
+				JSONObject result = new JSONObject(doAuthenticatedCall("https://www.bitstamp.net/api/balance/"));
+				wallet.update(result.getDouble("usd_available"), result.getDouble("btc_available"));
+				
+				// Update tradeFee if needed
+				if(result.getDouble("fee") != tradeFee) {
+					LOGGER.info("Updated tradeFee. Old: " + tradeFee + " New: " + result.getDouble("fee"));
+					tradeFee = result.getDouble("fee");
+				}
+			} catch (Exception e) {
+				LOGGER.error("Could not update wallet", e);
 			}
-		} catch (Exception e) {
-			LOGGER.error("Could not update wallet", e);
+			
+			lastWalletUpdate = new Date().getTime();
 		}
 	}
 

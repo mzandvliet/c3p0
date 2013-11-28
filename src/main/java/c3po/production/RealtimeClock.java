@@ -1,5 +1,6 @@
 package c3po.production;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -18,6 +19,8 @@ public class RealtimeClock implements IClock, Runnable {
 	private long preloadTime;
 	private long interpolationTime;
 
+	SimpleDateFormat sdf  = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
+	
 	private boolean stopIt = false;
 
 	private long maxTicks;
@@ -57,14 +60,12 @@ public class RealtimeClock implements IClock, Runnable {
 		
 		// First run the learning period
 		long currentTick = new Date().getTime() - preloadTime - interpolationTime;
-		LOGGER.debug("Tick: " + currentTick);
+
 		
-		while(currentTick < new Date().getTime()) {
+		while(currentTick < new Date().getTime()- interpolationTime) {
 			for (ITickable tickable : listeners) {
-				if (currentTick - tickable.getLastTick() >= tickable.getTimestep()) {
-					tickable.tick(currentTick);
-					LOGGER.debug(" Tick: " + new Date(currentTick).toLocaleString() + " Bot : " + tickable );
-				}
+				LOGGER.debug(" Tick: " + new Date(currentTick).toLocaleString() + " Bot : " + tickable );
+				tickable.tick(currentTick);
 			}
 		
 			currentTick += timeStep;
@@ -78,13 +79,9 @@ public class RealtimeClock implements IClock, Runnable {
 			currentTick = new Date().getTime() - interpolationTime;
 			
 			for (ITickable tickable : listeners) {
-				if (currentTick - tickable.getLastTick() >= tickable.getTimestep()) {
-					tickable.tick(currentTick);
-					LOGGER.debug("Bot : " + tickable + " Tick: " + currentTick);
-				}
+				LOGGER.debug(" Tick: " + new Date(currentTick).toLocaleString() + " Bot : " + tickable );
+				tickable.tick(currentTick);
 			}
-			
-			LOGGER.debug("Tick: " + currentTick);
 
 			Wait(timeStep);
 			tickIndex++;
