@@ -1,5 +1,7 @@
 package c3po.macd;
 
+import java.net.InetSocketAddress;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,9 +13,12 @@ import c3po.Time;
 import c3po.Wallet;
 import c3po.Training.GenAlgBotTrainer;
 import c3po.Training.GenAlgBotTrainerConfig;
+import c3po.Training.IBotFactory;
+import c3po.bitstamp.BitstampSimulationTickerDbSource;
 import c3po.bitstamp.BitstampSimulationTradeFloor;
 import c3po.bitstamp.BitstampSimulationTickerCsvSource;
 import c3po.simulation.SimulationBotRunner;
+import c3po.simulation.SimulationContext;
 
 /*
  * TODO: Finish implementing this, needs fleshed out GenAlgBotTrainer
@@ -27,7 +32,6 @@ import c3po.simulation.SimulationBotRunner;
 public class SimpleMacdTrainer {
 private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner.class);
 	
-	private final static String csvPath = "resources/bitstamp_ticker_till_20131126.csv";
 	private final static long simulationStartTime = 1384079023000l;
 	private final static long simulationEndTime = 1385501193000l;
 	
@@ -36,7 +40,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 	private final static long timestep = 1 * Time.MINUTES;
 
 	// Simulation and fitness test
-	private final static int numEpochs = 100;
+	private final static int numEpochs = 10;
 	private final static int numBots = 250;
 	
 	// Selection
@@ -57,6 +61,28 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 	private final static double walletStartBtcInUsd = 0.0d;
 
 	public static void main(String[] args) {
+		IClock botClock = new SimulationClock(timestep, simulationStartTime, simulationEndTime, interpolationTime);
+		
+		final BitstampSimulationTickerDbSource tickerNode = new BitstampSimulationTickerDbSource(
+				timestep,
+				interpolationTime,
+				new InetSocketAddress("94.208.87.249", 3309),
+				"c3po",
+				"D7xpJwzGJEWf5qWB",
+				simulationStartTime,
+				simulationEndTime
+				);
+		tickerNode.open();
+		
+		final ITradeFloor tradeFloor =  new BitstampSimulationTradeFloor(
+				tickerNode.getOutputLast(),
+				tickerNode.getOutputBid(),
+				tickerNode.getOutputAsk()
+		);
+		
+		double walletStartBtc = walletStartBtcInUsd / tickerNode.getOutputLast().getSample(simulationStartTime).value;
+		final IWallet wallet = new Wallet(walletStartUsd, walletStartBtc);
+		
 		MacdBotMutatorConfig mutatorConfig = new MacdBotMutatorConfig(
 				mutationChance,
 				minAnalysisPeriod,
@@ -75,25 +101,19 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 				numElites,
 				mutationChance);
 		
+		SimulationContext simContext = new SimulationContext(tickerNode, tickerNode.getOutputLast(), botClock);
+		IBotFactory<MacdBotConfig> botFactory = new MacdBotFactory(wallet, tickerNode.getOutputLast(), tradeFloor);
+		
 		// TODO: Needs a simulation context to optimize against
-		GenAlgBotTrainer<MacdBotConfig> trainer = new GenAlgBotTrainer<MacdBotConfig>(genAlgConfig, mutator, null, null);
-		
-		final BitstampSimulationTickerCsvSource tickerNode = new BitstampSimulationTickerCsvSource(timestep, interpolationTime, csvPath);
-		
-		final ITradeFloor tradeFloor =  new BitstampSimulationTradeFloor(
-				tickerNode.getOutputLast(),
-				tickerNode.getOutputBid(),
-				tickerNode.getOutputAsk()
-		);
-		
-		double walletStartBtc = walletStartBtcInUsd / tickerNode.getOutputLast().getSample(simulationStartTime).value;
-		final IWallet wallet = new Wallet(walletStartUsd, walletStartBtc);
-		
+		GenAlgBotTrainer<MacdBotConfig> trainer = new GenAlgBotTrainer<MacdBotConfig>(genAlgConfig, mutator, botFactory, simContext);
+		MacdBotConfig winningConfig = trainer.train();
 		// TODO: Run the WINNING BOT again, Graph the results for manual evaluation
 
-		tickerNode.open();
-		IClock botClock = new SimulationClock(timestep, simulationStartTime, simulationEndTime, interpolationTime);
+		MacdBot winningBot = new MacdBot(winningConfig, tickerNode.getOutputLast(), wallet, tradeFloor);
+		botClock.addListener(winningBot);
+		
 		botClock.run();
+		
 		tickerNode.close();
 	}
 }

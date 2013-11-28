@@ -11,7 +11,7 @@ import c3po.*;
 /**
  * Work in progress in using the database as source
  */
-public class BitstampSimulationTickerDbSource extends BitstampTickerSource {
+public class BitstampSimulationTickerDbSource extends BitstampTickerSource implements INonRealtimeSource {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BitstampSimulationTickerDbSource.class);
 	
 	private final long startTime;
@@ -19,16 +19,20 @@ public class BitstampSimulationTickerDbSource extends BitstampTickerSource {
 	private Connection connection = null;
 	private ResultSet resultSet;
 	
-	public BitstampSimulationTickerDbSource(long timestep, long interpolationTime, InetSocketAddress host, String user, String pwd, long startTime, long endTime) throws ClassNotFoundException, SQLException {
+	public BitstampSimulationTickerDbSource(long timestep, long interpolationTime, InetSocketAddress host, String user, String pwd, long startTime, long endTime) {
 		  super(timestep, interpolationTime);
 		  
 		  this.startTime = startTime;
 		  this.endTime = endTime;
 		  
-		  // This will load the MySQL driver, each DB has its own driver
-	      Class.forName("com.mysql.jdbc.Driver");
-	      // Setup the connection with the DB
-	      connection = DriverManager.getConnection("jdbc:mysql://"+host.getHostString()+":"+host.getPort()+"/c3po?user="+user+"&password="+pwd);
+	    try {
+	    	  // This will load the MySQL driver, each DB has its own driver
+			Class.forName("com.mysql.jdbc.Driver");
+			// Setup the connection with the DB
+		      connection = DriverManager.getConnection("jdbc:mysql://"+host.getHostString()+":"+host.getPort()+"/c3po?user="+user+"&password="+pwd);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 	@Override
@@ -93,5 +97,27 @@ public class BitstampSimulationTickerDbSource extends BitstampTickerSource {
 	@Override
 	public boolean isEmpty() {
 		return false;
+	}
+
+	@Override
+	public long getStartTime() {
+		return startTime;
+	}
+
+	@Override
+	public long getEndTime() {
+		return endTime;
+	}
+
+	@Override
+	public void reset() {
+		if (resultSet != null) {
+			try {
+				resultSet.first();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 }

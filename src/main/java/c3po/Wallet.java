@@ -69,4 +69,9 @@ public class Wallet implements IWallet {
 			walletBtc = btc;
 		}
 	}
+
+	@Override
+	public IWallet copy() {
+		return new Wallet(walletUsd, walletBtc);
+	}
 }

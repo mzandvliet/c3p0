@@ -23,6 +23,7 @@ import c3po.SimulationClock;
 import c3po.Time;
 import c3po.Wallet;
 import c3po.bitstamp.BitstampSimulationTickerCsvSource;
+import c3po.simulation.SimulationContext;
 
 /**
  * This finds optimal Bot configurations for a given simulation.
@@ -56,55 +57,47 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 	private static final Logger LOGGER = LoggerFactory.getLogger(GenAlgBotTrainer.class);
 	
 	private final GenAlgBotTrainerConfig config;
-	private final ITrainingBotFactory<TBotConfig> botFactory;
+	private final IBotFactory<TBotConfig> botFactory;
 	private final IBotConfigMutator<TBotConfig> mutator;
-	private final SimulationClock clock;
+	private final SimulationContext simContext;
 	
-	public GenAlgBotTrainer(GenAlgBotTrainerConfig config, IBotConfigMutator<TBotConfig> mutator, ITrainingBotFactory<TBotConfig> botFactory, SimulationClock clock) {
+	public GenAlgBotTrainer(GenAlgBotTrainerConfig config, IBotConfigMutator<TBotConfig> mutator, IBotFactory<TBotConfig> botFactory, SimulationContext simContext) {
 		this.config = config;
 		this.botFactory = botFactory;
 		this.mutator = mutator;
-		this.clock = clock;
+		this.simContext = simContext;
 	}
 
 	public TBotConfig train() {
 		List<TBotConfig> configs = createRandomConfigs(config.numBots);
 		
 		for (int i = 0; i < config.numEpochs; i++) {
-			List<TBotConfig> sortedConfigs = simulateEpoch(configs, i);
-			List<TBotConfig> winners = sortedConfigs.subList(0, config.numParents);
-			configs = evolveConfigs(winners, config.numBots, config.numElites);
+			List<IBot<TBotConfig>> population = createPopulationFromConfigs(configs);
+			HashMap<IBot<TBotConfig>, DebugTradeLogger> loggers = createLoggers(population);
+			
+			simulateEpoch(population);
+			
+			sortByScore(population, loggers);
+			
+			List<TBotConfig> sortedConfigs = new ArrayList<TBotConfig>();
+			for (IBot<TBotConfig> bot : population) {
+				sortedConfigs.add(bot.getConfig());
+			}
+			
+			logEpoch(i, population, loggers);
+			
+			if (i < config.numEpochs-1) { // Leave configs alone at last run
+				List<TBotConfig> winners = sortedConfigs.subList(0, config.numParents);
+				configs = evolveConfigs(winners, config.numBots, config.numElites);
+			}
 		}
 		
-		return configs.get(0); // TODO: THIS REQUIRES ONE LAST SORT, YO. REFACTOR YOUR METHODS TO SUPPORT THIS
+		return configs.get(0);
 	}
-	
-	private List<TBotConfig> simulateEpoch(final List<TBotConfig> configs, final int epoch) {
-		List<IBot<TBotConfig>> population = createPopulationFromConfigs(configs);
-		HashMap<IBot<TBotConfig>, DebugTradeLogger> loggers = createLoggers(population);
-		
-		// Run the simulation
-		
-		for (IBot<TBotConfig> bot : population) {
-			clock.addListener(bot);
-		}
-		
-		clock.run();
-		
-		for (IBot<TBotConfig> bot : population) {
-			clock.removeListener(bot);
-		}
-		
-		// return population;
-		
-		sortByScore(population, loggers);
-		
-		List<TBotConfig> sortedConfigs = new ArrayList<TBotConfig>();
-		for (IBot<TBotConfig> bot : population) {
-			sortedConfigs.add(bot.getConfig());
-		}
-		
-		LOGGER.debug("Finished epoch " + epoch);
+
+	private void logEpoch(int i, List<IBot<TBotConfig>> population,
+			HashMap<IBot<TBotConfig>, DebugTradeLogger> loggers) {
+		LOGGER.debug("Finished epoch " + i);
 		
 		IBot<TBotConfig> bestBot = population.get(0);
 		LOGGER.debug("Best bot was: " + bestBot.getConfig().toString());
@@ -117,12 +110,23 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 		LOGGER.debug("Trades: " + loggers.get(worstBot).getActions().size());
 		
 		LOGGER.debug("...");
-		
-		return sortedConfigs;
 	}
 	
-	private void sortByScore(final List<IBot<TBotConfig>> population, final HashMap<IBot<TBotConfig>, DebugTradeLogger> loggers) {
+	private void simulateEpoch(final List<IBot<TBotConfig>> population) {
+		// Run the simulation
 		
+		for (IBot<TBotConfig> bot : population) {
+			simContext.getClock().addListener(bot);
+		}
+		
+		simContext.getClock().run();
+		
+		for (IBot<TBotConfig> bot : population) {
+			simContext.getClock().removeListener(bot);
+		}
+	}
+	
+	private void sortByScore(List<IBot<TBotConfig>> population, final HashMap<IBot<TBotConfig>, DebugTradeLogger> loggers) {
 		Collections.sort(population, new Comparator<IBot<TBotConfig>>() {
 
 	        public int compare(IBot<TBotConfig> botA, IBot<TBotConfig> botB) {

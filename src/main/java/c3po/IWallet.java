@@ -9,4 +9,6 @@ public interface IWallet {
 	
 	public void addListener(IWalletTransactionListener listener);
 	public void removeListener(IWalletTransactionListener listener);
+	
+	public IWallet copy();
 }
