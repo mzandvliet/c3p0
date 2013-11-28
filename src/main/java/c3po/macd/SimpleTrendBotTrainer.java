@@ -19,7 +19,7 @@ import c3po.IWallet;
 import c3po.SimulationClock;
 import c3po.Time;
 import c3po.Wallet;
-import c3po.bitstamp.BitstampTickerCsvSource;
+import c3po.bitstamp.BitstampSimulationTickerCsvSource;
 
 /**
  * This finds optimal MacdBot configurations for a given simulation dataset.
@@ -107,7 +107,7 @@ public class SimpleTrendBotTrainer {
 		
 		// Create a ticker
 		
-		final BitstampTickerSource tickerNode = new BitstampTickerCsvSource(timestep, interpolationTime, csvPath);
+		final BitstampTickerSource tickerNode = new BitstampSimulationTickerCsvSource(timestep, interpolationTime, csvPath);
 		
 		tickerNode.open();
 		

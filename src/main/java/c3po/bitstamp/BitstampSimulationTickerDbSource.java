@@ -7,20 +7,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import c3po.*;
-import c3po.bitstamp.BitstampTickerSource.SignalName;
 
 /**
  * Work in progress in using the database as source
  */
-public class BitstampTickerSimulationDbSource extends BitstampTickerSource {
-	private static final Logger LOGGER = LoggerFactory.getLogger(BitstampTickerSimulationDbSource.class);
+public class BitstampSimulationTickerDbSource extends BitstampTickerSource {
+	private static final Logger LOGGER = LoggerFactory.getLogger(BitstampSimulationTickerDbSource.class);
 	
 	private final long startTime;
 	private final long endTime;
 	private Connection connection = null;
 	private ResultSet resultSet;
 	
-	public BitstampTickerSimulationDbSource(long timestep, long interpolationTime, InetSocketAddress host, String user, String pwd, long startTime, long endTime) throws ClassNotFoundException, SQLException {
+	public BitstampSimulationTickerDbSource(long timestep, long interpolationTime, InetSocketAddress host, String user, String pwd, long startTime, long endTime) throws ClassNotFoundException, SQLException {
 		  super(timestep, interpolationTime);
 		  
 		  this.startTime = startTime;

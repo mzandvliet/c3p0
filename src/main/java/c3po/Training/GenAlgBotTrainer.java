@@ -22,7 +22,7 @@ import c3po.IWallet;
 import c3po.SimulationClock;
 import c3po.Time;
 import c3po.Wallet;
-import c3po.bitstamp.BitstampTickerCsvSource;
+import c3po.bitstamp.BitstampSimulationTickerCsvSource;
 
 /**
  * This finds optimal Bot configurations for a given simulation.

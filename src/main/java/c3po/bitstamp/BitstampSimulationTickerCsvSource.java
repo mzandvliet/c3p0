@@ -5,15 +5,14 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import c3po.Sample;
-import c3po.bitstamp.BitstampTickerSource.SignalName;
 import au.com.bytecode.opencsv.CSVReader;
 
-public class BitstampTickerCsvSource extends BitstampTickerSource {
+public class BitstampSimulationTickerCsvSource extends BitstampTickerSource {
 	private final String path;
 	private CSVReader reader;
 	private boolean isEmpty = false;
 	
-	public BitstampTickerCsvSource(long timestep, long interpolationTime, String path) {
+	public BitstampSimulationTickerCsvSource(long timestep, long interpolationTime, String path) {
 		super(timestep, interpolationTime);
 		this.path = path;
 	}

@@ -12,7 +12,7 @@ import c3po.Wallet;
 import c3po.Training.GenAlgBotTrainer;
 import c3po.Training.GenAlgBotTrainerConfig;
 import c3po.bitstamp.BitstampSimulationTradeFloor;
-import c3po.bitstamp.BitstampTickerCsvSource;
+import c3po.bitstamp.BitstampSimulationTickerCsvSource;
 import c3po.simulation.SimulationBotRunner;
 
 /*
@@ -78,7 +78,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 		// TODO: Needs a simulation context to optimize against
 		GenAlgBotTrainer<MacdBotConfig> trainer = new GenAlgBotTrainer<MacdBotConfig>(genAlgConfig, mutator, null, null);
 		
-		final BitstampTickerCsvSource tickerNode = new BitstampTickerCsvSource(timestep, interpolationTime, csvPath);
+		final BitstampSimulationTickerCsvSource tickerNode = new BitstampSimulationTickerCsvSource(timestep, interpolationTime, csvPath);
 		
 		final ITradeFloor tradeFloor =  new BitstampSimulationTradeFloor(
 				tickerNode.getOutputLast(),

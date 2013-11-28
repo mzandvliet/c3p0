@@ -22,7 +22,7 @@ import c3po.ITradeListener;
 import c3po.IWallet;
 import c3po.Sample;
 import c3po.TradeAction;
-import c3po.bitstamp.BitstampTickerCsvSource;
+import c3po.bitstamp.BitstampSimulationTickerCsvSource;
 
 /**
  * Very simple Bot implementation that takes a running average 
@@ -59,7 +59,7 @@ public class SimpleTrendBot extends AbstractTickable implements IBot {
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		// Set up global signal tree
 		
-		final BitstampTickerCsvSource tickerNode = new BitstampTickerCsvSource(timestep, interpolationTime, csvPath);
+		final BitstampSimulationTickerCsvSource tickerNode = new BitstampSimulationTickerCsvSource(timestep, interpolationTime, csvPath);
 			
 		final IWallet wallet = new Wallet(walletDollarStart, walletBtcStart);
 		

@@ -9,13 +9,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import c3po.bitstamp.BitstampSimulationTradeFloor;
-import c3po.bitstamp.BitstampTickerSimulationDbSource;
+import c3po.bitstamp.BitstampSimulationTickerDbSource;
 import c3po.IClock;
 import c3po.ISignal;
 import c3po.ITradeFloor;
 import c3po.ITradeListener;
 import c3po.IWallet;
-import c3po.bitstamp.BitstampTickerCsvSource;
+import c3po.bitstamp.BitstampSimulationTickerCsvSource;
 
 /* Todo:
  * 
@@ -88,7 +88,7 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 		// Set up global signal tree
 		
 		//final BitstampTickerCsvSource tickerNode = new BitstampTickerCsvSource(timestep, interpolationTime, csvPath);
-		final BitstampTickerSimulationDbSource tickerNode = new BitstampTickerSimulationDbSource(
+		final BitstampSimulationTickerDbSource tickerNode = new BitstampSimulationTickerDbSource(
 				timestep,
 				interpolationTime,
 				new InetSocketAddress("94.208.87.249", 3309),

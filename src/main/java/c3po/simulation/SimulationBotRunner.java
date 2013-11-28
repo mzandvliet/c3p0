@@ -44,7 +44,7 @@ public class SimulationBotRunner {
 	private final static double walletStartBtcInUsd = 0.0d;
 	
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
-		final BitstampTickerCsvSource tickerNode = new BitstampTickerCsvSource(timestep, interpolationTime, csvPath);
+		final BitstampSimulationTickerCsvSource tickerNode = new BitstampSimulationTickerCsvSource(timestep, interpolationTime, csvPath);
 		tickerNode.open();
 		
 		final ITradeFloor tradeFloor =  new BitstampSimulationTradeFloor(
