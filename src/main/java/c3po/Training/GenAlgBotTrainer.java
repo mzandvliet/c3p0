@@ -29,19 +29,19 @@ import c3po.bitstamp.BitstampTickerCsvSource;
  * 
  * 
  * 
- * Todo:
+ * TODO:
  * 
  * - Trainer history/simulation-context up to current running time to do optimization on. Either:
  * 		- Record it live, or
- * 		- Fetch it from the database
+ * 		- Fetch it from the database (Do this using the new DbSimulationSource)
  * 
  * - Need to define a simulation context
- * 		- Market history ready to go
+ * 		- Market history ready to go (based on an interface wrapping a recorded source, as described above)
  * 		- Wallet start state
  * 
  * - Need to create bots from this start state
  * 
- * - Need to be able to reset simulation
+ * - Need to be able to reset easily reset simulation and run it again with different bots
  * 
  * - Optimize
  * 		- Early out if a convergence threshold is reached
@@ -76,7 +76,7 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 			configs = evolveConfigs(winners, config.numBots, config.numElites);
 		}
 		
-		return configs.get(0); // Todo: THIS REQUIRES ONE LAST SORT, YO
+		return configs.get(0); // TODO: THIS REQUIRES ONE LAST SORT, YO. REFACTOR YOUR METHODS TO SUPPORT THIS
 	}
 	
 	private List<TBotConfig> simulateEpoch(final List<TBotConfig> configs, final int epoch) {

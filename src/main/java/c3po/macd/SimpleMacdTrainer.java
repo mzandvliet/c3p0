@@ -15,6 +15,15 @@ import c3po.bitstamp.BitstampSimulationTradeFloor;
 import c3po.bitstamp.BitstampTickerCsvSource;
 import c3po.simulation.SimulationBotRunner;
 
+/*
+ * TODO: Finish implementing this, needs fleshed out GenAlgBotTrainer
+ * 
+ * Trainers need to accept a simulation context, which specifies:
+ * 		- Training set
+ * 		- Wallet
+ * 
+ */
+
 public class SimpleMacdTrainer {
 private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner.class);
 	
@@ -66,10 +75,10 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 				numElites,
 				mutationChance);
 		
+		// TODO: Needs a simulation context to optimize against
 		GenAlgBotTrainer<MacdBotConfig> trainer = new GenAlgBotTrainer<MacdBotConfig>(genAlgConfig, mutator, null, null);
 		
 		final BitstampTickerCsvSource tickerNode = new BitstampTickerCsvSource(timestep, interpolationTime, csvPath);
-		
 		
 		final ITradeFloor tradeFloor =  new BitstampSimulationTradeFloor(
 				tickerNode.getOutputLast(),
@@ -80,14 +89,11 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 		double walletStartBtc = walletStartBtcInUsd / tickerNode.getOutputLast().getSample(simulationStartTime).value;
 		final IWallet wallet = new Wallet(walletStartUsd, walletStartBtc);
 		
-		tickerNode.open();
-		
-		IClock botClock = new SimulationClock(timestep, simulationStartTime, simulationEndTime, interpolationTime);
-		
-		// Run the program
+		// TODO: Run the WINNING BOT again, Graph the results for manual evaluation
 
+		tickerNode.open();
+		IClock botClock = new SimulationClock(timestep, simulationStartTime, simulationEndTime, interpolationTime);
 		botClock.run();
-		
 		tickerNode.close();
 	}
 }
