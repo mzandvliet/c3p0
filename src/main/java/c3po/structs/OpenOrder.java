@@ -3,11 +3,14 @@ package c3po.structs;
 public class OpenOrder {
 	private final long id;
 	private final long datetime;
-	private final String type;
+	private final int type;
 	private final double price;
 	private final double amount;
+	
+	public final static int BUY = 0;
+	public final static int SELL = 1;
 
-	public OpenOrder(long id, long datetime, String type, double price, double amount) {
+	public OpenOrder(long id, long datetime, int type, double price, double amount) {
 		this.id = id;
 		this.datetime = datetime;
 		this.type = type;
@@ -23,9 +26,18 @@ public class OpenOrder {
 		return datetime;
 	}
 
-	public String getType() {
+	public int getType() {
 		return type;
 	}
+	
+	public String getTypeDisplay() {
+		switch(type) {
+		case BUY: return "BUY";
+		case SELL: return "SELL";
+		default: return "UNKNOWN";
+		}
+	}
+
 
 	public double getPrice() {
 		return price;
@@ -38,6 +50,6 @@ public class OpenOrder {
 	
 	
 	public String toString() {
-		return String.format("OpenOrder %s #%d: %s for %s", type, id, amount, price);
+		return String.format("OpenOrder %s #%d: %s for %s", getTypeDisplay(), id, amount, price);
 	}
 }

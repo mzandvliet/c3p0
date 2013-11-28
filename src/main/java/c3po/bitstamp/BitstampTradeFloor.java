@@ -1,5 +1,7 @@
 package c3po.bitstamp;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
@@ -33,7 +35,8 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	private static int clientId = 665206;
 	private static String apiKey = "8C3i5RNNZ3Hvy3epS7TKRp87a3K6tX4s";
 	private static String apiSecret = "ZPS0qszXKqWtOM8PeTiLrqJuCOjLI3rl";
-
+	
+	SimpleDateFormat sdf  = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
 	
 	public BitstampTradeFloor(ISignal last, ISignal bid, ISignal ask) {
 		super(last, bid, ask);
@@ -86,18 +89,18 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	public double buyImpl(IWallet wallet, TradeAction action) {
 		double boughtBtc = 0;
 		try {
-		// We get the latest ask, assuming the ticker is updated by some other part of the app
-		Sample currentAsk = askSignal.peek();
-				
-		// The amount of Btc we are going to get if we buy for volume USD
-		boughtBtc = action.volume * (1.0d-tradeFee);
-		double soldUsd = action.volume * currentAsk.value;
-		
-		// Place the actual buy order
-		placeBuyOrder(currentAsk.value, boughtBtc);
-		
-		// We assume the trade is fulfilled instantly, for the price of the ask
-		wallet.transact(action.timestamp, -soldUsd, boughtBtc);
+			// We get the latest ask, assuming the ticker is updated by some other part of the app
+			Sample currentAsk = askSignal.peek();
+					
+			// The amount of Btc we are going to get if we buy for volume USD
+			boughtBtc = action.volume * (1.0d-tradeFee);
+			double soldUsd = action.volume * currentAsk.value;
+			
+			// Place the actual buy order
+			placeBuyOrder(currentAsk.value, boughtBtc);
+			
+			// We assume the trade is fulfilled instantly, for the price of the ask
+			wallet.transact(action.timestamp, -soldUsd, boughtBtc);
 		}
 		catch(Exception e) {
 			LOGGER.error("Could not buy BTC", e);
@@ -108,17 +111,24 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 
 	@Override
 	public double sellImpl(IWallet wallet, TradeAction action) {
-		// We get the latest ask, assuming the ticker is updated by some other part of the app
-		Sample currentBid = bidSignal.peek();
+		double boughtUsd = 0;
+		try {
+			// We get the latest ask, assuming the ticker is updated by some other part of the app
+			Sample currentBid = bidSignal.peek();
+			
+			// We assume the trade is fulfilled instantly, for the price of the ask
+			boughtUsd = currentBid.value * (action.volume * (1.0d-tradeFee)); // volume in bitcoins
+			double soldBtc = action.volume;
+			
+			// Place the actual sell order
+			placeSellOrder(currentBid.value, soldBtc);
+			
+			wallet.transact(action.timestamp, boughtUsd, -soldBtc);
 		
-		// We assume the trade is fulfilled instantly, for the price of the ask
-		double boughtUsd = currentBid.value * (action.volume * (1.0d-tradeFee)); // volume in bitcoins
-		double soldBtc = action.volume;
-		
-		// Place the actual sell order
-		placeSellOrder(currentBid.value, soldBtc);
-		
-		wallet.transact(action.timestamp, boughtUsd, -soldBtc);
+		}
+		catch(Exception e) {
+			LOGGER.error("Could not sell BTC", e);
+		}
 		
 		return boughtUsd;
 	}
@@ -153,14 +163,14 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 			// Loop over all the open orders
 			for(OpenOrder openOrder : getOpenOrders()) {
 				// Adjust sell order if needed
-				if(openOrder.getType().equals("sell") && openOrder.getPrice() != currentBid.value) {
+				if(openOrder.getType() == OpenOrder.SELL && openOrder.getPrice() != currentBid.value) {
 					LOGGER.info("Adjusting "+ openOrder + " to match price " + currentBid.value);
 					cancelOrder(openOrder);
 					placeSellOrder(currentBid.value, openOrder.getAmount());
 				}
 				
 				// Adjust buy order if needed
-				if(openOrder.getType().equals("buy") && openOrder.getPrice() != currentAsk.value) {
+				if(openOrder.getType() == OpenOrder.BUY && openOrder.getPrice() != currentAsk.value) {
 					LOGGER.info("Adjusting "+ openOrder + " to match price " + currentBid.value);
 					cancelOrder(openOrder);
 					placeBuyOrder(currentAsk.value, openOrder.getAmount());
@@ -178,17 +188,23 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	 * 
 	 * @param price
 	 * @param amount
+	 * @return OpenOrder If the order succeeded, the resulting order
+	 * @throws Exception 
+	 * @throws JSONException 
 	 */
-	private void placeSellOrder(double price, double amount) {
-		try {
-			List<NameValuePair> params = new LinkedList<NameValuePair>();
-			params.add(new BasicNameValuePair("price", String.valueOf(price)));
-			params.add(new BasicNameValuePair("amount", String.valueOf(amount)));
-			String result = doAuthenticatedCall("https://www.bitstamp.net/api/sell/", params);
-			LOGGER.info("Placed sell order: Sell " + amount + " BTC for " + price + " USD. Result: " + result);
-		} catch(Exception e) {
-			LOGGER.error("Could not place sell limit order", e);
-		}
+	public OpenOrder placeSellOrder(double price, double amount) throws JSONException, Exception {
+
+		List<NameValuePair> params = new LinkedList<NameValuePair>();
+		params.add(new BasicNameValuePair("price", String.valueOf(price)));
+		params.add(new BasicNameValuePair("amount", String.valueOf(amount)));
+		JSONObject result = new JSONObject(doAuthenticatedCall("https://www.bitstamp.net/api/sell/", params));
+
+		if(result.has("error"))
+			throw new Exception(result.get("error").toString());
+		
+		LOGGER.info("Placed sell order: Sell " + amount + " BTC for " + price + " USD. Result: " + result);
+		
+		return new OpenOrder(result.getLong("id"), dateStringToSec(result.getString("datetime")), result.getInt("type"), result.getDouble("price"), result.getDouble("amount"));
 	}
 	
 	/**
@@ -196,17 +212,22 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	 * 
 	 * @param price
 	 * @param amount
+	 * @return OpenOrder If the order succeeded, the resulting order
+	 * @throws Exception 
+	 * @throws JSONException 
 	 */
-	public void placeBuyOrder(double price, double amount) {
-		try {
-			List<NameValuePair> params = new LinkedList<NameValuePair>();
-			params.add(new BasicNameValuePair("price", String.valueOf(price)));
-			params.add(new BasicNameValuePair("amount", String.valueOf(amount)));
-			String result = doAuthenticatedCall("https://www.bitstamp.net/api/buy/", params);
-			LOGGER.info("Placed buy order: Buy " + amount + " BTC for " + price + " USD. Result: " + result);
-		} catch(Exception e) {
-			LOGGER.error("Could not place buy limit order", e);
-		}
+	public OpenOrder placeBuyOrder(double price, double amount) throws JSONException, Exception {
+		List<NameValuePair> params = new LinkedList<NameValuePair>();
+		params.add(new BasicNameValuePair("price", String.valueOf(price)));
+		params.add(new BasicNameValuePair("amount", String.valueOf(amount)));
+		JSONObject result = new JSONObject(doAuthenticatedCall("https://www.bitstamp.net/api/buy/", params));
+		
+		if(result.has("error"))
+			throw new Exception(result.get("error").toString());
+		
+		LOGGER.info("Placed buy order: Buy " + amount + " BTC for " + price + " USD. Result: " + result);
+		
+		return new OpenOrder(result.getLong("id"), dateStringToSec(result.getString("datetime")), result.getInt("type"), result.getDouble("price"), result.getDouble("amount"));
 	}
 
 	/**
@@ -219,12 +240,17 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 		JSONArray result = new JSONArray(doAuthenticatedCall("https://www.bitstamp.net/api/open_orders/"));
 		
 		List<OpenOrder> openOrders = new LinkedList<OpenOrder>();
+
 		for(int index = 0; index < result.length(); index++) {
 			JSONObject row = result.getJSONObject(index);
-			openOrders.add(new OpenOrder(row.getLong("id"), row.getLong("datetime"), row.getString("type"), row.getDouble("price"), row.getDouble("amount")));
+			openOrders.add(new OpenOrder(row.getLong("id"), dateStringToSec(row.getString("datetime")), row.getInt("type"), row.getDouble("price"), row.getDouble("amount")));
 		}
 		
 		return openOrders;
+	}
+	
+	public long dateStringToSec(String input) throws ParseException {
+		return sdf.parse(input).getTime()/1000;
 	}
 
 	/**
