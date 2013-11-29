@@ -35,13 +35,10 @@ public class SimulationClock implements IClock {
 
 	public void run() {
 		for (long currentTick = startTime; currentTick < endTime; currentTick += clockTimestep) {
-			
 			// Iterate over all tickables, see which needs to be ticked
 			
 			for (ITickable listener : listeners) {
-				if (currentTick - listener.getLastTick() >= listener.getTimestep()) {
-					listener.tick(currentTick);
-				}
+				listener.tick(currentTick);
 			}
 		}
 	}

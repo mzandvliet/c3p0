@@ -18,16 +18,13 @@ import c3po.Training.GenAlgBotTrainerConfig;
 import c3po.Training.IBotFactory;
 import c3po.bitstamp.BitstampSimulationTickerDbSource;
 import c3po.bitstamp.BitstampSimulationTradeFloor;
-import c3po.bitstamp.BitstampSimulationTickerCsvSource;
 import c3po.simulation.SimulationBotRunner;
 import c3po.simulation.SimulationContext;
 
 /*
- * TODO: Finish implementing this, needs fleshed out GenAlgBotTrainer
+ * TODO:
  * 
- * Trainers need to accept a simulation context, which specifies:
- * 		- Training set
- * 		- Wallet
+ * - Refactor simulationContext into a clearer and more reusable concept
  * 
  */
 
@@ -35,14 +32,14 @@ public class SimpleMacdTrainer {
 private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner.class);
 	
 	private final static long simulationStartTime = 1384079023000l;
-	private final static long simulationEndTime = 1385501193000l;
+	private final static long simulationEndTime = 1384509600000l;
 	
 	// Timing
 	private final static long interpolationTime = 2 * Time.MINUTES;
 	private final static long timestep = 1 * Time.MINUTES;
 
 	// Simulation and fitness test
-	private final static int numEpochs = 10;
+	private final static int numEpochs = 1;
 	private final static int numBots = 250;
 	
 	// Selection
@@ -52,19 +49,22 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 	// Config mutation ranges
 	private final static double mutationChance = 0.5d;
 	private final static long minAnalysisPeriod = 1 * Time.MINUTES;
-	private final static long maxAnalysisPeriod = 12 * Time.HOURS;
+	private final static long maxAnalysisPeriod = 6 * Time.HOURS;
 	private final static double minBuyDiffThreshold = -10.0d;
 	private final static double maxBuyDiffThreshold = 10.0d;
 	private final static double minSellDiffThreshold = -10.0d;
 	private final static double maxSellDiffThreshold = 10.0d;
 	
 	// Market context
-	private final static double walletStartUsd = 400.0d;
+	private final static double walletStartUsd = 1000.0d;
 	private final static double walletStartBtcInUsd = 0.0d;
 	
 	private final static long graphInterval = 60 * Time.MINUTES;
 
 	public static void main(String[] args) {
+		
+		// Create the simulation context
+		
 		IClock botClock = new SimulationClock(timestep, simulationStartTime, simulationEndTime, interpolationTime);
 		
 		final BitstampSimulationTickerDbSource tickerNode = new BitstampSimulationTickerDbSource(
@@ -87,6 +87,23 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 		double walletStartBtc = walletStartBtcInUsd / tickerNode.getOutputLast().getSample(simulationStartTime).value;
 		final IWallet wallet = new Wallet(walletStartUsd, walletStartBtc);
 		
+		SimulationContext simContext = new SimulationContext(tickerNode, tickerNode.getOutputLast(), botClock);
+		
+		// Create and run the trainer on the context
+		
+		MacdBotConfig winningConfig = runTrainer(tickerNode, tradeFloor, wallet, simContext);
+		
+		
+		// Run the winning bot on the context again
+		
+		simContext.reset();
+
+		runWinner(botClock, tickerNode, tradeFloor, wallet, winningConfig);
+		
+		tickerNode.close();
+	}
+
+	private static MacdBotConfig runTrainer(final BitstampSimulationTickerDbSource tickerNode, final ITradeFloor tradeFloor, final IWallet wallet, SimulationContext simContext) {
 		MacdBotMutatorConfig mutatorConfig = new MacdBotMutatorConfig(
 				mutationChance,
 				minAnalysisPeriod,
@@ -105,18 +122,21 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 				numElites,
 				mutationChance);
 		
-		SimulationContext simContext = new SimulationContext(tickerNode, tickerNode.getOutputLast(), botClock);
+		
 		IBotFactory<MacdBotConfig> botFactory = new MacdBotFactory(wallet, tickerNode.getOutputLast(), tradeFloor);
 		
-		// TODO: Needs a simulation context to optimize against
 		GenAlgBotTrainer<MacdBotConfig> trainer = new GenAlgBotTrainer<MacdBotConfig>(genAlgConfig, mutator, botFactory, simContext);
 		MacdBotConfig winningConfig = trainer.train();
 		
+		return winningConfig;
+	}
+	
+	private static void runWinner(IClock botClock,
+			final BitstampSimulationTickerDbSource tickerNode,
+			final ITradeFloor tradeFloor, final IWallet wallet,
+			MacdBotConfig winningConfig) {
 		
-		// TODO: Run the WINNING BOT again, Graph the results for manual evaluation
-
 		MacdBot winningBot = new MacdBot(winningConfig, tickerNode.getOutputLast(), wallet, tradeFloor);
-		botClock.addListener(winningBot);
 		
 		DebugTradeLogger tradeLogger = new DebugTradeLogger();
 		winningBot.addTradeListener(tradeLogger);
@@ -130,10 +150,15 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 				);
 		winningBot.addTradeListener(grapher);
 		
+		// Run
+		
+		botClock.addListener(winningBot);
+		botClock.addListener(grapher);
+		
 		botClock.run();
 		
-		simContext.reset();
-		tickerNode.close();
+		botClock.removeListener(winningBot);
+		botClock.removeListener(grapher);
 		
 		// Log results
 		
