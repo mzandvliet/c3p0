@@ -3,6 +3,11 @@ package c3po.macd;
 import c3po.*;
 import c3po.Training.*;
 
+/* 
+ * TODO: Threaded training execution
+ * 
+ */
+
 public class SelfOptimizingMacdBot extends AbstractTickable implements IBot<SelfOptimizingMacdBotConfig> {
 	private final SelfOptimizingMacdBotConfig config;
 	private final ISignal ticker;
@@ -31,12 +36,16 @@ public class SelfOptimizingMacdBot extends AbstractTickable implements IBot<Self
 	
 	@Override
 	public void addTradeListener(ITradeListener listener) {
-		bot.addTradeListener(listener);
+		/* 
+		 * TODO: 
+		 * - register self with internal bot, and present a fully implemented tradeSource interface to the outside world
+		 * - When creating new internal bot, you only have to register with the new bot (and don't forget to unregister with the old bot)
+		 */
 	}
 
 	@Override
 	public void removeListener(ITradeListener listener) {
-		bot.removeListener(listener);
+		
 	}
 	
 	@Override

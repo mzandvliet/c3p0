@@ -21,13 +21,6 @@ import c3po.bitstamp.BitstampSimulationTradeFloor;
 import c3po.simulation.SimulationBotRunner;
 import c3po.simulation.SimulationContext;
 
-/*
- * TODO:
- * 
- * - Refactor simulationContext into a clearer and more reusable concept
- * 
- */
-
 public class SimpleMacdTrainer {
 private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner.class);
 	
