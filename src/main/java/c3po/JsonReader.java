@@ -8,6 +8,7 @@ import java.io.Reader;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.List;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -17,11 +18,17 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClients;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import c3po.macd.MacdTraderNode;
 
 /*
  * From: http://stackoverflow.com/questions/4308554/simplest-way-to-read-json-from-a-url-in-java
  */
 public class JsonReader {
+	private static final Logger LOGGER = LoggerFactory.getLogger(JsonReader.class);
+	public static boolean debug = false;
 
   private static String readAll(Reader rd) throws IOException {
     StringBuilder sb = new StringBuilder();
@@ -33,6 +40,9 @@ public class JsonReader {
   }
 
   public static JSONObject readJsonFromUrl(String url) throws IOException, JSONException {
+	if(debug)
+		LOGGER.debug("GET " + url);
+	  
     InputStream is = new URL(url).openStream();
     try {
       BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
@@ -56,6 +66,9 @@ public class JsonReader {
      * @throws JSONException
      */
 	public static String readJsonFromUrl(String url, List<NameValuePair> params) throws IOException, JSONException {
+		if(debug)
+			LOGGER.debug("POST " + url);
+		
 		HttpClient httpclient = HttpClients.createDefault();
 		HttpPost httppost = new HttpPost(url);
 

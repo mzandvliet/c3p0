@@ -41,6 +41,9 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	
 	public BitstampTradeFloor(ISignal last, ISignal bid, ISignal ask) {
 		super(last, bid, ask);
+		
+		// Real stuff is happening, extra JSON logging
+		JsonReader.debug = true;
 	}
 	
 	/**
@@ -76,7 +79,7 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 		return doAuthenticatedCall(url, params);
 	}
 	
-	public String doAuthenticatedCall(String url, List<NameValuePair> params) throws Exception {
+	public String doAuthenticatedCall(String url, List<NameValuePair> params) throws Exception {	
 		long nonce = generateNonce();
 		String sig = generateSignature(nonce);
 		
