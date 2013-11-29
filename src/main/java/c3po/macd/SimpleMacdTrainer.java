@@ -5,21 +5,16 @@ import java.net.InetSocketAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import c3po.DebugTradeLogger;
-import c3po.GraphingNode;
-import c3po.IClock;
-import c3po.ITradeFloor;
-import c3po.IWallet;
-import c3po.SimulationClock;
-import c3po.Time;
-import c3po.Wallet;
-import c3po.Training.GenAlgBotTrainer;
-import c3po.Training.GenAlgBotTrainerConfig;
-import c3po.Training.IBotFactory;
-import c3po.bitstamp.BitstampSimulationTickerDbSource;
-import c3po.bitstamp.BitstampSimulationTradeFloor;
-import c3po.simulation.SimulationBotRunner;
-import c3po.simulation.SimulationContext;
+import c3po.*;
+import c3po.Training.*;
+import c3po.bitstamp.*;
+import c3po.simulation.*;
+
+/* TODO: SimContext.reset() is STILL BROKEN
+ *
+ * resultSet.first() is likely not doing what I think it is.
+ * 
+ */
 
 public class SimpleMacdTrainer {
 private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner.class);
@@ -113,10 +108,11 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 				numElites,
 				mutationChance);
 		
+		GenAlgBotTrainer<MacdBotConfig> trainer = new GenAlgBotTrainer<MacdBotConfig>(genAlgConfig, mutator);
+		
 		
 		IBotFactory<MacdBotConfig> botFactory = new MacdBotFactory(simContext);
 		
-		GenAlgBotTrainer<MacdBotConfig> trainer = new GenAlgBotTrainer<MacdBotConfig>(genAlgConfig, mutator);
 		MacdBotConfig winningConfig = trainer.train(botFactory, simContext);
 		
 		return winningConfig;
@@ -124,8 +120,6 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 	
 	private static void runWinner(final MacdBotConfig winningConfig, SimulationContext simContext) {
 		simContext.reset();
-		
-		// TODO: passed-in simContext is broken
 		
 		LOGGER.debug("Running winner: " + winningConfig.toString());
 		
@@ -136,29 +130,29 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 		
 		// Create the grapher
 		
-//		GraphingNode grapher = new GraphingNode(graphInterval, "MacdBot", 
-//				context.getSignal(),
-//				bot.getAnalysisNode().getOutput(0),
-//				bot.getAnalysisNode().getOutput(1)
-//				);
-//		bot.addTradeListener(grapher);
+		GraphingNode grapher = new GraphingNode(graphInterval, "MacdBot", 
+				simContext.getSignal(),
+				bot.getAnalysisNode().getOutput(0),
+				bot.getAnalysisNode().getOutput(1)
+				);
+		bot.addTradeListener(grapher);
 		
 		// Run
 		
 		IClock clock = simContext.getClock();
 		
 		clock.addListener(bot);
-//		clock.addListener(grapher);
+		clock.addListener(grapher);
 		
 		clock.run();
 		
 		clock.removeListener(bot);
-//		clock.removeListener(grapher);
+		clock.removeListener(grapher);
 		
 		// Log results
 		
-//		grapher.pack();
-//		grapher.setVisible(true);
+		grapher.pack();
+		grapher.setVisible(true);
 		
 		tradeLogger.writeLog();
 		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Wallet: " + simContext.getTradeFloor().getWalletValueInUsd(bot.getWallet()));

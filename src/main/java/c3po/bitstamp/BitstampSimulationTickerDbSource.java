@@ -14,6 +14,7 @@ public class BitstampSimulationTickerDbSource extends BitstampTickerSource imple
 	private final long startTime;
 	private final long endTime;
 	private Connection connection = null;
+	
 	private ResultSet resultSet;
 	
 	public BitstampSimulationTickerDbSource(long timestep, long interpolationTime, InetSocketAddress host, String user, String pwd, long startTime, long endTime) {
