@@ -81,13 +81,17 @@ public class JsonReader {
 		HttpEntity entity = response.getEntity();
 
 		InputStream is = entity.getContent();
+		String result;
 		try {
 			BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
-			return readAll(rd);
+			result = readAll(rd);
+			LOGGER.debug("Response: " + result);
 		} finally {
 			is.close();
 			EntityUtils.consume(entity);
 			httppost.releaseConnection();
 		}
+		
+		return result;
 	}
 }

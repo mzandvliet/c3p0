@@ -29,7 +29,7 @@ public class BitstampSimulationTickerDbSource extends BitstampTickerSource imple
 	    	  // This will load the MySQL driver, each DB has its own driver
 			Class.forName("com.mysql.jdbc.Driver");
 			// Setup the connection with the DB
-		      connection = DriverManager.getConnection("jdbc:mysql://"+host.getHostString()+":"+host.getPort()+"/c3po?user="+user+"&password="+pwd);
+		      connection = DriverManager.getConnection("jdbc:mysql://"+host.getHostName()+":"+host.getPort()+"/c3po?user="+user+"&password="+pwd);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
