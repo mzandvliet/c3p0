@@ -68,7 +68,7 @@ public class RealtimeBotRunner {
 		// Create bot
 		IBot bot = new MacdBot(config, tickerNode.getOutputLast(), wallet, tradeFloor);
 		
-		DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+		DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, 0, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
 		dbTradeLogger.open();
 		dbTradeLogger.startSession(new Date().getTime(), wallet.getWalletUsd(), wallet.getWalletBtc());
 

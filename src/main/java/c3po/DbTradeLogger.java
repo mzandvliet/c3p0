@@ -24,8 +24,21 @@ public class DbTradeLogger implements ITradeListener, IWalletTransactionListener
 	private Connection connect = null;
 	
 	public DbTradeLogger(IBot bot, InetSocketAddress host, String user, String pwd) {
+		this(bot, (int) (new Date().getTime()/1000.0d), host, user, pwd);
+	}
+	
+	/**
+	 * Constructor that allows a predefined botId, for restarting existing bots.
+	 * 
+	 * @param bot
+	 * @param botId
+	 * @param host
+	 * @param user
+	 * @param pwd
+	 */
+	public DbTradeLogger(IBot bot, int botId, InetSocketAddress host, String user, String pwd) {
 		this.bot = bot;
-		this.botId = (int) (new Date().getTime()/1000.0d);
+		this.botId = botId;
 		this.host = host;
 		this.user = user;
 		this.pwd = pwd;
@@ -33,6 +46,8 @@ public class DbTradeLogger implements ITradeListener, IWalletTransactionListener
 		bot.addTradeListener(this);
 		bot.getWallet().addListener(this);
 	}
+	
+	
 
 	@Override
 	public void onTrade(TradeAction action) {
