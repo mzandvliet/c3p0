@@ -16,6 +16,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -85,6 +86,8 @@ public class JsonReader {
 			return readAll(rd);
 		} finally {
 			is.close();
+			EntityUtils.consume(entity);
+			httppost.releaseConnection();
 		}
 	}
 }

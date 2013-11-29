@@ -70,7 +70,7 @@ public class RealtimeBotRunner {
 		
 		DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, 0, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
 		dbTradeLogger.open();
-		dbTradeLogger.startSession(new Date().getTime(), wallet.getWalletUsd(), wallet.getWalletBtc());
+		//dbTradeLogger.startSession(new Date().getTime(), wallet.getWalletUsd(), wallet.getWalletBtc());
 
 		
 		// Create a clock
