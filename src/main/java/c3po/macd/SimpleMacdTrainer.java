@@ -87,23 +87,21 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 		double walletStartBtc = walletStartBtcInUsd / tickerNode.getOutputLast().getSample(simulationStartTime).value;
 		final IWallet wallet = new Wallet(walletStartUsd, walletStartBtc);
 		
-		SimulationContext simContext = new SimulationContext(tickerNode, tickerNode.getOutputLast(), botClock);
+		SimulationContext simContext = new SimulationContext(tickerNode, tickerNode.getOutputLast(), tradeFloor, wallet, botClock);
+		
 		
 		// Create and run the trainer on the context
 		
-		MacdBotConfig winningConfig = runTrainer(tickerNode, tradeFloor, wallet, simContext);
-		
+		MacdBotConfig winningConfig = runTrainer(simContext);
 		
 		// Run the winning bot on the context again
 		
-		simContext.reset();
-
-		runWinner(botClock, tickerNode, tradeFloor, wallet, winningConfig);
+		runWinner(winningConfig, simContext);
 		
 		tickerNode.close();
 	}
 
-	private static MacdBotConfig runTrainer(final BitstampSimulationTickerDbSource tickerNode, final ITradeFloor tradeFloor, final IWallet wallet, SimulationContext simContext) {
+	private static MacdBotConfig runTrainer(SimulationContext simContext) {
 		MacdBotMutatorConfig mutatorConfig = new MacdBotMutatorConfig(
 				mutationChance,
 				minAnalysisPeriod,
@@ -123,7 +121,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 				mutationChance);
 		
 		
-		IBotFactory<MacdBotConfig> botFactory = new MacdBotFactory(wallet, tickerNode.getOutputLast(), tradeFloor);
+		IBotFactory<MacdBotConfig> botFactory = new MacdBotFactory(simContext);
 		
 		GenAlgBotTrainer<MacdBotConfig> trainer = new GenAlgBotTrainer<MacdBotConfig>(genAlgConfig, mutator, botFactory, simContext);
 		MacdBotConfig winningConfig = trainer.train();
@@ -131,12 +129,12 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 		return winningConfig;
 	}
 	
-	private static void runWinner(IClock botClock,
-			final BitstampSimulationTickerDbSource tickerNode,
-			final ITradeFloor tradeFloor, final IWallet wallet,
-			MacdBotConfig winningConfig) {
+	private static void runWinner(final MacdBotConfig winningConfig, SimulationContext context) {
+		context.reset();
 		
-		MacdBot winningBot = new MacdBot(winningConfig, tickerNode.getOutputLast(), wallet, tradeFloor);
+		LOGGER.debug("Running bot: " + winningConfig.toString());
+		
+		MacdBot winningBot = new MacdBot(winningConfig, context.getSignal(), context.getWalletInstance(), context.getTradeFloor());
 		
 		DebugTradeLogger tradeLogger = new DebugTradeLogger();
 		winningBot.addTradeListener(tradeLogger);
@@ -144,7 +142,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 		// Create the grapher
 		
 		GraphingNode grapher = new GraphingNode(graphInterval, "MacdBot", 
-				tickerNode.getOutputLast(),
+				context.getSignal(),
 				winningBot.getAnalysisNode().getOutput(0),
 				winningBot.getAnalysisNode().getOutput(1)
 				);
@@ -152,13 +150,15 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 		
 		// Run
 		
-		botClock.addListener(winningBot);
-		botClock.addListener(grapher);
+		IClock clock = context.getClock();
 		
-		botClock.run();
+		clock.addListener(winningBot);
+		clock.addListener(grapher);
 		
-		botClock.removeListener(winningBot);
-		botClock.removeListener(grapher);
+		clock.run();
+		
+		clock.removeListener(winningBot);
+		clock.removeListener(grapher);
 		
 		// Log results
 		
@@ -166,6 +166,6 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 		grapher.setVisible(true);
 		
 		tradeLogger.writeLog();
-		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Wallet: " + tradeFloor.getWalletValueInUsd(wallet));
+		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Wallet: " + context.getTradeFloor().getWalletValueInUsd(winningBot.getWallet()));
 	}
 }

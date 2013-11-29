@@ -11,7 +11,7 @@ import c3po.*;
 
 public abstract class BitstampTickerSource extends AbstractTickable implements INode {
 	protected final int numSignals = 6;
-	private OutputSignal[] signals;
+	protected OutputSignal[] signals;
 	protected boolean isEmpty = false;
 	protected final long interpolationTime;
 	protected final CircularArrayList<ServerSampleEntry> buffer;

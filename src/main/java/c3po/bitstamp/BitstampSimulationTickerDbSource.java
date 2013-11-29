@@ -111,8 +111,6 @@ public class BitstampSimulationTickerDbSource extends BitstampTickerSource imple
 
 	@Override
 	public void reset() {
-		buffer.clear();
-		
 		if (resultSet != null) {
 			try {
 				resultSet.first();
@@ -120,6 +118,12 @@ public class BitstampSimulationTickerDbSource extends BitstampTickerSource imple
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		}
+		
+		buffer.clear();
+		
+		for (OutputSignal signal : signals) {
+			signal.setSample(Sample.none);
 		}
 	}
 }

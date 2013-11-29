@@ -2,6 +2,7 @@ package c3po.macd;
 
 import c3po.*;
 import c3po.Training.*;
+import c3po.simulation.SimulationContext;
 
 /*
  * Todo:
@@ -12,19 +13,15 @@ import c3po.Training.*;
 
 public class MacdBotFactory implements IBotFactory<MacdBotConfig> {
 
-	private final IWallet walletPrototype;
-	private final ISignal ticker;
-	private final ITradeFloor tradeFloor;
+	private final SimulationContext context;
 	
-	public MacdBotFactory(IWallet walletPrototype, final ISignal ticker, final ITradeFloor tradeFloor) {
+	public MacdBotFactory(SimulationContext context) {
 		super();
-		this.walletPrototype = walletPrototype;
-		this.ticker = ticker;
-		this.tradeFloor = tradeFloor;
+		this.context = context;
 	}
 
 	@Override
 	public MacdBot create(MacdBotConfig config) {
-		return new MacdBot(config, ticker, walletPrototype.copy(), tradeFloor);
+		return new MacdBot(config, context.getSignal(), context.getWalletInstance(), context.getTradeFloor());
 	}
 }
