@@ -69,7 +69,7 @@ public class GraphingNode extends ApplicationFrame implements ITickable, ITradeL
 	
 	@Override
 	public void tick(long tick) {
-		if (tick > lastTick) {
+		if (tick >= lastTick + timestep) {
 			for (int i = 0; i < inputs.length; i++) {
 				Sample newest = inputs[i].peek();
 				signalTimeSeries[i].addOrUpdate(new Second(newest.getDate()), newest.value);
@@ -88,7 +88,9 @@ public class GraphingNode extends ApplicationFrame implements ITickable, ITradeL
 	public void onTrade(TradeAction action) {
 		XYPlot plot = (XYPlot) chart.getPlot();
 		
-		TimeSeriesDataItem item = signalTimeSeries[0].getDataItem(signalTimeSeries[0].getItemCount() - 1);
+		TimeSeries firstSeries = signalTimeSeries[0];
+		int lastItemIndex = firstSeries.getItemCount() - 1;
+		TimeSeriesDataItem item = firstSeries.getDataItem(lastItemIndex);
 		
 		double x = item.getPeriod().getFirstMillisecond();
 		double y = item.getValue().doubleValue();

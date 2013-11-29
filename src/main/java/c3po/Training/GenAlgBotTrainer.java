@@ -76,18 +76,19 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 			HashMap<IBot<TBotConfig>, DebugTradeLogger> loggers = createLoggers(population);
 			
 			simulateEpoch(population);
+			simContext.reset();
 			
 			sortByScore(population, loggers);
 			
-			List<TBotConfig> sortedConfigs = new ArrayList<TBotConfig>();
+			configs.clear();
 			for (IBot<TBotConfig> bot : population) {
-				sortedConfigs.add(bot.getConfig());
+				configs.add(bot.getConfig());
 			}
 			
 			logEpoch(i, population, loggers);
 			
 			if (i < config.numEpochs-1) { // Leave configs alone at last run
-				List<TBotConfig> winners = sortedConfigs.subList(0, config.numParents);
+				List<TBotConfig> winners = configs.subList(0, config.numParents);
 				configs = evolveConfigs(winners, config.numBots, config.numElites);
 			}
 		}
@@ -124,8 +125,6 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 		for (IBot<TBotConfig> bot : population) {
 			simContext.getClock().removeListener(bot);
 		}
-		
-		simContext.reset();
 	}
 	
 	private void sortByScore(List<IBot<TBotConfig>> population, final HashMap<IBot<TBotConfig>, DebugTradeLogger> loggers) {

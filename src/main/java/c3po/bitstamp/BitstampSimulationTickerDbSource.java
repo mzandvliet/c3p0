@@ -111,6 +111,8 @@ public class BitstampSimulationTickerDbSource extends BitstampTickerSource imple
 
 	@Override
 	public void reset() {
+		buffer.clear();
+		
 		if (resultSet != null) {
 			try {
 				resultSet.first();
