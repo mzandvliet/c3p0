@@ -39,7 +39,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 	private final static long timestep = 1 * Time.MINUTES;
 
 	// Simulation and fitness test
-	private final static int numEpochs = 1;
+	private final static int numEpochs = 5;
 	private final static int numBots = 250;
 	
 	// Selection
@@ -123,49 +123,51 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 		
 		IBotFactory<MacdBotConfig> botFactory = new MacdBotFactory(simContext);
 		
-		GenAlgBotTrainer<MacdBotConfig> trainer = new GenAlgBotTrainer<MacdBotConfig>(genAlgConfig, mutator, botFactory, simContext);
-		MacdBotConfig winningConfig = trainer.train();
+		GenAlgBotTrainer<MacdBotConfig> trainer = new GenAlgBotTrainer<MacdBotConfig>(genAlgConfig, mutator);
+		MacdBotConfig winningConfig = trainer.train(botFactory, simContext);
 		
 		return winningConfig;
 	}
 	
-	private static void runWinner(final MacdBotConfig winningConfig, SimulationContext context) {
-		context.reset();
+	private static void runWinner(final MacdBotConfig winningConfig, SimulationContext simContext) {
+		simContext.reset();
 		
-		LOGGER.debug("Running bot: " + winningConfig.toString());
+		// TODO: passed-in simContext is broken
 		
-		MacdBot winningBot = new MacdBot(winningConfig, context.getSignal(), context.getWalletInstance(), context.getTradeFloor());
+		LOGGER.debug("Running winner: " + winningConfig.toString());
+		
+		MacdBot bot = new MacdBot(winningConfig, simContext.getSignal(), simContext.getWalletInstance(), simContext.getTradeFloor());
 		
 		DebugTradeLogger tradeLogger = new DebugTradeLogger();
-		winningBot.addTradeListener(tradeLogger);
+		bot.addTradeListener(tradeLogger);
 		
 		// Create the grapher
 		
-		GraphingNode grapher = new GraphingNode(graphInterval, "MacdBot", 
-				context.getSignal(),
-				winningBot.getAnalysisNode().getOutput(0),
-				winningBot.getAnalysisNode().getOutput(1)
-				);
-		winningBot.addTradeListener(grapher);
+//		GraphingNode grapher = new GraphingNode(graphInterval, "MacdBot", 
+//				context.getSignal(),
+//				bot.getAnalysisNode().getOutput(0),
+//				bot.getAnalysisNode().getOutput(1)
+//				);
+//		bot.addTradeListener(grapher);
 		
 		// Run
 		
-		IClock clock = context.getClock();
+		IClock clock = simContext.getClock();
 		
-		clock.addListener(winningBot);
-		clock.addListener(grapher);
+		clock.addListener(bot);
+//		clock.addListener(grapher);
 		
 		clock.run();
 		
-		clock.removeListener(winningBot);
-		clock.removeListener(grapher);
+		clock.removeListener(bot);
+//		clock.removeListener(grapher);
 		
 		// Log results
 		
-		grapher.pack();
-		grapher.setVisible(true);
+//		grapher.pack();
+//		grapher.setVisible(true);
 		
 		tradeLogger.writeLog();
-		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Wallet: " + context.getTradeFloor().getWalletValueInUsd(winningBot.getWallet()));
+		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Wallet: " + simContext.getTradeFloor().getWalletValueInUsd(bot.getWallet()));
 	}
 }

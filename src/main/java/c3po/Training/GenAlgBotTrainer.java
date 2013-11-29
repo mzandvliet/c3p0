@@ -57,25 +57,21 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 	private static final Logger LOGGER = LoggerFactory.getLogger(GenAlgBotTrainer.class);
 	
 	private final GenAlgBotTrainerConfig config;
-	private final IBotFactory<TBotConfig> botFactory;
 	private final IBotConfigMutator<TBotConfig> mutator;
-	private final SimulationContext simContext;
 	
-	public GenAlgBotTrainer(GenAlgBotTrainerConfig config, IBotConfigMutator<TBotConfig> mutator, IBotFactory<TBotConfig> botFactory, SimulationContext simContext) {
+	public GenAlgBotTrainer(GenAlgBotTrainerConfig config, IBotConfigMutator<TBotConfig> mutator) {
 		this.config = config;
-		this.botFactory = botFactory;
 		this.mutator = mutator;
-		this.simContext = simContext;
 	}
 
-	public TBotConfig train() {
+	public TBotConfig train(IBotFactory<TBotConfig> botFactory, SimulationContext simContext) {
 		List<TBotConfig> configs = createRandomConfigs(config.numBots);
 		
 		for (int i = 0; i < config.numEpochs; i++) {
-			List<IBot<TBotConfig>> population = createPopulationFromConfigs(configs);
+			List<IBot<TBotConfig>> population = createPopulationFromConfigs(configs, botFactory);
 			HashMap<IBot<TBotConfig>, DebugTradeLogger> loggers = createLoggers(population);
 			
-			simulateEpoch(population);
+			simulateEpoch(population, simContext);
 			simContext.reset();
 			
 			sortByScore(population, loggers);
@@ -113,17 +109,19 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 		LOGGER.debug("...");
 	}
 	
-	private void simulateEpoch(final List<IBot<TBotConfig>> population) {
+	private void simulateEpoch(final List<IBot<TBotConfig>> population, SimulationContext simContext) {
 		// Run the simulation
 		
+		IClock clock = simContext.getClock();
+		
 		for (IBot<TBotConfig> bot : population) {
-			simContext.getClock().addListener(bot);
+			clock.addListener(bot);
 		}
 		
-		simContext.getClock().run();
+		clock.run();
 		
 		for (IBot<TBotConfig> bot : population) {
-			simContext.getClock().removeListener(bot);
+			clock.removeListener(bot);
 		}
 	}
 	
@@ -155,7 +153,7 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 		return bot.getTradeFloor().getWalletValueInUsd(bot.getWallet());
 	}
 	
-	private List<IBot<TBotConfig>> createPopulationFromConfigs(List<TBotConfig> configs) {
+	private List<IBot<TBotConfig>> createPopulationFromConfigs(List<TBotConfig> configs, IBotFactory<TBotConfig> botFactory) {
 		ArrayList<IBot<TBotConfig>> population = new ArrayList<IBot<TBotConfig>>();
 
 		for (int i = 0; i < configs.size(); i++) {
@@ -196,8 +194,8 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 		int numChildren = populationSize - numElites;
 		
 		for (int i = 0; i < numChildren; i++) {
-			TBotConfig parentA = getRandom(parents);
-			TBotConfig parentB = getRandom(parents);
+			TBotConfig parentA = getRandomConfig(parents);
+			TBotConfig parentB = getRandomConfig(parents);
 			
 			// Crossbreed
 			TBotConfig child = mutator.crossBreedConfig(parentA, parentB);
@@ -219,7 +217,7 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 		return newGenes;
 	}
 	
-	private TBotConfig getRandom(final List<TBotConfig> list) {
+	private TBotConfig getRandomConfig(final List<TBotConfig> list) {
 		return list.get( (int)(Math.random() * list.size()) );
 	}
 }

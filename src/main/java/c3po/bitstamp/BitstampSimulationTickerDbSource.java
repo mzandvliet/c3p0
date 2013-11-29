@@ -8,9 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import c3po.*;
 
-/**
- * Work in progress in using the database as source
- */
 public class BitstampSimulationTickerDbSource extends BitstampTickerSource implements INonRealtimeSource {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BitstampSimulationTickerDbSource.class);
 	
