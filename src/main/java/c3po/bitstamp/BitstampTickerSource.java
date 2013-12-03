@@ -47,7 +47,7 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 		 *   constant signal until server start time is reached.
 		 */
 		ServerSampleEntry oldestEntry = buffer.get(0);
-		if (clientTimestamp <= buffer.get(0).timestamp) {
+		if (clientTimestamp <= oldestEntry.timestamp) {
 			for (int j = 0; j < signals.length; j++) {
 				Sample sample = oldestEntry.get(j);
 				signals[j].setSample(sample);

@@ -27,8 +27,13 @@ public abstract class AbstractTickable implements ITickable {
 	public void tick(long tick) {
 		if (tick >= lastTick + timestep) {
 			onNewTick(tick);
+		
+			lastTick = tick;
 		}
-		lastTick = tick;
+	}
+	
+	public void reset() {
+		lastTick = -1;
 	}
 	
 	public abstract void onNewTick(long tick);

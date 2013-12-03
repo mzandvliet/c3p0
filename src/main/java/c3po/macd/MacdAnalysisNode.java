@@ -50,6 +50,26 @@ public class MacdAnalysisNode extends AbstractTickable implements INode {
 		//LOGGER.debug(String.format("Initiated AnalysisNode with " + config));
 	}
 	
+	public ISignal getOutputFast() {
+		return this.signals[SignalNames.FAST.ordinal()];
+	}
+	
+	public ISignal getOutputSlow() {
+		return this.signals[SignalNames.SLOW.ordinal()];
+	}
+	
+	public ISignal getOutputMacd() {
+		return this.signals[SignalNames.MACD.ordinal()];
+	}
+	
+	public ISignal getOutputSignal() {
+		return this.signals[SignalNames.SIGNAL.ordinal()];
+	}
+	
+	public ISignal getOutputDifference() {
+		return this.signals[SignalNames.DIFFERENCE.ordinal()];
+	}
+	
 		
 	public MacdAnalysisConfig getConfig() {
 		return config;

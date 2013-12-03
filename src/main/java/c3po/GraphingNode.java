@@ -1,6 +1,7 @@
 package c3po;
 
 import java.awt.Color;
+import java.util.Date;
 
 import javax.swing.JPanel;
 
@@ -74,9 +75,9 @@ public class GraphingNode extends ApplicationFrame implements ITickable, ITradeL
 				Sample newest = inputs[i].peek();
 				signalTimeSeries[i].addOrUpdate(new Second(newest.getDate()), newest.value);
 			}
+			
+			lastTick = tick;
 		}
-		
-		lastTick = tick;
 	}
 	
 	@Override

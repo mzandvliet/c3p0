@@ -19,7 +19,7 @@ import c3po.*;
 public class BitstampSimulationTradeFloor extends AbstractTradeFloor {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BitstampSimulationTradeFloor.class);
 
-	private double tradeFee = 0.044d;
+	private double tradeFee = 0.33d / 100;
 	
 	public BitstampSimulationTradeFloor(ISignal last, ISignal bid, ISignal ask) {
 		super(last, bid, ask);

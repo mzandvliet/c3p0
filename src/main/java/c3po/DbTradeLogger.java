@@ -83,7 +83,7 @@ public class DbTradeLogger implements ITradeListener, IWalletTransactionListener
 		}
 	}
 	
-	public void startSession(long startTime, double usdStart, double btcStart) throws SQLException {
+	public void startSession(long startTime) throws SQLException {
 		// Send botID to database
 		  
 		// Statements allow to issue SQL queries to the database
@@ -94,7 +94,7 @@ public class DbTradeLogger implements ITradeListener, IWalletTransactionListener
 		statement.execute(query);
 		  
 		LOGGER.debug(query);
-		log(new WalletTransactionResult(startTime, usdStart, btcStart));
+		log(new WalletTransactionResult(startTime, bot.getWallet().getWalletUsd(), bot.getWallet().getWalletBtc()));
 	}
 	
 	private void log(TradeAction action) throws SQLException {

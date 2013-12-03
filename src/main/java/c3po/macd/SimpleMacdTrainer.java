@@ -1,6 +1,7 @@
 package c3po.macd;
 
 import java.net.InetSocketAddress;
+import java.util.Date;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,29 +20,29 @@ import c3po.simulation.*;
 public class SimpleMacdTrainer {
 private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner.class);
 	
-	private final static long simulationStartTime = 1384079023000l;
-	private final static long simulationEndTime = 1384509600000l;
+    private final static long simulationStartTime =  1384079023000l;
+	private final static long simulationEndTime = new Date().getTime();
 	
 	// Timing
 	private final static long interpolationTime = 2 * Time.MINUTES;
 	private final static long timestep = 1 * Time.MINUTES;
 
 	// Simulation and fitness test
-	private final static int numEpochs = 5;
+	private final static int numEpochs = 50;
 	private final static int numBots = 250;
 	
 	// Selection
 	private final static int numParents = 125;
-	private final static int numElites = 10;
+	private final static int numElites = 25;
 	
 	// Config mutation ranges
-	private final static double mutationChance = 0.5d;
+	private final static double mutationChance = 0.25d;
 	private final static long minAnalysisPeriod = 1 * Time.MINUTES;
-	private final static long maxAnalysisPeriod = 6 * Time.HOURS;
-	private final static double minBuyDiffThreshold = -10.0d;
-	private final static double maxBuyDiffThreshold = 10.0d;
-	private final static double minSellDiffThreshold = -10.0d;
-	private final static double maxSellDiffThreshold = 10.0d;
+	private final static long maxAnalysisPeriod = 24 * Time.HOURS;
+	private final static double minBuyDiffThreshold = -20.0d;
+	private final static double maxBuyDiffThreshold = 20.0d;
+	private final static double minSellDiffThreshold = -20.0d;
+	private final static double maxSellDiffThreshold = 20.0d;
 	
 	// Market context
 	private final static double walletStartUsd = 1000.0d;
@@ -137,22 +138,32 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 				);
 		bot.addTradeListener(grapher);
 		
+		GraphingNode diffGrapher = new GraphingNode(graphInterval, "Macd", 
+				bot.getAnalysisNode().getOutputDifference()
+				);
+		bot.addTradeListener(diffGrapher);
+		
 		// Run
 		
 		IClock clock = simContext.getClock();
 		
 		clock.addListener(bot);
 		clock.addListener(grapher);
+		clock.addListener(diffGrapher);
 		
 		clock.run();
 		
 		clock.removeListener(bot);
 		clock.removeListener(grapher);
+		clock.removeListener(diffGrapher);
 		
 		// Log results
 		
 		grapher.pack();
 		grapher.setVisible(true);
+		
+		diffGrapher.pack();
+		diffGrapher.setVisible(true); 
 		
 		tradeLogger.writeLog();
 		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Wallet: " + simContext.getTradeFloor().getWalletValueInUsd(bot.getWallet()));

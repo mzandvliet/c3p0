@@ -133,12 +133,12 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 	        	// A minimum # of trade is required, but importance of trade frequency falls off after just a couple of them
 	            	
 	        	double botAWallet = getBotDollarValue(botA);
-	        	double botAActivity = 0.1d + Math.log(loggers.get(botA).getActions().size() * 10000); 
-            	double botAPerformance = botAWallet * botAActivity;
+	        	//double botAActivity = 0.1d + Math.log(loggers.get(botA).getActions().size() * 1000); 
+            	double botAPerformance = botAWallet;// * botAActivity;
             	
             	double botBWallet = getBotDollarValue(botB);
-	        	double botBActivity = 0.1d + Math.log(loggers.get(botB).getActions().size() * 10000);
-            	double botBPerformance = botBWallet * botBActivity;
+	        	//double botBActivity = 0.1d + Math.log(loggers.get(botB).getActions().size() * 1000);
+            	double botBPerformance = botBWallet;// * botBActivity;
             	
             	if (botAPerformance == botBPerformance) {
             		return 0;

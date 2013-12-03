@@ -175,4 +175,12 @@ public class CircularArrayList<E> extends AbstractList<E> implements Queue<E>,Ra
 	public E remove() {
 		return remove(0);
 	}
+	
+	@Override
+	public void clear() {
+		buf.clear();
+		buf.addAll(Collections.nCopies(n, (E) null));
+		head = 0;
+		tail = 0;
+	}
 }

@@ -35,13 +35,13 @@ public class RealtimeBotRunner {
 		 * Bot Config
 		 */
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
+				39 * Time.MINUTES,
 				218 * Time.MINUTES,
-				325 * Time.MINUTES,
-				311 * Time.MINUTES);
+				273 * Time.MINUTES);
 		
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
-				1.6356,
-				-4.6798);
+				0.6609,
+				-9.6978);
 		
 		MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
 		

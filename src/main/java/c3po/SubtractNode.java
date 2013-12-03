@@ -31,4 +31,8 @@ public class SubtractNode extends AbstractTickable implements INode {
 	private Sample subtract(Sample a, Sample b) {
 		return new Sample(a.timestamp, a.value - b.value);
 	}
+	
+	public String toString() {
+		return String.format("SubstractNode [%s - %s]", inputA, inputB);
+	}
 }

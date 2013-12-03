@@ -86,9 +86,10 @@ public class SignalBuffer extends AbstractList<Sample> implements ISignalBuffer,
 	
 	@Override
 	public void tick(long tick) {
-		if (tick > lastTick) {
+		if (tick >= lastTick + timestep) {
 			signals.add(source.getSample(tick));
+		
+			lastTick = tick;
 		}
-		lastTick = tick;
 	}
 }

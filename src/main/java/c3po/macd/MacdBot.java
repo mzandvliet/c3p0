@@ -16,6 +16,7 @@ import c3po.ISignal;
 import c3po.ITradeFloor;
 import c3po.ITradeListener;
 import c3po.IWallet;
+import c3po.Time;
 import c3po.bitstamp.BitstampSimulationTickerCsvSource;
 
 /* Todo:
@@ -66,7 +67,8 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdBot.class);
 	
 //	private final static String csvPath = "resources/bitstamp_ticker_till_20131126.csv";
-	private final static long simulationStartTime = 1384079023000l;
+	// Earliest time 1384079023000l
+	private final static long simulationStartTime =  1384079023000l;
 	private final static long simulationEndTime = new Date().getTime();
 	
 //	private final static String csvPath = "resources/bitstamp_ticker_till_20131122_crashed.csv";
@@ -76,10 +78,10 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 	private final static long interpolationTime = 2 * Time.MINUTES;
 	private final static long timestep = 1 * Time.MINUTES;
 	
-	private final static double walletStartUsd = 400.0d;
+	private final static double walletStartUsd = 1000.0d;
 	private final static double walletStartBtcInUsd = 0.0d;
 	
-	private final static long graphInterval = 60 * Time.MINUTES;
+	private final static long graphInterval = 10 * Time.MINUTES;
 	
 	//================================================================================
     // Main
@@ -110,15 +112,14 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 		final IWallet wallet = new Wallet(walletStartUsd, walletStartBtc);
 		
 		// Create bot config
-		
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
-				62 * Time.MINUTES,
-				80 * Time.MINUTES,
-				91 * Time.MINUTES);
+				39 * Time.MINUTES,
+				218 * Time.MINUTES,
+				273 * Time.MINUTES);
 		
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
-				2.3809,
-				-7.6297);
+				0.6609,
+				-9.6978);
 		MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
 		
 		// Create bot
@@ -130,20 +131,30 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 		DebugTradeLogger tradeLogger = new DebugTradeLogger();
 		bot.addTradeListener(tradeLogger);
 		
+		DbTradeLogger dbLogger = new DbTradeLogger(bot, new InetSocketAddress("94.208.87.249", 3309),"c3po","D7xpJwzGJEWf5qWB");
+		dbLogger.open();
+		dbLogger.startSession(simulationStartTime);
+		
 		// Create the grapher
 		
-		GraphingNode grapher = new GraphingNode(graphInterval, "MacdBot", 
+		GraphingNode grapher = new GraphingNode(graphInterval, "Ticker", 
 				tickerNode.getOutputLast(),
-				bot.analysisNode.getOutput(0),
-				bot.analysisNode.getOutput(1)
+				bot.analysisNode.getOutputFast(),
+				bot.analysisNode.getOutputSlow()
 				);
 		bot.addTradeListener(grapher);
+		
+		GraphingNode diffGrapher = new GraphingNode(graphInterval, "Macd", 
+				bot.analysisNode.getOutputDifference()
+				);
+		bot.addTradeListener(diffGrapher);
 		
 		// Create a clock
 		
 		IClock botClock = new SimulationClock(timestep, simulationStartTime, simulationEndTime, interpolationTime);
 		botClock.addListener(bot);
 		botClock.addListener(grapher);
+		botClock.addListener(diffGrapher);
 		
 		// Run the program
 
@@ -157,8 +168,13 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 		grapher.pack();
 		grapher.setVisible(true); // Show graph *after* simulation because otherwise annotation adding causes exceptions
 		
+		diffGrapher.pack();
+		diffGrapher.setVisible(true); // Show graph *after* simulation because otherwise annotation adding causes exceptions
+		
 		tradeLogger.writeLog();
 		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Wallet: " + tradeFloor.getWalletValueInUsd(wallet));
+		
+		dbLogger.close();
 	}
 	
 	
@@ -190,7 +206,7 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 		
 		analysisNode = new MacdAnalysisNode(timestep, ticker, config.analysisConfig);
 		long startDelayInTicks = config.analysisConfig.max() / timestep;
-		traderNode = new MacdTraderNode(timestep, analysisNode.getOutput(4), wallet, tradeFloor, config.traderConfig, startDelayInTicks);
+		traderNode = new MacdTraderNode(timestep, analysisNode.getOutputDifference(), wallet, tradeFloor, config.traderConfig, startDelayInTicks);
 	}
 
 	@Override
