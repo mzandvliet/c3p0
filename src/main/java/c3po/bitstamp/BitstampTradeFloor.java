@@ -104,8 +104,8 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	}
 	
 	public static String doubleToAmountString(double input) {		
-		DecimalFormat df = new DecimalFormat("######.########", new DecimalFormatSymbols(Locale.US));
-		df.applyLocalizedPattern("######.######");
+		DecimalFormat df = new DecimalFormat("########.########", new DecimalFormatSymbols(Locale.US));
+		df.applyLocalizedPattern("########.########");
 		return df.format(input);
 	}
 	
