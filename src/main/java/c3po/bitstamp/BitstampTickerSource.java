@@ -202,5 +202,10 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 		private BitstampTickerSource getOuterType() {
 			return BitstampTickerSource.this;
 		}
+
+		@Override
+		public String toString() {
+			return "ServerSampleEntry [timestamp=" + timestamp + "]";
+		}
 	}
 }
