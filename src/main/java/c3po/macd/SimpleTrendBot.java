@@ -85,7 +85,7 @@ public class SimpleTrendBot extends AbstractTickable implements IBot {
 		
 		DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
 		dbTradeLogger.open();
-		dbTradeLogger.startSession(simulationStartTime, walletDollarStart, walletBtcStart);
+		dbTradeLogger.startSession(simulationStartTime);
 
 		
 		// Create the grapher
@@ -286,5 +286,11 @@ public class SimpleTrendBot extends AbstractTickable implements IBot {
 	@Override
 	public void removeListener(ITradeListener listener) {
 		listeners.remove(listener);
+	}
+
+	@Override
+	public int getId() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

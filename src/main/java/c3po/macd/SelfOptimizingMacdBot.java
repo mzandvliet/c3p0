@@ -28,10 +28,10 @@ public class SelfOptimizingMacdBot extends AbstractTickable implements IBot<Self
 		this.wallet = wallet;
 		this.tradeFloor = tradeFloor;
 		
-		this.trainer = new GenAlgBotTrainer<MacdBotConfig>(config.genAlgConfig, null, null, null);
-		MacdBotConfig initialConfig = trainer.train(); // TODO: train on data from *before* the current time, WHICH NEEDS MORE CONFIGURATION
+		this.trainer = null;
+		MacdBotConfig initialConfig = null; // TODO: train on data from *before* the current time, WHICH NEEDS MORE CONFIGURATION
 		
-		this.bot = new MacdBot(initialConfig, ticker, wallet, tradeFloor);
+		this.bot = new MacdBot(0, initialConfig, ticker, wallet, tradeFloor);
 	}
 	
 	@Override
@@ -68,11 +68,17 @@ public class SelfOptimizingMacdBot extends AbstractTickable implements IBot<Self
 		// TODO Refactor to support asynchronous optimization, since it's rather costly
 		
 		if (tick > lastOptimizationTime) {
-			MacdBotConfig newConfig = trainer.train();
-			bot = new MacdBot(newConfig, ticker, wallet, tradeFloor); // TODO: are Bots immutable or mutable? Either way, we need to apply the new config to our wrapped bot
+			MacdBotConfig newConfig = trainer.train(null, null);
+			bot = new MacdBot(0, newConfig, ticker, wallet, tradeFloor); // TODO: are Bots immutable or mutable? Either way, we need to apply the new config to our wrapped bot
 		}
 		lastOptimizationTime = tick;
 		
 		bot.onNewTick(tick);
+	}
+
+	@Override
+	public int getId() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

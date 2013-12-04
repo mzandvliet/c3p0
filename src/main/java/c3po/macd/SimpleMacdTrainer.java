@@ -2,6 +2,7 @@ package c3po.macd;
 
 import java.net.InetSocketAddress;
 import java.util.Date;
+import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,7 +125,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 		
 		LOGGER.debug("Running winner: " + winningConfig.toString());
 		
-		MacdBot bot = new MacdBot(winningConfig, simContext.getSignal(), simContext.getWalletInstance(), simContext.getTradeFloor());
+		MacdBot bot = new MacdBot(new Random().nextInt(), winningConfig, simContext.getSignal(), simContext.getWalletInstance(), simContext.getTradeFloor());
 		
 		DebugTradeLogger tradeLogger = new DebugTradeLogger();
 		bot.addTradeListener(tradeLogger);

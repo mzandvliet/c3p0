@@ -1,5 +1,7 @@
 package c3po.macd;
 
+import java.util.Random;
+
 import c3po.*;
 import c3po.Training.*;
 import c3po.simulation.SimulationContext;
@@ -22,6 +24,6 @@ public class MacdBotFactory implements IBotFactory<MacdBotConfig> {
 
 	@Override
 	public MacdBot create(MacdBotConfig config) {
-		return new MacdBot(config, context.getSignal(), context.getWalletInstance(), context.getTradeFloor());
+		return new MacdBot(new Random().nextInt(), config, context.getSignal(), context.getWalletInstance(), context.getTradeFloor());
 	}
 }

@@ -150,7 +150,7 @@ public class SimpleTrendBotTrainer {
 		
 		List<MacdTraderConfig> sortedConfigs = new ArrayList<MacdTraderConfig>();
 		for (SimpleTrendBot bot : population) {
-			sortedConfigs.add(bot.getConfig());
+			sortedConfigs.add((MacdTraderConfig) bot.getConfig());
 		}
 		
 		LOGGER.debug("Finished epoch " + epoch);

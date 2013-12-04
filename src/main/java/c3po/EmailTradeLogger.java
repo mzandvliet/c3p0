@@ -6,7 +6,13 @@ import java.util.*;
 import javax.mail.*;
 import javax.mail.internet.*;
 
-/* Modified from this: http://stackoverflow.com/questions/46663/how-to-send-an-email-by-java-application-using-gmail-yahoo-hotmail */
+/* 
+ * TODO:
+ * - Better encapsulation of bot ID
+ * 		- Does this thing log trades in general, or is it a bot-specific trade logger? There's a difference.
+ * 
+ * Modified from this: http://stackoverflow.com/questions/46663/how-to-send-an-email-by-java-application-using-gmail-yahoo-hotmail
+ */
 
 public class EmailTradeLogger implements ITradeListener {
 	//================================================================================
@@ -34,9 +40,11 @@ public class EmailTradeLogger implements ITradeListener {
     // Class
     //================================================================================
 	
+    private int botId;
     private String[] recipients;
     
-	public EmailTradeLogger(String ... recipients) {
+	public EmailTradeLogger(int botId, String ... recipients) {
+		this.botId = botId;
 		this.recipients = recipients;
 	}
 	
@@ -45,7 +53,7 @@ public class EmailTradeLogger implements ITradeListener {
 		String host = HOST;
         String from = USER_NAME;
         String pass = PASSWORD;
-        String subject = "C3PO - Trade Notification";
+        String subject = "Bot " + botId + " - Trade Notification";
         String body = action.toString();
 
         sendMail(host, from, pass, recipients, subject, body);

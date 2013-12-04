@@ -86,6 +86,16 @@ public class RealtimeClockTest {
 			// TODO Auto-generated method stub
 			
 		}
+		@Override
+		public IBotConfig getConfig() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		@Override
+		public int getId() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
 	}
 
 }

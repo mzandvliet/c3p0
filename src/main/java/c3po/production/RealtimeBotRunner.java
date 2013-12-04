@@ -78,13 +78,13 @@ public class RealtimeBotRunner {
 		tradeFloor.addTradeListener(tradeLogger);
 		
 		// Create bot
-		MacdBot bot = new MacdBot(config, tickerNode.getOutputLast(), wallet, tradeFloor);
+		MacdBot bot = new MacdBot(botId, config, tickerNode.getOutputLast(), wallet, tradeFloor);
 		
 		// Log the trades by DB and email
 		
-		DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, botId, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+		DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
 		dbTradeLogger.open();
-		EmailTradeLogger mailLogger = new EmailTradeLogger("martijn@ramjetanvil.com", "jopast@gmail.com");
+		EmailTradeLogger mailLogger = new EmailTradeLogger(bot.getId(), "martijn@ramjetanvil.com", "jopast@gmail.com");
 		bot.addTradeListener(mailLogger);
 		
 		// Create a clock

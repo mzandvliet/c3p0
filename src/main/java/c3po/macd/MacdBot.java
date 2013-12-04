@@ -124,7 +124,7 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 		
 		// Create bot
 		
-		MacdBot bot = new MacdBot(config, tickerNode.getOutputLast(), wallet, tradeFloor);
+		MacdBot bot = new MacdBot(1234, config, tickerNode.getOutputLast(), wallet, tradeFloor);
 		
 		// Create loggers
 		
@@ -185,6 +185,7 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
     // Properties
     //================================================================================
 	
+	private final int id;
 	private final MacdBotConfig config;
 	private final IWallet wallet;
 	private final ITradeFloor tradeFloor;
@@ -199,8 +200,9 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
     // Methods
     //================================================================================
 	
-	public MacdBot(MacdBotConfig config, ISignal ticker, IWallet wallet, ITradeFloor tradeFloor) {
+	public MacdBot(int id, MacdBotConfig config, ISignal ticker, IWallet wallet, ITradeFloor tradeFloor) {
 		super(config.timestep);
+		this.id = id;
 		this.config = config;
 		this.wallet = wallet;
 		this.tradeFloor = tradeFloor;
@@ -233,6 +235,11 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 		return tradeFloor;
 	}
 	
+	@Override
+	public int getId() {
+		return id;
+	}
+
 	public MacdAnalysisNode getAnalysisNode() {
 		return analysisNode;
 	}

@@ -16,16 +16,11 @@ public class DbTradeLogger implements ITradeListener, IWalletTransactionListener
 	private static final Logger LOGGER = LoggerFactory.getLogger(DbTradeLogger.class);
 
 	private final IBot bot;
-	private final int botId;
 	private final InetSocketAddress host;
 	private final String user;
 	private final String pwd;
 	
 	private Connection connect = null;
-	
-	public DbTradeLogger(IBot bot, InetSocketAddress host, String user, String pwd) {
-		this(bot, (int) (new Date().getTime()/1000.0d), host, user, pwd);
-	}
 	
 	/**
 	 * Constructor that allows a predefined botId, for restarting existing bots.
@@ -36,9 +31,8 @@ public class DbTradeLogger implements ITradeListener, IWalletTransactionListener
 	 * @param user
 	 * @param pwd
 	 */
-	public DbTradeLogger(IBot bot, int botId, InetSocketAddress host, String user, String pwd) {
+	public DbTradeLogger(IBot bot, InetSocketAddress host, String user, String pwd) {
 		this.bot = bot;
-		this.botId = botId;
 		this.host = host;
 		this.user = user;
 		this.pwd = pwd;
@@ -90,7 +84,7 @@ public class DbTradeLogger implements ITradeListener, IWalletTransactionListener
 		Statement statement = connect.createStatement();
 		// Result set get the result of the SQL query
 		final String queryTemplate = "INSERT INTO  `c3po`.`bots` (`bot_id` ,`bot_type` ,`tradefloor_type` ,`start`) VALUES ('%s',  '%s',  '%s',  '%s')";
-		String query = String.format(queryTemplate, botId, "MacdBot", "BitstampSimulationTradeFloor", startTime / 1000);
+		String query = String.format(queryTemplate, bot.getId(), "MacdBot", "BitstampSimulationTradeFloor", startTime / 1000);
 		statement.execute(query);
 		  
 		LOGGER.debug(query);
@@ -104,7 +98,7 @@ public class DbTradeLogger implements ITradeListener, IWalletTransactionListener
 		Statement statement = connect.createStatement();
 		// Result set get the result of the SQL query
 		final String queryTemplate = "INSERT INTO  `c3po`.`bot_trade_action` (`bot_id` ,`timestamp` ,`action_type` ,`amount`) VALUES ('%s',  '%s',  '%s',  '%s')";
-		String query = String.format(queryTemplate, botId, Math.floor(action.timestamp / 1000.0d), action.action, action.volume);
+		String query = String.format(queryTemplate, bot.getId(), Math.floor(action.timestamp / 1000.0d), action.action, action.volume);
 		
 		LOGGER.debug(query);
 		statement.execute(query);
@@ -120,7 +114,7 @@ public class DbTradeLogger implements ITradeListener, IWalletTransactionListener
 		Statement statement = connect.createStatement();
 		// Result set get the result of the SQL query
 		final String queryTemplate = "INSERT INTO  `c3po`.`bot_wallet` (`bot_id` ,`timestamp` ,`walletUsd` ,`walletBtc`) VALUES ('%s',  '%s',  '%s',  '%s')";
-		String query = String.format(queryTemplate, botId, transaction.timestamp / 1000, transaction.usdTotal, transaction.btcTotal);
+		String query = String.format(queryTemplate, bot.getId(), transaction.timestamp / 1000, transaction.usdTotal, transaction.btcTotal);
 		
 		statement.execute(query);
 		  

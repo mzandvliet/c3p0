@@ -4,4 +4,5 @@ public interface IBot<TBotConfig extends IBotConfig> extends ITickable, ITradeAc
 	public TBotConfig getConfig();
 	public IWallet getWallet();
 	public ITradeFloor getTradeFloor();
+	public int getId();
 }

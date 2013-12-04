@@ -1,6 +1,10 @@
 package c3po;
 
-import java.util.Date;
+/* TODO:
+ * 
+ * - Reference or handle to bot who initiated the trade
+ * - Separate concept of trade action from trade success/result
+ */
 
 public class TradeAction {
 	final public double volume;
