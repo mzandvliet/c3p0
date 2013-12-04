@@ -13,6 +13,7 @@ import c3po.bitstamp.BitstampSimulationTradeFloor;
 import c3po.bitstamp.BitstampTickerSource;
 import c3po.bitstamp.BitstampTickerDbSource;
 import c3po.bitstamp.BitstampTradeFloor;
+import c3po.EmailTradeLogger;
 import c3po.IClock;
 import c3po.ITradeFloor;
 import c3po.Time;
@@ -68,10 +69,11 @@ public class RealtimeBotRunner {
 		// Create bot
 		IBot bot = new MacdBot(config, tickerNode.getOutputLast(), wallet, tradeFloor);
 		
+		// Log the trades by DB and email
 		DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, 0, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
 		dbTradeLogger.open();
-		//dbTradeLogger.startSession(new Date().getTime(), wallet.getWalletUsd(), wallet.getWalletBtc());
-
+		EmailTradeLogger mailLogger = new EmailTradeLogger("martijn@ramjetanvil.com", "jopast@gmail.com");
+		bot.addTradeListener(mailLogger);
 		
 		// Create a clock
 		IClock botClock = new RealtimeClock(timestep, Math.max(analysisConfig.slowPeriod, analysisConfig.signalPeriod), interpolationTime);

@@ -135,8 +135,8 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 //		dbLogger.open();
 //		dbLogger.startSession(simulationStartTime);
 		
-		EmailTradeLogger mailLogger = new EmailTradeLogger("martijn@ramjetanvil.com", "jopast@gmail.com");
-		bot.addTradeListener(mailLogger);
+//		EmailTradeLogger mailLogger = new EmailTradeLogger("martijn@ramjetanvil.com", "jopast@gmail.com");
+//		bot.addTradeListener(mailLogger);
 		
 		// Create the grapher
 		
