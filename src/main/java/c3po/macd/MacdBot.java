@@ -68,7 +68,7 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 	
 //	private final static String csvPath = "resources/bitstamp_ticker_till_20131126.csv";
 	// Earliest time 1384079023000l
-	private final static long simulationStartTime =  1384079023000l;
+	private final static long simulationStartTime =  new Date().getTime() - Time.DAYS;
 	private final static long simulationEndTime = new Date().getTime();
 	
 //	private final static String csvPath = "resources/bitstamp_ticker_till_20131122_crashed.csv";
@@ -131,9 +131,12 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 		DebugTradeLogger tradeLogger = new DebugTradeLogger();
 		bot.addTradeListener(tradeLogger);
 		
-		DbTradeLogger dbLogger = new DbTradeLogger(bot, new InetSocketAddress("94.208.87.249", 3309),"c3po","D7xpJwzGJEWf5qWB");
-		dbLogger.open();
-		dbLogger.startSession(simulationStartTime);
+//		DbTradeLogger dbLogger = new DbTradeLogger(bot, new InetSocketAddress("94.208.87.249", 3309),"c3po","D7xpJwzGJEWf5qWB");
+//		dbLogger.open();
+//		dbLogger.startSession(simulationStartTime);
+		
+		EmailTradeLogger mailLogger = new EmailTradeLogger("martijn@ramjetanvil.com", "jopast@gmail.com");
+		bot.addTradeListener(mailLogger);
 		
 		// Create the grapher
 		
@@ -174,7 +177,7 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 		tradeLogger.writeLog();
 		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Wallet: " + tradeFloor.getWalletValueInUsd(wallet));
 		
-		dbLogger.close();
+//		dbLogger.close();
 	}
 	
 	
