@@ -1,5 +1,7 @@
 package c3po.bitstamp;
 
+import java.util.Arrays;
+
 import c3po.*;
 
 /* Todo:
@@ -169,6 +171,36 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 		
 		public void set(int i, Sample sample) {
 			samples[i] = sample;
+		}
+
+		
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + getOuterType().hashCode();
+			result = prime * result + (int) (timestamp ^ (timestamp >>> 32));
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			ServerSampleEntry other = (ServerSampleEntry) obj;
+			if (!getOuterType().equals(other.getOuterType()))
+				return false;
+			if (timestamp != other.timestamp)
+				return false;
+			return true;
+		}
+
+		private BitstampTickerSource getOuterType() {
+			return BitstampTickerSource.this;
 		}
 	}
 }

@@ -53,33 +53,37 @@ public class RealtimeClock implements IClock, Runnable {
 		listeners.remove(tickable);
 	}
 	
-	public void run() {
-		// Tick the leafs repeatedly to propagate (or 'draw') samples through the tree from roots to leaves
+	public void run() {		
+		LOGGER.debug("Finished preloading data, starting realtime execution");
 		
-		// Todo: Whelp! How do we define our stop condition (user), and how do we check for it?
-		
+		prewarm();
+		runRealtime();
+	}
+	
+	private void prewarm() {
 		// First run the learning period
-		long currentTick = new Date().getTime() - preloadTime - interpolationTime;
+		long systemStartTime = new Date().getTime();
+		long currentTick = systemStartTime - preloadTime - interpolationTime;
 
-		
-		while(currentTick < new Date().getTime()- interpolationTime) {
+		while(currentTick < systemStartTime - interpolationTime) {
+			Date tickDate = new Date(currentTick);
+			LOGGER.debug("Clock tick: " + Time.format(tickDate));
+			
 			for (ITickable tickable : listeners) {
-				LOGGER.debug(" Tick: " + new Date(currentTick).toLocaleString() + " Bot : " + tickable );
 				tickable.tick(currentTick);
 			}
 		
 			currentTick += timeStep;
 		}
-		
-		LOGGER.debug("Finished preloading data, starting realtime execution");
-		
-		// And now... run forever!
+	}
+	
+	private void runRealtime() {
 		long tickIndex = 0;
 		while (stopIt == false && (maxTicks == 0 || maxTicks > tickIndex)) {
-			currentTick = new Date().getTime() - interpolationTime;
-			
+			long currentTick = new Date().getTime() - interpolationTime;
+			Date tickDate = new Date(currentTick);
+			LOGGER.debug("Clock tick: " + Time.format(tickDate));
 			for (ITickable tickable : listeners) {
-				LOGGER.debug(" Tick: " + new Date(currentTick).toLocaleString() + " Bot : " + tickable );
 				tickable.tick(currentTick);
 			}
 

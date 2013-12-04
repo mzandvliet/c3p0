@@ -6,6 +6,10 @@ import java.util.List;
 public class SignalMath {
 	public static Sample lerp(Sample oldest, Sample newest, long timestamp) {
 		long timeDelta = newest.timestamp - oldest.timestamp;
+		
+		if (timeDelta == 0)
+			throw new IllegalArgumentException("oldest and newest samples have same timestamp");
+		
 		long indexTimeDelta = timestamp - oldest.timestamp;
 		double lerp = (double)indexTimeDelta / (double)timeDelta;
 		double valueDelta = newest.value - oldest.value;

@@ -24,6 +24,7 @@ import c3po.ISignal;
 import c3po.IWallet;
 import c3po.JsonReader;
 import c3po.Sample;
+import c3po.Time;
 import c3po.TradeAction;
 import c3po.structs.OpenOrder;
 
@@ -140,7 +141,7 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	@Override
 	public void updateWallet(IWallet wallet) {
 		
-		if(lastWalletUpdate + 60000l < new Date().getTime()) {
+		if(lastWalletUpdate + 1 * Time.MINUTES < new Date().getTime()) {
 			try {
 				JSONObject result = new JSONObject(doAuthenticatedCall("https://www.bitstamp.net/api/balance/"));
 				wallet.update(result.getDouble("usd_available"), result.getDouble("btc_available"));

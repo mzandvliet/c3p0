@@ -49,15 +49,19 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 		 
 	    // Statements allow to issue SQL queries to the database
 	    statement = connect.createStatement();
-	      
+	    
 	    // Get all entries between the newest value in the buffer and the end of the interpolation timeframe
-	    String query = "select * from bitstamp_ticker WHERE `timestamp` BETWEEN " + newestTimeInBuffer / 1000  + " AND " + serverTimeMax / 1000 + " ORDER BY timestamp ASC";
+	    long firstTimestamp = newestTimeInBuffer / 1000 + 1; // +1, otherwise results include sample we already have
+	    long lastTimestamp = serverTimeMax / 1000;
+	    String query = "select * from bitstamp_ticker WHERE `timestamp` BETWEEN " + firstTimestamp + " AND " + lastTimestamp + " ORDER BY timestamp ASC";
 	    ResultSet resultSet = statement.executeQuery(query);
 	    
 	    // Add them all to the buffer
 	    while(resultSet.next()) {
 	    	long serverTimestamp = resultSet.getLong("timestamp") * 1000;
 	    	ServerSampleEntry entry = new ServerSampleEntry(serverTimestamp, 6);
+	    	
+//	    	LOGGER.debug("entry timestamp: " + serverTimestamp);
 	    	
 	    	entry.set(SignalName.LAST.ordinal(), new Sample(serverTimestamp, resultSet.getDouble("last")));
 			entry.set(SignalName.HIGH.ordinal(), new Sample(serverTimestamp, resultSet.getDouble("high")));
@@ -66,7 +70,10 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 			entry.set(SignalName.BID.ordinal(), new Sample(serverTimestamp, resultSet.getDouble("bid")));
 			entry.set(SignalName.ASK.ordinal(), new Sample(serverTimestamp, resultSet.getDouble("ask")));
 	    	
-	    	buffer.add(entry);
+			// TODO: this check should not be necessary anymore (see +1 trick above), but I'm paranoid
+			ServerSampleEntry lastEntry = buffer.size() > 0 ? buffer.get(buffer.size()-1) : null; 
+			if (!entry.equals(lastEntry))
+				buffer.add(entry);
 	    }
 	}
 
