@@ -1,11 +1,14 @@
 package c3po.bitstamp;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -47,6 +50,13 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 		JsonReader.debug = true;
 	}
 	
+	public BitstampTradeFloor(ISignal last, ISignal bid, ISignal ask, int clientId, String apiKey, String apiSecret) {
+		this(last, bid, ask);
+		BitstampTradeFloor.clientId = clientId;
+		BitstampTradeFloor.apiKey = apiKey;
+		BitstampTradeFloor.apiSecret = apiSecret;
+	}
+	
 	/**
 	 * Signature is a HMAC-SHA256 encoded message containing: nonce, client ID and API key. 
 	 * The HMAC-SHA256 code must be generated using a secret key that was generated with your API key. 
@@ -78,6 +88,18 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	public String doAuthenticatedCall(String url) throws Exception {
 		List<NameValuePair> params = new ArrayList<NameValuePair>();
 		return doAuthenticatedCall(url, params);
+	}
+	
+	/**
+	 * Transforms a double to string, with a maximum of 6 digits
+	 * 
+	 * @param input
+	 * @return String with maximum of 6 digits
+	 */
+	public static String doubleToCurrencyString(double input) {		
+		DecimalFormat df = new DecimalFormat("#.00", new DecimalFormatSymbols(Locale.US));
+		df.applyLocalizedPattern("####.00");
+		return df.format(input);
 	}
 	
 	public String doAuthenticatedCall(String url, List<NameValuePair> params) throws Exception {	
@@ -211,14 +233,14 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	public OpenOrder placeSellOrder(double price, double amount) throws JSONException, Exception {
 
 		List<NameValuePair> params = new LinkedList<NameValuePair>();
-		params.add(new BasicNameValuePair("price", String.valueOf(price)));
+		params.add(new BasicNameValuePair("price", String.valueOf(doubleToCurrencyString(price))));
 		params.add(new BasicNameValuePair("amount", String.valueOf(amount)));
 		JSONObject result = new JSONObject(doAuthenticatedCall("https://www.bitstamp.net/api/sell/", params));
 
 		if(result.has("error"))
 			throw new Exception(result.get("error").toString());
 		
-		LOGGER.info("Placed sell order: Sell " + amount + " BTC for " + price + " USD. Result: " + result);
+		LOGGER.info("Placed sell order: Sell " + amount + " BTC for " + doubleToCurrencyString(price) + " USD. Result: " + result);
 		
 		return new OpenOrder(result.getLong("id"), dateStringToSec(result.getString("datetime")), result.getInt("type"), result.getDouble("price"), result.getDouble("amount"));
 	}
@@ -234,14 +256,14 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	 */
 	public OpenOrder placeBuyOrder(double price, double amount) throws JSONException, Exception {
 		List<NameValuePair> params = new LinkedList<NameValuePair>();
-		params.add(new BasicNameValuePair("price", String.valueOf(price)));
+		params.add(new BasicNameValuePair("price", String.valueOf(doubleToCurrencyString(price))));
 		params.add(new BasicNameValuePair("amount", String.valueOf(amount)));
 		JSONObject result = new JSONObject(doAuthenticatedCall("https://www.bitstamp.net/api/buy/", params));
 		
 		if(result.has("error"))
 			throw new Exception(result.get("error").toString());
 		
-		LOGGER.info("Placed buy order: Buy " + amount + " BTC for " + price + " USD. Result: " + result);
+		LOGGER.info("Placed buy order: Buy " + amount + " BTC for " + doubleToCurrencyString(price) + " USD. Result: " + result);
 		
 		return new OpenOrder(result.getLong("id"), dateStringToSec(result.getString("datetime")), result.getInt("type"), result.getDouble("price"), result.getDouble("amount"));
 	}

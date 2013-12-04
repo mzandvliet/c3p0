@@ -37,6 +37,15 @@ public class BitstampTradefloorTest {
 	}
 	
 	@Test
+	public void testCurrencyFormatter() {
+		assertEquals("1322.99", BitstampTradeFloor.doubleToCurrencyString(1322.99d));
+		assertEquals("1322.99", BitstampTradeFloor.doubleToCurrencyString(1322.991d));
+		assertEquals("1322.99", BitstampTradeFloor.doubleToCurrencyString(1322.989d));
+		assertEquals("1322.99", BitstampTradeFloor.doubleToCurrencyString(001322.989d));
+		assertEquals("322.99", BitstampTradeFloor.doubleToCurrencyString(322.989d));
+	}
+	
+	@Test
 	public void testAuthenticatedCall() throws Exception {
 		BitstampTradeFloor tf = new BitstampTradeFloor(null, null, null);
 		JSONObject result = new JSONObject(tf.doAuthenticatedCall("https://www.bitstamp.net/api/balance/"));
@@ -76,7 +85,7 @@ public class BitstampTradefloorTest {
 		
 	}
 	
-	@Test @Ignore
+	@Test
 	public void realTest() throws Exception {
 		BitstampTradeFloor tf = new BitstampTradeFloor(null, null, null);
 		
