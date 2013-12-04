@@ -2,8 +2,12 @@ package c3po.production;
 
 import c3po.*;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.sql.SQLException;
+import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +29,19 @@ public class RealtimeBotRunner {
 	private final static long interpolationTime = 2 * Time.MINUTES;
 	private final static long timestep = 1 * Time.MINUTES;
 
-	public static void main(String[] args) throws ClassNotFoundException, SQLException {
-			
+	public static void main(String[] args) throws ClassNotFoundException, SQLException, FileNotFoundException, IOException {
+		 
+		if(args.length != 1)
+			throw new RuntimeException("Please provide the config file as argument");
+		
+        // Load a properties file
+		Properties prop = new Properties();
+		prop.load(new FileInputStream(args[0]));
+    	int botId = Integer.valueOf(prop.getProperty("botId"));
+    	int clientId = Integer.valueOf(prop.getProperty("clientId"));
+    	String apiKey = prop.getProperty("apiKey");
+    	String apiSecret = prop.getProperty("apiSecret");
+    			
 		/**
 		 * Bot Config
 		 */
@@ -52,7 +67,8 @@ public class RealtimeBotRunner {
 		final ITradeFloor tradeFloor =  new BitstampTradeFloor(
 				tickerNode.getOutputLast(),
 				tickerNode.getOutputBid(),
-				tickerNode.getOutputAsk()
+				tickerNode.getOutputAsk(),
+				clientId, apiKey, apiSecret
 		);
 		
 		// Update the wallet with the real values
@@ -65,7 +81,8 @@ public class RealtimeBotRunner {
 		MacdBot bot = new MacdBot(config, tickerNode.getOutputLast(), wallet, tradeFloor);
 		
 		// Log the trades by DB and email
-		DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, 0, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+		
+		DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, botId, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
 		dbTradeLogger.open();
 		EmailTradeLogger mailLogger = new EmailTradeLogger("martijn@ramjetanvil.com", "jopast@gmail.com");
 		bot.addTradeListener(mailLogger);
