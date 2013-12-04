@@ -68,7 +68,7 @@ public class JsonReader {
      */
 	public static String readJsonFromUrl(String url, List<NameValuePair> params) throws IOException, JSONException {
 		if(debug)
-			LOGGER.debug("POST " + url);
+			LOGGER.debug("POST " + url + " with params " + params);
 		
 		HttpClient httpclient = HttpClients.createDefault();
 		HttpPost httppost = new HttpPost(url);

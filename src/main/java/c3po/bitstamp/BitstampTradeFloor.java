@@ -1,5 +1,6 @@
 package c3po.bitstamp;
 
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
@@ -89,7 +90,7 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 		List<NameValuePair> params = new ArrayList<NameValuePair>();
 		return doAuthenticatedCall(url, params);
 	}
-	
+
 	/**
 	 * Transforms a double to string, with a maximum of 6 digits
 	 * 
@@ -120,7 +121,7 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 			Sample currentAsk = askSignal.peek();
 					
 			// The amount of Btc we are going to get if we buy for volume USD
-			boughtBtc = action.volume * (1.0d-tradeFee);
+			boughtBtc = currentAsk.value * (action.volume * (1.0d-tradeFee));
 			double soldUsd = action.volume * currentAsk.value;
 			
 			// Place the actual buy order
