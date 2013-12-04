@@ -31,7 +31,7 @@ import c3po.structs.OpenOrder;
 
 public class BitstampTradeFloor extends AbstractTradeFloor {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BitstampTradeFloor.class);
-	private double tradeFee = 0.05d;
+	private double tradeFee = 0.005d;
 	
 	private static int clientId = 665206;
 	private static String apiKey = "8C3i5RNNZ3Hvy3epS7TKRp87a3K6tX4s";
@@ -147,15 +147,21 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 				wallet.update(result.getDouble("usd_available"), result.getDouble("btc_available"));
 				
 				// Update tradeFee if needed
-				if(result.getDouble("fee") != tradeFee) {
-					LOGGER.info("Updated tradeFee. Old: " + tradeFee + " New: " + result.getDouble("fee"));
-					tradeFee = result.getDouble("fee");
-				}
+				double newFee = result.getDouble("fee");
+				setTradeFeeInPercent(newFee);
 			} catch (Exception e) {
 				LOGGER.error("Could not update wallet", e);
 			}
 			
 			lastWalletUpdate = new Date().getTime();
+		}
+	}
+	
+	private void setTradeFeeInPercent(double tradeFeePercent) {
+		double newFee = tradeFeePercent / 100d;
+		if(newFee != tradeFee) {
+			LOGGER.info("Updated tradeFee - Old: " + tradeFee + " New: " + newFee);
+			tradeFee = newFee;
 		}
 	}
 
