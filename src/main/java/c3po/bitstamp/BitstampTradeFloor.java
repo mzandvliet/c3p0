@@ -30,6 +30,7 @@ import c3po.JsonReader;
 import c3po.Sample;
 import c3po.Time;
 import c3po.TradeAction;
+import c3po.bitstamp.BitstampTickerSource.ServerSampleEntry;
 import c3po.structs.OpenOrder;
 
 
@@ -90,6 +91,30 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 		List<NameValuePair> params = new ArrayList<NameValuePair>();
 		return doAuthenticatedCall(url, params);
 	}
+	
+	/**
+	 * Does a call to the Bitstamp Ticker for the most up to date Bid available
+	 * 
+	 * @return Most up to date bid ever
+	 * @throws JSONException
+	 * @throws IOException
+	 */
+	private double getCurrentBid() throws JSONException, IOException {
+		JSONObject json = JsonReader.readJsonFromUrl("http://www.bitstamp.net/api/ticker/");
+		return json.getDouble("bid");
+	}
+	
+	/**
+	 * Does a call to the Bitstamp Ticker for the most up to date Ask available
+	 * 
+	 * @return Most up to date ask ever
+	 * @throws JSONException
+	 * @throws IOException
+	 */
+	private double getCurrentAsk() throws JSONException, IOException {
+		JSONObject json = JsonReader.readJsonFromUrl("http://www.bitstamp.net/api/ticker/");
+		return json.getDouble("ask");
+	}
 
 	/**
 	 * Transforms a double to string, with a maximum of 6 digits
@@ -123,18 +148,20 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	public double buyImpl(IWallet wallet, TradeAction action) {
 		double boughtBtc = 0;
 		try {
-			// We get the latest ask, assuming the ticker is updated by some other part of the app
-			Sample currentAsk = askSignal.peek();
+			// We get the latest ask from the JSON
+			double currentAsk = this.getCurrentAsk();
 					
 			// The amount of Btc we are going to get if we buy for volume USD
-			boughtBtc = action.volume / currentAsk.value * (1.0d-tradeFee);
-			double soldUsd = action.volume * currentAsk.value;
+			boughtBtc = action.volume / currentAsk * (1.0d-tradeFee);
+			double soldUsd = action.volume * currentAsk;
 			
 			// Place the actual buy order
-			placeBuyOrder(currentAsk.value, boughtBtc);
+			placeBuyOrder(currentAsk, boughtBtc);
 			
 			// We assume the trade is fulfilled instantly, for the price of the ask
-			wallet.transact(action.timestamp, -soldUsd, boughtBtc);
+			wallet.transact(action.timestamp, -action.volume, boughtBtc);
+
+			return boughtBtc;
 		}
 		catch(Exception e) {
 			LOGGER.error("Could not buy BTC", e);
@@ -148,17 +175,16 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 		double boughtUsd = 0;
 		try {
 			// We get the latest ask, assuming the ticker is updated by some other part of the app
-			Sample currentBid = bidSignal.peek();
+			double currentBid = this.getCurrentBid();
 			
 			// We assume the trade is fulfilled instantly, for the price of the ask
-			boughtUsd = action.volume * currentBid.value * (1.0d-tradeFee);
+			boughtUsd = action.volume * currentBid * (1.0d-tradeFee);
 			double soldBtc = action.volume;
 			
 			// Place the actual sell order
-			placeSellOrder(currentBid.value, soldBtc);
+			placeSellOrder(currentBid, soldBtc);
 			
-			wallet.transact(action.timestamp, boughtUsd, -soldBtc);
-		
+			wallet.transact(action.timestamp, boughtUsd, -action.volume);
 		}
 		catch(Exception e) {
 			LOGGER.error("Could not sell BTC", e);
