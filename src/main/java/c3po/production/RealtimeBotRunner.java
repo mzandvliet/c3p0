@@ -85,7 +85,7 @@ public class RealtimeBotRunner {
 		
 		DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
 		dbTradeLogger.open();
-		dbTradeLogger.startSession(new Date().getTime());
+		//dbTradeLogger.startSession(new Date().getTime());
 		EmailTradeLogger mailLogger = new EmailTradeLogger(bot.getId(), "martijn@ramjetanvil.com", "jopast@gmail.com");
 		bot.addTradeListener(mailLogger);
 		
