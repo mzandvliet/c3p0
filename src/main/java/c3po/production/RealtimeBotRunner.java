@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -84,6 +85,7 @@ public class RealtimeBotRunner {
 		
 		DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
 		dbTradeLogger.open();
+		dbTradeLogger.startSession(new Date().getTime());
 		EmailTradeLogger mailLogger = new EmailTradeLogger(bot.getId(), "martijn@ramjetanvil.com", "jopast@gmail.com");
 		bot.addTradeListener(mailLogger);
 		
