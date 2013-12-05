@@ -101,7 +101,7 @@ public class DbTradeLogger implements ITradeListener, IWalletTransactionListener
 		
 		while (i < maxRetries) {
 			if (executeStatement(sql)) {
-				LOGGER.debug(String.format("Succesfully executed statement after %s tries.", maxRetries + 1));
+				LOGGER.debug(String.format("Succesfully executed statement after %s tries.", i + 1));
 				return true;
 			} else {
 				reconnect();
