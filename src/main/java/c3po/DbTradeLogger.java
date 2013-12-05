@@ -114,9 +114,10 @@ public class DbTradeLogger implements ITradeListener, IWalletTransactionListener
 	}
 	
 	private boolean executeStatement(String sql) {
+		Statement statement = null;
 		try {
 			LOGGER.debug("executing: " + sql);
-			Statement statement = connection.createStatement();
+			statement = connection.createStatement();
 			statement.execute(sql);
 			return true;
 		} catch (SQLException e) {

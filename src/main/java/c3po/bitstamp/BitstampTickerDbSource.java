@@ -14,9 +14,9 @@ import c3po.bitstamp.BitstampTickerSource.SignalName;
  */
 public class BitstampTickerDbSource extends BitstampTickerSource {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BitstampTickerDbSource.class);
+	private static final int MAXRETRIES = 3;
 
-	private Connection connect = null;
-	private Statement statement = null;
+	private Connection connection = null;
 	private InetSocketAddress host;
 	private String user;
 	private String pwd;
@@ -30,35 +30,52 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 		  
 		  // This will load the MySQL driver, each DB has its own driver
 	      Class.forName("com.mysql.jdbc.Driver");
-	      // Setup the connection with the DB
-	      connect = DriverManager.getConnection("jdbc:mysql://"+host.getHostName()+":"+host.getPort()+"/c3po?user="+user+"&password="+pwd);
+	      
+	      open();
 	}
 	
-	protected void reconnect() {
-		 try {
-			connect = DriverManager.getConnection("jdbc:mysql://"+host.getHostName()+":"+host.getPort()+"/c3po?user="+user+"&password="+pwd);
+	@Override
+	public boolean open() {
+		// Setup the connection with the DB
+		try {
+			connection = DriverManager.getConnection("jdbc:mysql://"+host.getHostName()+":"+host.getPort()+"/c3po?user="+user+"&password="+pwd);
+			return true;
 		} catch (SQLException e) {
-			LOGGER.error("Could not reconnect", e);
+			LOGGER.error("Could not open connection", e);
+			return false;
 		}
 	}
 	
 	@Override
-	protected void pollServer(long clientTimestamp) {
-    	readToCurrent(clientTimestamp, true);	    	
+	public boolean close() {
+		// Close the connection with the DB
+		try {
+			connection.close();
+			return true;
+		} catch (SQLException e) {
+			LOGGER.error("Could not close connection", e);
+			return false;
+		}
 	}
 	
-	private void readToCurrent(long clientTimestamp, boolean retry) {
+	protected void reconnect() {
+		LOGGER.debug("Attempting to reconnect...");
+		close(); // First, attempt to clean up the old connection to avoid any leaks
+		open(); // Then, open up a new connection
+	}
+	
+	@Override
+	protected void pollServer(long clientTimestamp) {
+    	readToCurrent(clientTimestamp);	    	
+	}
+	
+	private void readToCurrent(long clientTimestamp) {
 		long serverTimestamp = clientTimestamp + interpolationTime;
+		
 		try {
 			tryGetNewEntry(serverTimestamp);
 		} catch (SQLException e) {
 			LOGGER.error("Could not read to current", e);
-			
-			if(retry) {
-				// Try reconnect and do it again
-				reconnect();
-				readToCurrent(clientTimestamp,false);
-			}
 		}
 	}
 	
@@ -66,16 +83,12 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 		ServerSampleEntry newest = buffer.peek();
 		
 		long newestTimeInBuffer = newest != null ? newest.timestamp : serverTimeMax - interpolationTime;
-		 
-	    // Statements allow to issue SQL queries to the database
-	    statement = connect.createStatement();
 	    
 	    // Get all entries between the newest value in the buffer and the end of the interpolation timeframe
 	    long firstTimestamp = newestTimeInBuffer / 1000 + 1; // +1, otherwise results include sample we already have
 	    long lastTimestamp = serverTimeMax / 1000;
 	    String query = "select * from bitstamp_ticker WHERE `timestamp` BETWEEN " + firstTimestamp + " AND " + lastTimestamp + " ORDER BY timestamp ASC";
-	    LOGGER.debug("Querying DB: " + query);
-	    ResultSet resultSet = statement.executeQuery(query);
+	    ResultSet resultSet = executeQueryWithRetries(query, MAXRETRIES);
 	    
 	    // Add them all to the buffer
 	    while(resultSet.next()) {
@@ -96,20 +109,42 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 			if (!entry.equals(lastEntry))
 				buffer.add(entry);
 	    }
+	    
+	    try {
+	    	resultSet.close();
+	    } catch (SQLException e) {
+	    	LOGGER.error("Failed to dispose properly of parsed ResultSet", e);
+	    }
 	}
-
-	@Override
-	public void open() {
-		// Already opened in the constructor, might not be pretty though
-	}
-
-	@Override
-	public void close() {
-		try {
-			connect.close();
-		} catch (SQLException e) {
-			LOGGER.info("Could not close connection", e);
+	
+	private ResultSet executeQueryWithRetries(String sql, int maxRetries) {
+		int i = 0;
+		
+		while (i < maxRetries) {
+			ResultSet resultSet = executeQuery(sql);
+			if (resultSet != null) {
+				LOGGER.debug(String.format("Succesfully executed statement after %s tries.", i + 1));
+				return resultSet;
+			} else {
+				reconnect();
+			}
+			i++;
 		}
+		
+		LOGGER.error(String.format("Failed to execute statement after %s tries.", maxRetries + 1));
+		return null;
+	}
+	
+	private ResultSet executeQuery(String sql) {
+		try {
+			LOGGER.debug("executing: " + sql);
+			Statement statement = connection.createStatement();
+			ResultSet resultSet = statement.executeQuery(sql);
+			return resultSet;
+		} catch (SQLException e) {
+			LOGGER.error("Failed to execute statement", e);
+			return null;
+		}			
 	}
 
 	@Override

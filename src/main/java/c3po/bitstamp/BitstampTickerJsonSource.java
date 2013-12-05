@@ -16,14 +16,15 @@ public class BitstampTickerJsonSource extends BitstampTickerSource implements IN
 	}
 	
 	@Override
-	public void open() {
+	public boolean open() {
 		// TODO Auto-generated method stub
-		
+		return false;
 	}
 
 	@Override
-	public void close() {
+	public boolean close() {
 		// TODO Auto-generated method stub
+		return false;
 	}
 
 	@Override

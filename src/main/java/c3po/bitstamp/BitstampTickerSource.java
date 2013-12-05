@@ -128,12 +128,12 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 	/**
 	 * Prepare the source for handling ticks
 	 */
-	public abstract void open();
+	public abstract boolean open();
 	
 	/**
 	 * Close the source again
 	 */
-	public abstract void close();
+	public abstract boolean close();
 
 	/**
 	 * Method that indicates whether the source has reached it's end

@@ -65,7 +65,7 @@ public class BitstampSimulationTickerDbSource extends BitstampTickerSource imple
 	}
 
 	@Override
-	public void open() {		
+	public boolean open() {		
 		try {
 			// Statements allow to issue SQL queries to the database
 			Statement statement = connection.createStatement();
@@ -91,16 +91,19 @@ public class BitstampSimulationTickerDbSource extends BitstampTickerSource imple
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return false;
 		}
-		return;
+		return true;
 	}
 
 	@Override
-	public void close() {
+	public boolean close() {
 		try {
 			connection.close();
+			return true;
 		} catch (SQLException e) {
 			e.printStackTrace();
+			return false;
 		}
 	}
 

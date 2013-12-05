@@ -17,22 +17,24 @@ public class BitstampSimulationTickerCsvSource extends BitstampTickerSource {
 		this.path = path;
 	}
 	
-	public void open() {
+	public boolean open() {
 		try {
 			reader = new CSVReader(new FileReader(path));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
+			return true;
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return false;
 		}
 	}
 	
-	public void close() {
+	public boolean close() {
 		try {
 			reader.close();
+			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
+			return false;
 		}
 	}
 	
