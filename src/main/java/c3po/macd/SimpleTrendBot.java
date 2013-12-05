@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import c3po.TradeAction.TradeActionType;
 import c3po.bitstamp.BitstampSimulationTradeFloor;
+import c3po.DbConnection;
 import c3po.ExpMovingAverageNode;
 import c3po.IClock;
 import c3po.ISignal;
@@ -78,13 +79,16 @@ public class SimpleTrendBot extends AbstractTickable implements IBot {
 		// Create bot
 		SimpleTrendBot bot = new SimpleTrendBot(traderConfig, timestep, 30 * Time.MINUTES, tickerNode.getOutputAsk(), wallet, tradeFloor);
 		
+		
+		DbConnection dbConnection = new DbConnection(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+		dbConnection.open();
+		
 		// Create loggers
 		
 		DebugTradeLogger tradeLogger = new DebugTradeLogger();
 		bot.addTradeListener(tradeLogger);
 		
-		DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
-		dbTradeLogger.open();
+		DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, dbConnection);
 		dbTradeLogger.startSession(simulationStartTime);
 
 		

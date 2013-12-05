@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import c3po.bitstamp.BitstampSimulationTradeFloor;
 import c3po.bitstamp.BitstampSimulationTickerDbSource;
+import c3po.DbConnection;
 import c3po.IClock;
 import c3po.ISignal;
 import c3po.ITradeFloor;
@@ -76,6 +77,9 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 				-6.4236);
 		MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
 		
+		DbConnection dbConnection = new DbConnection(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+		dbConnection.open();
+		
 		// Create bot
 		
 		int botId = Math.abs(new Random().nextInt());
@@ -86,8 +90,7 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 		DebugTradeLogger tradeLogger = new DebugTradeLogger();
 		bot.addTradeListener(tradeLogger);
 		
-		DbTradeLogger dbLogger = new DbTradeLogger(bot, new InetSocketAddress("94.208.87.249", 3309),"c3po","D7xpJwzGJEWf5qWB");
-		dbLogger.open();
+		DbTradeLogger dbLogger = new DbTradeLogger(bot, dbConnection);
 		dbLogger.startSession(simulationStartTime);
 		
 //		EmailTradeLogger mailLogger = new EmailTradeLogger("martijn@ramjetanvil.com", "jopast@gmail.com");
@@ -131,8 +134,8 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 		
 		tradeLogger.writeLog();
 		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Wallet: " + tradeFloor.getWalletValueInUsd(wallet));
-		
-		dbLogger.close();
+
+		dbConnection.close();
 	}
 	
 	
