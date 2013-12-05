@@ -97,8 +97,8 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 		
 		GraphingNode grapher = new GraphingNode(graphInterval, "Ticker", 
 				tickerNode.getOutputLast(),
-				bot.analysisNode.getOutputFast(),
-				bot.analysisNode.getOutputSlow()
+				tickerNode.getOutputBid(),
+				tickerNode.getOutputAsk()
 				);
 		bot.addTradeListener(grapher);
 		

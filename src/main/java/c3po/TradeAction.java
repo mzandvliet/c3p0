@@ -7,9 +7,9 @@ package c3po;
  */
 
 public class TradeAction {
-	final public double volume;
-	final public TradeActionType action; // enum would be nicer
+	final public TradeActionType action;
 	final public long timestamp;
+	final public double volume;
 
 	public TradeAction(TradeActionType action, long timestamp, double volume) {
 		this.action = action;
