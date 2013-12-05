@@ -17,9 +17,16 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 
 	private Connection connect = null;
 	private Statement statement = null;
+	private InetSocketAddress host;
+	private String user;
+	private String pwd;
 	
 	public BitstampTickerDbSource(long timestep, long interpolationTime, InetSocketAddress host, String user, String pwd) throws ClassNotFoundException, SQLException {
 		  super(timestep, interpolationTime);
+		  
+		  this.host = host;
+		  this.user = user;
+		  this.pwd = pwd;
 		  
 		  // This will load the MySQL driver, each DB has its own driver
 	      Class.forName("com.mysql.jdbc.Driver");
@@ -27,18 +34,31 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 	      connect = DriverManager.getConnection("jdbc:mysql://"+host.getHostName()+":"+host.getPort()+"/c3po?user="+user+"&password="+pwd);
 	}
 	
-	@Override
-	protected void pollServer(long clientTimestamp) {
-    	readToCurrent(clientTimestamp);	    	
+	protected void reconnect() {
+		 try {
+			connect = DriverManager.getConnection("jdbc:mysql://"+host.getHostName()+":"+host.getPort()+"/c3po?user="+user+"&password="+pwd);
+		} catch (SQLException e) {
+			LOGGER.error("Could not reconnect", e);
+		}
 	}
 	
-	private void readToCurrent(long clientTimestamp) {
+	@Override
+	protected void pollServer(long clientTimestamp) {
+    	readToCurrent(clientTimestamp, true);	    	
+	}
+	
+	private void readToCurrent(long clientTimestamp, boolean retry) {
 		long serverTimestamp = clientTimestamp + interpolationTime;
 		try {
 			tryGetNewEntry(serverTimestamp);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOGGER.error("Could not read to current", e);
+			
+			if(retry) {
+				// Try reconnect and do it again
+				reconnect();
+				readToCurrent(clientTimestamp,false);
+			}
 		}
 	}
 	
@@ -88,7 +108,7 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 		try {
 			connect.close();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			LOGGER.info("Could not close connection", e);
 		}
 	}
 
