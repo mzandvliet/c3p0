@@ -30,72 +30,78 @@ public class RealtimeBotRunner {
 	private final static long interpolationTime = 2 * Time.MINUTES;
 	private final static long timestep = 1 * Time.MINUTES;
 
-	public static void main(String[] args) throws ClassNotFoundException, SQLException, FileNotFoundException, IOException {
+	public static void main(String[] args) {
 		 
-		if(args.length != 1)
-			throw new RuntimeException("Please provide the config file as argument");
-		
-        // Load a properties file
-		Properties prop = new Properties();
-		prop.load(new FileInputStream(args[0]));
-    	int botId = Integer.valueOf(prop.getProperty("botId"));
-    	int clientId = Integer.valueOf(prop.getProperty("clientId"));
-    	String apiKey = prop.getProperty("apiKey");
-    	String apiSecret = prop.getProperty("apiSecret");
-    			
-		/**
-		 * Bot Config
-		 */
-		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
-				39 * Time.MINUTES,
-				218 * Time.MINUTES,
-				273 * Time.MINUTES);
-		
-		MacdTraderConfig traderConfig = new MacdTraderConfig(
-				0.6609,
-				-9.6978);
-		
-		MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
-		
-		// Set up global signal tree
-		final BitstampTickerSource tickerNode = new BitstampTickerDbSource(timestep, interpolationTime, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
-
-		/**
-		 * Tradefloor + Wallet Initialization
-		 */
-		final IWallet wallet = new Wallet(0d, 0d);
-		
-		final ITradeFloor tradeFloor =  new BitstampTradeFloor(
-				tickerNode.getOutputLast(),
-				tickerNode.getOutputBid(),
-				tickerNode.getOutputAsk(),
-				clientId, apiKey, apiSecret
-		);
-		
-		// Update the wallet with the real values
-		tradeFloor.updateWallet(wallet);
-		
-		final DebugTradeLogger tradeLogger = new DebugTradeLogger();
-		tradeFloor.addTradeListener(tradeLogger);
-		
-		// Create bot
-		MacdBot bot = new MacdBot(botId, config, tickerNode.getOutputLast(), wallet, tradeFloor);
-		
-		// Log the trades by DB and email
-		
-		DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
-		dbTradeLogger.open();
-		//dbTradeLogger.startSession(new Date().getTime());
-		EmailTradeLogger mailLogger = new EmailTradeLogger(bot.getId(), "martijn@ramjetanvil.com", "jopast@gmail.com");
-		bot.addTradeListener(mailLogger);
-		
-		// Create a clock
-		IClock botClock = new RealtimeClock(timestep, Math.max(analysisConfig.slowPeriod, analysisConfig.signalPeriod), interpolationTime);
-		botClock.addListener(bot);
-		
-		// Run the program
-		tickerNode.open();
-		botClock.run();
-		tickerNode.close();
+		try {
+			if(args.length != 1)
+				throw new RuntimeException("Please provide the config file as argument");
+			
+	        // Load a properties file
+			Properties prop = new Properties();
+			prop.load(new FileInputStream(args[0]));
+	    	int botId = Integer.valueOf(prop.getProperty("botId"));
+	    	int clientId = Integer.valueOf(prop.getProperty("clientId"));
+	    	String apiKey = prop.getProperty("apiKey");
+	    	String apiSecret = prop.getProperty("apiSecret");
+	    	
+	    	DbConnection dbConnection = new DbConnection(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+	    			
+			/**
+			 * Bot Config
+			 */
+			MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
+					39 * Time.MINUTES,
+					218 * Time.MINUTES,
+					273 * Time.MINUTES);
+			
+			MacdTraderConfig traderConfig = new MacdTraderConfig(
+					0.6609,
+					-9.6978);
+			
+			MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
+			
+			// Set up global signal tree
+			final BitstampTickerSource tickerNode = new BitstampTickerDbSource(timestep, interpolationTime, dbConnection);
+	
+			/**
+			 * Tradefloor + Wallet Initialization
+			 */
+			final IWallet wallet = new Wallet(0d, 0d);
+			
+			final ITradeFloor tradeFloor =  new BitstampTradeFloor(
+					tickerNode.getOutputLast(),
+					tickerNode.getOutputBid(),
+					tickerNode.getOutputAsk(),
+					clientId, apiKey, apiSecret
+			);
+			
+			// Update the wallet with the real values
+			tradeFloor.updateWallet(wallet);
+			
+			final DebugTradeLogger tradeLogger = new DebugTradeLogger();
+			tradeFloor.addTradeListener(tradeLogger);
+			
+			// Create bot
+			MacdBot bot = new MacdBot(botId, config, tickerNode.getOutputLast(), wallet, tradeFloor);
+			
+			// Log the trades by DB and email
+			DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, dbConnection);
+	
+			//dbTradeLogger.startSession(new Date().getTime());
+			EmailTradeLogger mailLogger = new EmailTradeLogger(bot.getId(), "martijn@ramjetanvil.com", "jopast@gmail.com");
+			bot.addTradeListener(mailLogger);
+			
+			// Create a clock
+			IClock botClock = new RealtimeClock(timestep, Math.max(analysisConfig.slowPeriod, analysisConfig.signalPeriod), interpolationTime);
+			botClock.addListener(bot);
+			
+			// Run the program
+			tickerNode.open();
+			botClock.run();
+			tickerNode.close();
+			
+		} catch (Exception e) {
+			LOGGER.error("Critical error in main", e);
+		}
 	}
 }
