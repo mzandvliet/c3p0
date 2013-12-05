@@ -5,6 +5,7 @@ import c3po.*;
 import java.net.InetSocketAddress;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,47 +18,6 @@ import c3po.ITradeFloor;
 import c3po.ITradeListener;
 import c3po.IWallet;
 import c3po.Time;
-import c3po.bitstamp.BitstampSimulationTickerCsvSource;
-
-/* Todo:
- * 
- * ------------------------------------
- * 1. FIX CSV CRASH GENERATOR
- * 2. REMOVE ARTIFICIAL SIGNAL CLAMPER IN CSVSOURCE
- * ------------------------------------
- * 
- * - Create day-trader bots
- * 
- * - Implement better polling to mitigate server data misses
- * 
- * - Defensive Programming
- * 		- Verify input data integrity and consistency
- * 
- * - Bot Design
- * 		- Manage time duration of open positions
- * 			- Build risk into macd with volatility node
- * 			- High volatility means bot should close positions faster to mitigate crash risk
- * 		- Use varying macd configurations to fit current market context
- * 
- * - Develop exit protocol and implementation
- * - Seed newly started bots with data from recorded history, then update with live feed
- * 
- * 
- * 
- * - Network architecture
- * 		- INode should define setInput() to assign signals dynamically
- * 			- Constructor should not take input signals anymore
- * 		- Make Sample generic?
- * 			- So you can have ISignal<TradeAction> & INode<TradeAction>
- * 			- Analyse wallet & trade data streams using network methods too
- * 		- Find abstractions that reduce boilerplate for data transformation nodes
- * 			- Something akin to delegates/lambdas, you know
- * 
- * 
- * - Improve TradeFloor interface
- * 		- Currency abstraction
- * 
- */
 
 public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 	//================================================================================
@@ -66,14 +26,9 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdBot.class);
 	
-//	private final static String csvPath = "resources/bitstamp_ticker_till_20131126.csv";
 	// Earliest time 1384079023000l
-	private final static long simulationStartTime =  new Date().getTime() - Time.DAYS;
+	private final static long simulationStartTime =  new Date().getTime() - Time.DAYS * 7;
 	private final static long simulationEndTime = new Date().getTime();
-	
-//	private final static String csvPath = "resources/bitstamp_ticker_till_20131122_crashed.csv";
-//	private final static long simulationStartTime = 1384079023000l;
-//	private final static long simulationEndTime = 1385192429000l;
 	
 	private final static long interpolationTime = 2 * Time.MINUTES;
 	private final static long timestep = 1 * Time.MINUTES;
@@ -90,7 +45,6 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		// Set up global signal tree
 		
-		//final BitstampTickerCsvSource tickerNode = new BitstampTickerCsvSource(timestep, interpolationTime, csvPath);
 		final BitstampSimulationTickerDbSource tickerNode = new BitstampSimulationTickerDbSource(
 				timestep,
 				interpolationTime,
@@ -113,27 +67,28 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 		
 		// Create bot config
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
-				39 * Time.MINUTES,
-				218 * Time.MINUTES,
-				273 * Time.MINUTES);
+				305 * Time.MINUTES,
+				1220 * Time.MINUTES,
+				1165 * Time.MINUTES);
 		
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
-				0.6609,
-				-9.6978);
+				-3.6299,
+				-6.4236);
 		MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
 		
 		// Create bot
 		
-		MacdBot bot = new MacdBot(1234, config, tickerNode.getOutputLast(), wallet, tradeFloor);
+		int botId = Math.abs(new Random().nextInt());
+		MacdBot bot = new MacdBot(botId, config, tickerNode.getOutputLast(), wallet, tradeFloor);
 		
 		// Create loggers
 		
 		DebugTradeLogger tradeLogger = new DebugTradeLogger();
 		bot.addTradeListener(tradeLogger);
 		
-//		DbTradeLogger dbLogger = new DbTradeLogger(bot, new InetSocketAddress("94.208.87.249", 3309),"c3po","D7xpJwzGJEWf5qWB");
-//		dbLogger.open();
-//		dbLogger.startSession(simulationStartTime);
+		DbTradeLogger dbLogger = new DbTradeLogger(bot, new InetSocketAddress("94.208.87.249", 3309),"c3po","D7xpJwzGJEWf5qWB");
+		dbLogger.open();
+		dbLogger.startSession(simulationStartTime);
 		
 //		EmailTradeLogger mailLogger = new EmailTradeLogger("martijn@ramjetanvil.com", "jopast@gmail.com");
 //		bot.addTradeListener(mailLogger);
@@ -177,7 +132,7 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 		tradeLogger.writeLog();
 		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Wallet: " + tradeFloor.getWalletValueInUsd(wallet));
 		
-//		dbLogger.close();
+		dbLogger.close();
 	}
 	
 	

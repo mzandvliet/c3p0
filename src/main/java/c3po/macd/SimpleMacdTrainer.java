@@ -21,7 +21,8 @@ import c3po.simulation.*;
 public class SimpleMacdTrainer {
 private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner.class);
 	
-    private final static long simulationStartTime =  1384079023000l;
+	// First timestamp in database: 1384079023000l
+    private final static long simulationStartTime =  new Date().getTime() - Time.DAYS * 7;
 	private final static long simulationEndTime = new Date().getTime();
 	
 	// Timing
@@ -34,12 +35,12 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 	
 	// Selection
 	private final static int numParents = 125;
-	private final static int numElites = 25;
+	private final static int numElites = 10;
 	
 	// Config mutation ranges
 	private final static double mutationChance = 0.25d;
 	private final static long minAnalysisPeriod = 1 * Time.MINUTES;
-	private final static long maxAnalysisPeriod = 24 * Time.HOURS;
+	private final static long maxAnalysisPeriod = 12 * Time.HOURS;
 	private final static double minBuyDiffThreshold = -20.0d;
 	private final static double maxBuyDiffThreshold = 20.0d;
 	private final static double minSellDiffThreshold = -20.0d;
