@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Work in progress in using the database as source
+ * 
+ * TODO Remove duplication, cleanup. Share code with the BitstampTickerDbSource
  */
 public class DbTradeLogger implements ITradeListener, IWalletTransactionListener {
 	
@@ -40,26 +42,15 @@ public class DbTradeLogger implements ITradeListener, IWalletTransactionListener
 		bot.addTradeListener(this);
 		bot.getWallet().addListener(this);
 	}
-	
-	
 
 	@Override
 	public void onTrade(TradeAction action) {
-		try {
-			log(action);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+		log(action, true);
 	}
 	
 	@Override
 	public void onWalletTransaction(WalletTransactionResult transaction) {
-		try {
-			log(transaction);
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		log(transaction, true);
 	}
 
 	public void open() throws ClassNotFoundException, SQLException {
@@ -68,12 +59,24 @@ public class DbTradeLogger implements ITradeListener, IWalletTransactionListener
 	      // Setup the connection with the DB
 	      connect = DriverManager.getConnection("jdbc:mysql://"+host.getHostName()+":"+host.getPort()+"/c3po?user="+user+"&password="+pwd);
 	}
+	
+	/**
+	 * This method tries to reconnect
+	 * TODO Test and remove duplication
+	 */
+	protected void reconnect() {
+		 try {
+			connect = DriverManager.getConnection("jdbc:mysql://"+host.getHostName()+":"+host.getPort()+"/c3po?user="+user+"&password="+pwd);
+		} catch (SQLException e) {
+			LOGGER.error("Could not reconnect", e);
+		}
+	}
 
 	public void close() {
 		try {
 			connect.close();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			LOGGER.info("Could not close connection", e);
 		}
 	}
 	
@@ -88,36 +91,54 @@ public class DbTradeLogger implements ITradeListener, IWalletTransactionListener
 		statement.execute(query);
 		  
 		LOGGER.debug(query);
-		log(new WalletTransactionResult(startTime, bot.getWallet().getWalletUsd(), bot.getWallet().getWalletBtc()));
+		log(new WalletTransactionResult(startTime, bot.getWallet().getWalletUsd(), bot.getWallet().getWalletBtc()), true);
 	}
 	
-	private void log(TradeAction action) throws SQLException {
-		// Send botID + action to database
-		
-		// Statements allow to issue SQL queries to the database
-		Statement statement = connect.createStatement();
-		// Result set get the result of the SQL query
-		final String queryTemplate = "INSERT INTO  `c3po`.`bot_trade_action` (`bot_id` ,`timestamp` ,`action_type` ,`amount`) VALUES ('%s',  '%s',  '%s',  '%s')";
-		String query = String.format(queryTemplate, bot.getId(), Math.floor(action.timestamp / 1000.0d), action.action, action.volume);
-		
-		LOGGER.debug(query);
-		statement.execute(query);
+	private void log(TradeAction action, boolean retry) {
+		try {
+			// Send botID + action to database
+			
+			// Statements allow to issue SQL queries to the database
+			Statement statement = connect.createStatement();
+			// Result set get the result of the SQL query
+			final String queryTemplate = "INSERT INTO  `c3po`.`bot_trade_action` (`bot_id` ,`timestamp` ,`action_type` ,`amount`) VALUES ('%s',  '%s',  '%s',  '%s')";
+			String query = String.format(queryTemplate, bot.getId(), Math.floor(action.timestamp / 1000.0d), action.action, action.volume);
+			
+			LOGGER.debug(query);
+			statement.execute(query);
+		} catch(SQLException e) {
+			LOGGER.error("Could not log trade action", e);
+			if(retry) {
+				// Try reconnect and do it again
+				reconnect();
+				log(action,false);
+			} 
+		}
 	}
 	
 	// Todo: init call with a start amount
 	// Send updates
 	
-	private void log(WalletTransactionResult transaction) throws SQLException {
-		// Send botID + action to database
-		
-		// Statements allow to issue SQL queries to the database
-		Statement statement = connect.createStatement();
-		// Result set get the result of the SQL query
-		final String queryTemplate = "INSERT INTO  `c3po`.`bot_wallet` (`bot_id` ,`timestamp` ,`walletUsd` ,`walletBtc`) VALUES ('%s',  '%s',  '%s',  '%s')";
-		String query = String.format(queryTemplate, bot.getId(), transaction.timestamp / 1000, transaction.usdTotal, transaction.btcTotal);
-		
-		statement.execute(query);
-		  
-		LOGGER.debug(query);
+	private void log(WalletTransactionResult transaction, boolean retry) {
+		try {
+			// Send botID + action to database
+			
+			// Statements allow to issue SQL queries to the database
+			Statement statement = connect.createStatement();
+			// Result set get the result of the SQL query
+			final String queryTemplate = "INSERT INTO  `c3po`.`bot_wallet` (`bot_id` ,`timestamp` ,`walletUsd` ,`walletBtc`) VALUES ('%s',  '%s',  '%s',  '%s')";
+			String query = String.format(queryTemplate, bot.getId(), transaction.timestamp / 1000, transaction.usdTotal, transaction.btcTotal);
+			
+			statement.execute(query);
+			  
+			LOGGER.debug(query);
+		} catch(SQLException e) {
+			LOGGER.error("Could not log wallet transaction", e);
+			if(retry) {
+				// Try reconnect and do it again
+				reconnect();
+				log(transaction,false);
+			} 
+		}
 	}
 }
