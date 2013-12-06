@@ -28,7 +28,7 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdBot.class);
 	
 	// Earliest time 1384079023000l
-	private final static long simulationStartTime = 1384079023000l;
+	private final static long simulationStartTime = new Date().getTime() - Time.DAYS * 7;
 	private final static long simulationEndTime = new Date().getTime();
 	
 	private final static long interpolationTime = 2 * Time.MINUTES;
@@ -37,7 +37,7 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 	private final static double walletStartUsd = 1000.0d;
 	private final static double walletStartBtcInUsd = 0.0d;
 	
-	private final static long graphInterval = 10 * Time.MINUTES;
+	private final static long graphInterval = 1 * Time.MINUTES;
 	
 	//================================================================================
     // Main
@@ -68,22 +68,25 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 		
 		// Create bot config
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
-				39 * Time.MINUTES,
-				267 * Time.MINUTES,
-				235 * Time.MINUTES);
+				56 * Time.MINUTES,
+				241 * Time.MINUTES,
+				262 * Time.MINUTES);
 		
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
-				4.8876,
-				-9.2317);
+				1.5855,
+				-3.8407);
 		MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
 		
 		DbConnection dbConnection = new DbConnection(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
 		dbConnection.open();
 		
+		// Create the aggregate ticker signal
+		AggregateNode bidAskMedianNode = new AggregateNode(timestep, tickerNode.getOutputBid(), tickerNode.getOutputAsk());
+		
 		// Create bot
 		
 		int botId = Math.abs(new Random().nextInt());
-		MacdBot bot = new MacdBot(botId, config, tickerNode.getOutputLast(), wallet, tradeFloor);
+		MacdBot bot = new MacdBot(botId, config, bidAskMedianNode.getOutput(0), wallet, tradeFloor);
 		
 		// Create loggers
 		
@@ -100,8 +103,7 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 		
 		GraphingNode grapher = new GraphingNode(graphInterval, "Ticker", 
 				tickerNode.getOutputLast(),
-				tickerNode.getOutputBid(),
-				tickerNode.getOutputAsk()
+				bidAskMedianNode.getOutput(0)
 				);
 		bot.addTradeListener(grapher);
 		

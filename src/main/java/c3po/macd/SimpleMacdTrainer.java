@@ -22,7 +22,7 @@ public class SimpleMacdTrainer {
 private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner.class);
 	
 	// First timestamp in database: 1384079023000l
-    private final static long simulationStartTime =  new Date().getTime() - Time.DAYS * 5;
+    private final static long simulationStartTime =  new Date().getTime() - Time.DAYS * 2;
 	private final static long simulationEndTime = new Date().getTime();
 	
 	// Timing
@@ -50,7 +50,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 	private final static double walletStartUsd = 1000.0d;
 	private final static double walletStartBtcInUsd = 0.0d;
 	
-	private final static long graphInterval = 60 * Time.MINUTES;
+	private final static long graphInterval = 10 * Time.MINUTES;
 
 	public static void main(String[] args) {
 		
