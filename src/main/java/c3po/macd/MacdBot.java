@@ -28,7 +28,7 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdBot.class);
 	
 	// Earliest time 1384079023000l
-	private final static long simulationStartTime =  new Date().getTime() - Time.DAYS * 7;
+	private final static long simulationStartTime = 1384079023000l;
 	private final static long simulationEndTime = new Date().getTime();
 	
 	private final static long interpolationTime = 2 * Time.MINUTES;
@@ -68,13 +68,13 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 		
 		// Create bot config
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
-				305 * Time.MINUTES,
-				1220 * Time.MINUTES,
-				1165 * Time.MINUTES);
+				39 * Time.MINUTES,
+				267 * Time.MINUTES,
+				235 * Time.MINUTES);
 		
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
-				-3.6299,
-				-6.4236);
+				4.8876,
+				-9.2317);
 		MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
 		
 		DbConnection dbConnection = new DbConnection(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");

@@ -22,7 +22,7 @@ public class SimpleMacdTrainer {
 private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner.class);
 	
 	// First timestamp in database: 1384079023000l
-    private final static long simulationStartTime =  new Date().getTime() - Time.DAYS * 7;
+    private final static long simulationStartTime =  new Date().getTime() - Time.DAYS * 5;
 	private final static long simulationEndTime = new Date().getTime();
 	
 	// Timing

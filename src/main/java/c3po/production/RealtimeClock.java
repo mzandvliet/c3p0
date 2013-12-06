@@ -53,10 +53,10 @@ public class RealtimeClock implements IClock, Runnable {
 		listeners.remove(tickable);
 	}
 	
-	public void run() {		
-		LOGGER.debug("Finished preloading data, starting realtime execution");
-		
+	public void run() {
+		LOGGER.debug("Prewarming...");
 		prewarm();
+		LOGGER.debug("Finished preloading data, starting realtime execution");
 		runRealtime();
 	}
 	
