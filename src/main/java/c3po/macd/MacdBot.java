@@ -34,8 +34,8 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 	private final static long interpolationTime = 2 * Time.MINUTES;
 	private final static long timestep = 1 * Time.MINUTES;
 	
-	private final static double walletStartUsd = 1000.0d;
-	private final static double walletStartBtcInUsd = 0.0d;
+	private final static double walletStartUsd = 0.0d;
+	private final static double walletStartBtcInUsd = 1000.0d;
 	
 	private final static long graphInterval = 10 * Time.MINUTES;
 	
@@ -68,13 +68,13 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 		
 		// Create bot config
 		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
-				305 * Time.MINUTES,
-				1220 * Time.MINUTES,
-				1165 * Time.MINUTES);
+				64 * Time.MINUTES,
+				129 * Time.MINUTES,
+				105 * Time.MINUTES);
 		
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
-				-3.6299,
-				-6.4236);
+				2.5057,
+				-1.8142);
 		MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
 		
 		DbConnection dbConnection = new DbConnection(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");

@@ -22,7 +22,7 @@ public class SimpleMacdTrainer {
 private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner.class);
 	
 	// First timestamp in database: 1384079023000l
-    private final static long simulationStartTime =  new Date().getTime() - Time.DAYS * 7;
+    private final static long simulationStartTime =  new Date().getTime() - Time.DAYS * 14;
 	private final static long simulationEndTime = new Date().getTime();
 	
 	// Timing
@@ -40,15 +40,15 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 	// Config mutation ranges
 	private final static double mutationChance = 0.25d;
 	private final static long minAnalysisPeriod = 1 * Time.MINUTES;
-	private final static long maxAnalysisPeriod = 12 * Time.HOURS;
-	private final static double minBuyDiffThreshold = -20.0d;
-	private final static double maxBuyDiffThreshold = 20.0d;
-	private final static double minSellDiffThreshold = -20.0d;
-	private final static double maxSellDiffThreshold = 20.0d;
+	private final static long maxAnalysisPeriod = 8 * Time.HOURS;
+	private final static double minBuyDiffThreshold = -1.0d;
+	private final static double maxBuyDiffThreshold = 10.0d;
+	private final static double minSellDiffThreshold = -10.0d;
+	private final static double maxSellDiffThreshold = 1.0d;
 	
 	// Market context
-	private final static double walletStartUsd = 1000.0d;
-	private final static double walletStartBtcInUsd = 0.0d;
+	private final static double walletStartUsd = 500.0d;
+	private final static double walletStartBtcInUsd = 500.0d;
 	
 	private final static long graphInterval = 60 * Time.MINUTES;
 

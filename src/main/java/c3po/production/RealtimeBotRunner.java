@@ -50,13 +50,13 @@ public class RealtimeBotRunner {
 			 * Bot Config
 			 */
 			MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
-					39 * Time.MINUTES,
-					218 * Time.MINUTES,
-					273 * Time.MINUTES);
+					Integer.valueOf(prop.getProperty("macdFast")) * Time.MINUTES,
+					Integer.valueOf(prop.getProperty("macdSlow")) * Time.MINUTES,
+					Integer.valueOf(prop.getProperty("macdSignal")) * Time.MINUTES);
 			
 			MacdTraderConfig traderConfig = new MacdTraderConfig(
-					0.6609,
-					-9.6978);
+					Double.valueOf(prop.getProperty("macdMinBuyThreshold")),
+					Double.valueOf(prop.getProperty("macdMinSellThreshold")));
 			
 			MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
 			
