@@ -55,7 +55,8 @@ public class RealtimeBotRunner {
 					Double.valueOf(prop.getProperty("macdBuyPercentage")),
 					Double.valueOf(prop.getProperty("macdSellPercentage")),
 					Long.valueOf(prop.getProperty("macdBuyBackoffTimer")),
-					Long.valueOf(prop.getProperty("macdSellBackoffTimer"))
+					Long.valueOf(prop.getProperty("macdSellBackoffTimer")),
+					Double.valueOf(prop.getProperty("macdLossCuttingPercentage"))
 			);
 			
 			MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);

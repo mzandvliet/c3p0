@@ -31,7 +31,8 @@ public class MacdBotMutator implements IBotConfigMutator<MacdBotConfig> {
 				getRandomDouble(mutatorConfig.minBuyPercentage, mutatorConfig.maxBuyPercentage),
 				getRandomDouble(mutatorConfig.minSellPercentage, mutatorConfig.maxSellPercentage),
 				getRandomLong(mutatorConfig.minBuyBackoffTimer, mutatorConfig.maxBuyBackoffTimer),
-				getRandomLong(mutatorConfig.minSellBackoffTimer, mutatorConfig.maxSellBackoffTimer)
+				getRandomLong(mutatorConfig.minSellBackoffTimer, mutatorConfig.maxSellBackoffTimer),
+				getRandomDouble(mutatorConfig.minLossCuttingPercentage, mutatorConfig.maxLossCuttingPercentage)
 		);
 		
 		final MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
@@ -56,7 +57,8 @@ public class MacdBotMutator implements IBotConfigMutator<MacdBotConfig> {
 				which() ? parentA.traderConfig.buyPercentage : parentB.traderConfig.buyPercentage,
 				which() ? parentA.traderConfig.sellPercentage : parentB.traderConfig.sellPercentage,
 				which() ? parentA.traderConfig.buyBackoffTimer : parentB.traderConfig.buyBackoffTimer,
-				which() ? parentA.traderConfig.sellBackoffTimer : parentB.traderConfig.sellBackoffTimer
+				which() ? parentA.traderConfig.sellBackoffTimer : parentB.traderConfig.sellBackoffTimer,
+				which() ? parentA.traderConfig.lossCuttingPercentage : parentB.traderConfig.lossCuttingPercentage
 													
 		);
 		
@@ -87,7 +89,8 @@ public class MacdBotMutator implements IBotConfigMutator<MacdBotConfig> {
 				shouldMutate(mutatorConfig.mutationChance) ? randomConfig.traderConfig.buyPercentage : config.traderConfig.buyPercentage,
 				shouldMutate(mutatorConfig.mutationChance) ? randomConfig.traderConfig.sellPercentage : config.traderConfig.sellPercentage,
 				shouldMutate(mutatorConfig.mutationChance) ? randomConfig.traderConfig.buyBackoffTimer : config.traderConfig.buyBackoffTimer,
-				shouldMutate(mutatorConfig.mutationChance) ? randomConfig.traderConfig.sellBackoffTimer : config.traderConfig.sellBackoffTimer
+				shouldMutate(mutatorConfig.mutationChance) ? randomConfig.traderConfig.sellBackoffTimer : config.traderConfig.sellBackoffTimer,
+				shouldMutate(mutatorConfig.mutationChance) ? randomConfig.traderConfig.lossCuttingPercentage : config.traderConfig.lossCuttingPercentage
 		);
 		
 		final MacdBotConfig mutatedConfig = new MacdBotConfig(config.timestep, analysisConfig, traderConfig);

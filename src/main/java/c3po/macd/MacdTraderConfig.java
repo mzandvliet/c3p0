@@ -7,6 +7,7 @@ public class MacdTraderConfig {
 	public final double buyPercentage;
 	public final long sellBackoffTimer;
 	public final long buyBackoffTimer;
+	public final double lossCuttingPercentage;
 	
 	public MacdTraderConfig(
 			double minBuyThreshold,
@@ -14,23 +15,26 @@ public class MacdTraderConfig {
 			double buyPercentage,
 			double sellPercentage,
 			long sellBackoffTimer,
-			long buyBackoffTimer) {
+			long buyBackoffTimer,
+			double lossCuttingPercentage) {
 		this.minBuyDiffThreshold = minBuyThreshold;
 		this.minSellDiffThreshold = minSellThreshold;
 		this.buyPercentage = buyPercentage;
 		this.sellPercentage = sellPercentage;
 		this.sellBackoffTimer = sellBackoffTimer;
 		this.buyBackoffTimer = buyBackoffTimer;
+		this.lossCuttingPercentage = lossCuttingPercentage;
 	}
 
 	public String toString() {
-		return String.format("[TraderConfig - minBuyThreshold: %,.4f, minSellThreshold: %,.4f, buyPercentage: %,.2f max every %d min, sellPercentage: %,.2f max every %d min]", 
+		return String.format("[TraderConfig - minBuyThreshold: %,.4f, minSellThreshold: %,.4f, buyPercentage: %,.2f max every %d min, sellPercentage: %,.2f max every %d min. Cutting losses at %,.2f]", 
 				minBuyDiffThreshold,
 				minSellDiffThreshold,
 				buyPercentage,
 				buyBackoffTimer / 1000 / 60,
 				sellPercentage,
-				sellBackoffTimer / 1000 / 60);
+				sellBackoffTimer / 1000 / 60,
+				lossCuttingPercentage);
 	}
 
 	@Override

@@ -16,4 +16,6 @@ public interface ITradeFloor extends ITradeActionSource {
 	
 	double getWalletValueInUsd(IWallet wallet);
 	void updateWallet(IWallet wallet);
+	
+	public double peekBid() throws Exception;
 }

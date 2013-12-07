@@ -37,7 +37,7 @@ public class MacdBotRunner {
 	private final static double walletStartUsd = 1000.0d;
 	private final static double walletStartBtcInUsd = 0.0d;
 	
-	private final static long graphInterval = 1 * Time.MINUTES;
+	private final static long graphInterval = 20 * Time.MINUTES;
 	
 	//================================================================================
     // Main
@@ -75,7 +75,7 @@ public class MacdBotRunner {
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
 				1.5855,
 				-3.8407,
-				1.0, 1.0, 1, 1);
+				1.0, 1.0, 1, 1, 0);
 		MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
 		
 		DbConnection dbConnection = new DbConnection(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");

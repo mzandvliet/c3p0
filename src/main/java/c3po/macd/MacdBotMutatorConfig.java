@@ -17,7 +17,9 @@ public class MacdBotMutatorConfig implements IBotMutationConfig<MacdBotConfig>{
 	public final long minSellBackoffTimer;
 	public final long maxSellBackoffTimer;
 	public final long minBuyBackoffTimer;
-	public final long maxBuyBackoffTimer;	
+	public final long maxBuyBackoffTimer;
+	public final double minLossCuttingPercentage;
+	public final double maxLossCuttingPercentage;	
 	
 	public MacdBotMutatorConfig(double mutationChance, 
 			long minAnalysisPeriod, long maxAnalysisPeriod, 
@@ -26,7 +28,8 @@ public class MacdBotMutatorConfig implements IBotMutationConfig<MacdBotConfig>{
 			double minBuyPercentage, double maxBuyPercentage,
 			double minSellPercentage, double maxSellPercentage,
 			long minBuyBackoffTimer, long maxBuyBackoffTimer, 
-			long minSellBackoffTimer, long maxSellBackoffTimer) {
+			long minSellBackoffTimer, long maxSellBackoffTimer,
+			double minLossCuttingPercentage, double maxLossCuttingPercentage) {
 		this.mutationChance = mutationChance;
 		this.minAnalysisPeriod = minAnalysisPeriod;
 		this.maxAnalysisPeriod = maxAnalysisPeriod;
@@ -42,6 +45,8 @@ public class MacdBotMutatorConfig implements IBotMutationConfig<MacdBotConfig>{
 		this.maxSellBackoffTimer = maxSellBackoffTimer;
 		this.minBuyBackoffTimer = minBuyBackoffTimer;
 		this.maxBuyBackoffTimer = maxBuyBackoffTimer;
+		this.minLossCuttingPercentage = minLossCuttingPercentage;
+		this.maxLossCuttingPercentage = maxLossCuttingPercentage;
 	}
 
 	@Override

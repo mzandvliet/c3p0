@@ -346,4 +346,9 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 		String result = doAuthenticatedCall("https://www.bitstamp.net/api/cancel_order/", params);
 		LOGGER.info("Cancelled order " + order + ": " + result);
     }
+
+	@Override
+	public double peekBid() throws Exception {
+		return this.getCurrentBid();
+	}
 }

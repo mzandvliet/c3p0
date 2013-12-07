@@ -19,7 +19,7 @@ import c3po.simulation.*;
  */
 
 public class SimpleMacdTrainer {
-private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner.class);
+private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.class);
 	
 	// First timestamp in database: 1384079023000l
     private final static long simulationStartTime =  new Date().getTime() - Time.DAYS * 7;
@@ -45,9 +45,9 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 	private final static double maxBuyDiffThreshold = 20.0d;
 	private final static double minSellDiffThreshold = -20.0d;
 	private final static double maxSellDiffThreshold = 20.0d;
-	private final static double minBuyPercentage = 0d;
+	private final static double minBuyPercentage = 0.3d;
 	private final static double maxBuyPercentage = 1d;
-	private final static double minSellPercentage = 0d;
+	private final static double minSellPercentage = 1d;
 	private final static double maxSellPercentage = 1d;
 	
 	private final static long minBuyBackoffTimer = 1 * Time.MINUTES;
@@ -55,9 +55,12 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 	private final static long minSellBackoffTimer = 1 * Time.MINUTES;
 	private final static long maxSellBackoffTimer = 12 * Time.HOURS;
 	
+	private final static double minLossCuttingPercentage = 0.0d;
+	private final static double maxLossCuttingPercentage = 0.92d;
+	
 	// Market context
-	private final static double walletStartUsd = 1000.0d;
-	private final static double walletStartBtcInUsd = 0.0d;
+	private final static double walletStartUsd = 500.0d;
+	private final static double walletStartBtcInUsd = 500.0d;
 	
 	private final static long graphInterval = 10 * Time.MINUTES;
 
@@ -104,20 +107,14 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 	private static MacdBotConfig runTrainer(SimulationContext simContext) {
 		MacdBotMutatorConfig mutatorConfig = new MacdBotMutatorConfig(
 				mutationChance,
-				minAnalysisPeriod,
-				maxAnalysisPeriod,
-				minBuyDiffThreshold,
-				maxBuyDiffThreshold,
-				minSellDiffThreshold,
-				maxSellDiffThreshold,
-				minBuyPercentage,
-				maxBuyPercentage,
-				minSellPercentage,
-				maxSellPercentage,
-				minBuyBackoffTimer,
-				maxBuyBackoffTimer,
-				minSellBackoffTimer,
-				maxSellBackoffTimer);
+				minAnalysisPeriod, maxAnalysisPeriod,
+				minBuyDiffThreshold,  maxBuyDiffThreshold,
+				minSellDiffThreshold, maxSellDiffThreshold,
+				minBuyPercentage, maxBuyPercentage,
+				minSellPercentage, maxSellPercentage,
+				minBuyBackoffTimer, maxBuyBackoffTimer,
+				minSellBackoffTimer, maxSellBackoffTimer,
+				minLossCuttingPercentage, maxLossCuttingPercentage);
 		
 		MacdBotMutator mutator = new MacdBotMutator(mutatorConfig);
 		

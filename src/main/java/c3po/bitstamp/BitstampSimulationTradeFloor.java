@@ -61,4 +61,9 @@ public class BitstampSimulationTradeFloor extends AbstractTradeFloor {
 	public void updateWallet(IWallet wallet) {
 		// TODO Auto-generated method stub
 	}
+
+	@Override
+	public double peekBid() throws Exception {
+		return bidSignal.peek().value;
+	}
 }

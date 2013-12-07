@@ -25,11 +25,15 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	private final MacdTraderConfig config;
 	private final long startDelay; // Used to avoid trading while macdBuffers are still empty and yield unstable signals
 	
-	private TradePosition state;
-	
 	private long numSkippedTicks;
+	private long lastBuyTimestamp = 0;
+	private long lastSellTimestamp = 0;
+	
+	private boolean verbose = false;
 	
 	private final List<ITradeListener> listeners;
+	private double lastBuyPrice = 0;
+	private double lossCuttingPercentage = 0;
 
 	public MacdTraderNode(long timestep, ISignal macdDiff, IWallet wallet, ITradeFloor tradeFloor, MacdTraderConfig config, long startDelay) {
 		super(timestep);
@@ -39,9 +43,6 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		this.config = config;
 		this.startDelay = startDelay;
 		this.listeners = new ArrayList<ITradeListener>();
-	
-		// Position depends on wallet status, bitcoins mean shit is on
-		this.state = (wallet.getWalletBtc() > 0.0d ? TradePosition.OPEN : TradePosition.CLOSED);
 	}	
 
 	public MacdTraderConfig getConfig() {
@@ -62,48 +63,94 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		Sample currentDiff = macdDiff.getSample(tick);
 		
 		if (numSkippedTicks > startDelay) {
-			if(wallet.getWalletUsd() > 1.0d) {
+			boolean hasEnoughUsd = (wallet.getWalletUsd() / config.buyPercentage > minDollars);
+			boolean hasEnoughBtc = (wallet.getWalletBtc() / config.sellPercentage > tradeFloor.toBtc(minDollars));
+			boolean isAfterBuyBackoff = (tick > lastBuyTimestamp + config.buyBackoffTimer);
+			boolean isAfterSellBackoff = (tick > lastSellTimestamp + config.sellBackoffTimer);		
+			
+			if(verbose)
+				LOGGER.debug(String.format("Decide: hasEnoughUsd: %b, isAfterBuyBackoff: %b, hasEnoughBtc: %b, isAfterSellBackoff: %b", hasEnoughUsd, isAfterBuyBackoff, hasEnoughBtc, isAfterSellBackoff));
+			
+			if(hasEnoughUsd && isAfterBuyBackoff) {
 				tryToOpenPosition(tick, currentDiff);
 			}
 			
-			if(wallet.getWalletBtc() > 0.0d) {
+			if(hasEnoughBtc && isAfterSellBackoff) {
 				tryToClosePosition(tick, currentDiff);
+			}	
+			
+			
+			boolean hasBtc = (wallet.getWalletBtc() > tradeFloor.toBtc(minDollars));
+			
+			if(hasBtc) {
+				tryLossSafeguard(tick);
 			}
+			
 		}
 		else {
 			numSkippedTicks++;
 		}
 	}
-
-	private void tryToOpenPosition(long tick, Sample currentDiff) {
-		boolean enoughDollarsToBuy = wallet.getWalletUsd() > minDollars;
-		boolean buyThresholdReached = currentDiff.value > config.minBuyDiffThreshold;
-		
-		if (state == TradePosition.CLOSED && enoughDollarsToBuy && buyThresholdReached) {
-			double usdToSell = wallet.getWalletUsd(); // All-in
-			TradeAction buyAction = new TradeAction(TradeActionType.BUY, tick, usdToSell);
-			double btcReceived = tradeFloor.buy(wallet, buyAction);
-
-			notify(buyAction);
-			//LOGGER.info(String.format("Bought %s BTC for %s USD because difference %s > %s", btcReceived, usdToSell, currentDiff.value, config.minBuyDiffThreshold));
-			
-			state = TradePosition.OPEN;
-		}
-	}
 	
-	private void tryToClosePosition(long tick, Sample currentDiff) {
-		boolean enoughBtcToSell = wallet.getWalletBtc() > tradeFloor.toBtc(minDollars);
-		boolean sellThresholdReached = currentDiff.value < config.minSellDiffThreshold;
+	private void tryLossSafeguard(long tick) {
+
+		boolean shouldSell = false;
+		double peekBid = 0.0d;
+		try {
+			 peekBid = tradeFloor.peekBid();
+			shouldSell = (lastBuyPrice != 0 && peekBid < lastBuyPrice * lossCuttingPercentage);
+		} catch (Exception e) {
+			LOGGER.error("Could not check for loss cutting safeguard", e);
+		}
 		
-		if (enoughBtcToSell && sellThresholdReached) {
+		if(shouldSell) {
+			LOGGER.info(String.format("Performing loss cutting, because the current bid %,.2f is less then %,.2f of %,.2f", peekBid, lossCuttingPercentage, lastBuyPrice));
 			double btcToSell = wallet.getWalletBtc(); // All-in
 			TradeAction sellAction = new TradeAction(TradeActionType.SELL, tick, btcToSell);
 			double usdReceived = tradeFloor.sell(wallet, sellAction);
 			
-			notify(sellAction);
-			//LOGGER.info(String.format("Sold %s BTC for %s USD because difference %s < %s", btcToSell, usdReceived, currentDiff.value, config.minSellDiffThreshold));
+			this.lastSellTimestamp = tick;
 			
-			state = TradePosition.CLOSED;
+			notify(sellAction);
+		}
+	}
+
+	public void setVerbose(boolean verbose) {
+		this.verbose = verbose;
+	}
+
+	private void tryToOpenPosition(long tick, Sample currentDiff) {
+		boolean buyThresholdReached = currentDiff.value > config.minBuyDiffThreshold;
+		
+		if(verbose)
+			LOGGER.debug(String.format("%,.4f > %,.4f = %b", currentDiff.value, config.minBuyDiffThreshold, buyThresholdReached));
+
+		if (buyThresholdReached) {
+			double usdToSell = wallet.getWalletUsd() * config.buyPercentage;
+			TradeAction buyAction = new TradeAction(TradeActionType.BUY, tick, usdToSell);
+			double btcReceived = tradeFloor.buy(wallet, buyAction);
+
+			this.lastBuyTimestamp = tick;
+			this.lastBuyPrice = usdToSell / btcReceived;
+			
+			notify(buyAction);
+		}
+	}
+	
+	private void tryToClosePosition(long tick, Sample currentDiff) {
+		boolean sellThresholdReached = currentDiff.value < config.minSellDiffThreshold;
+		
+		if(verbose)
+			LOGGER.debug(String.format("%,.4f < %,.4f = %b", currentDiff.value, config.minSellDiffThreshold, sellThresholdReached));
+		
+		if (sellThresholdReached) {
+			double btcToSell = wallet.getWalletBtc() * config.sellPercentage; 
+			TradeAction sellAction = new TradeAction(TradeActionType.SELL, tick, btcToSell);
+			double usdReceived = tradeFloor.sell(wallet, sellAction);
+			
+			this.lastSellTimestamp = tick;
+			
+			notify(sellAction);
 		}
 	}
 
