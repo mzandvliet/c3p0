@@ -10,18 +10,23 @@ public class MacdBotMutatorConfig implements IBotMutationConfig<MacdBotConfig>{
 	public final double maxBuyDiffThreshold;
 	public final double minSellDiffThreshold;
 	public final double maxSellDiffThreshold;
+	public final double minSellPercentage;
+	public final double maxSellPercentage;
+	public final double minBuyPercentage;
+	public final double maxBuyPercentage;
+	public final long minSellBackoffTimer;
+	public final long maxSellBackoffTimer;
+	public final long minBuyBackoffTimer;
+	public final long maxBuyBackoffTimer;	
 	
-	public MacdBotMutatorConfig(
-			double mutationChance,
-			long minAnalysisPeriod,
-			long maxAnalysisPeriod,
-			double minBuyDiffThreshold,
-			double maxBuyDiffThreshold,
-			double minSellDiffThreshold,
-			double maxSellDiffThreshold) {
-		
-		super();
-		
+	public MacdBotMutatorConfig(double mutationChance, 
+			long minAnalysisPeriod, long maxAnalysisPeriod, 
+			double minBuyDiffThreshold, double maxBuyDiffThreshold, 
+			double minSellDiffThreshold, double maxSellDiffThreshold,  
+			double minBuyPercentage, double maxBuyPercentage,
+			double minSellPercentage, double maxSellPercentage,
+			long minBuyBackoffTimer, long maxBuyBackoffTimer, 
+			long minSellBackoffTimer, long maxSellBackoffTimer) {
 		this.mutationChance = mutationChance;
 		this.minAnalysisPeriod = minAnalysisPeriod;
 		this.maxAnalysisPeriod = maxAnalysisPeriod;
@@ -29,6 +34,14 @@ public class MacdBotMutatorConfig implements IBotMutationConfig<MacdBotConfig>{
 		this.maxBuyDiffThreshold = maxBuyDiffThreshold;
 		this.minSellDiffThreshold = minSellDiffThreshold;
 		this.maxSellDiffThreshold = maxSellDiffThreshold;
+		this.minSellPercentage = minSellPercentage;
+		this.maxSellPercentage = maxSellPercentage;
+		this.minBuyPercentage = minBuyPercentage;
+		this.maxBuyPercentage = maxBuyPercentage;
+		this.minSellBackoffTimer = minSellBackoffTimer;
+		this.maxSellBackoffTimer = maxSellBackoffTimer;
+		this.minBuyBackoffTimer = minBuyBackoffTimer;
+		this.maxBuyBackoffTimer = maxBuyBackoffTimer;
 	}
 
 	@Override

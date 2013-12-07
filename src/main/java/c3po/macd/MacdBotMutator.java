@@ -27,7 +27,11 @@ public class MacdBotMutator implements IBotConfigMutator<MacdBotConfig> {
 		
 		final MacdTraderConfig traderConfig = new MacdTraderConfig(
 				getRandomDouble(mutatorConfig.minBuyDiffThreshold, mutatorConfig.maxBuyDiffThreshold),
-				getRandomDouble(mutatorConfig.minSellDiffThreshold, mutatorConfig.maxSellDiffThreshold)
+				getRandomDouble(mutatorConfig.minSellDiffThreshold, mutatorConfig.maxSellDiffThreshold),
+				getRandomDouble(mutatorConfig.minBuyPercentage, mutatorConfig.maxBuyPercentage),
+				getRandomDouble(mutatorConfig.minSellPercentage, mutatorConfig.maxSellPercentage),
+				getRandomLong(mutatorConfig.minBuyBackoffTimer, mutatorConfig.maxBuyBackoffTimer),
+				getRandomLong(mutatorConfig.minSellBackoffTimer, mutatorConfig.maxSellBackoffTimer)
 		);
 		
 		final MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
@@ -48,7 +52,12 @@ public class MacdBotMutator implements IBotConfigMutator<MacdBotConfig> {
 		
 		final MacdTraderConfig traderConfig = new MacdTraderConfig(
 				which() ? parentA.traderConfig.minBuyDiffThreshold : parentB.traderConfig.minBuyDiffThreshold,
-				which() ? parentA.traderConfig.minSellDiffThreshold : parentB.traderConfig.minSellDiffThreshold
+				which() ? parentA.traderConfig.minSellDiffThreshold : parentB.traderConfig.minSellDiffThreshold,
+				which() ? parentA.traderConfig.buyPercentage : parentB.traderConfig.buyPercentage,
+				which() ? parentA.traderConfig.sellPercentage : parentB.traderConfig.sellPercentage,
+				which() ? parentA.traderConfig.buyBackoffTimer : parentB.traderConfig.buyBackoffTimer,
+				which() ? parentA.traderConfig.sellBackoffTimer : parentB.traderConfig.sellBackoffTimer
+													
 		);
 		
 		final MacdBotConfig childConfig = new MacdBotConfig(
@@ -74,7 +83,11 @@ public class MacdBotMutator implements IBotConfigMutator<MacdBotConfig> {
 			
 		final MacdTraderConfig traderConfig = new MacdTraderConfig(
 				shouldMutate(mutatorConfig.mutationChance) ? randomConfig.traderConfig.minBuyDiffThreshold : config.traderConfig.minBuyDiffThreshold,
-				shouldMutate(mutatorConfig.mutationChance) ? randomConfig.traderConfig.minSellDiffThreshold : config.traderConfig.minSellDiffThreshold
+				shouldMutate(mutatorConfig.mutationChance) ? randomConfig.traderConfig.minSellDiffThreshold : config.traderConfig.minSellDiffThreshold,
+				shouldMutate(mutatorConfig.mutationChance) ? randomConfig.traderConfig.buyPercentage : config.traderConfig.buyPercentage,
+				shouldMutate(mutatorConfig.mutationChance) ? randomConfig.traderConfig.sellPercentage : config.traderConfig.sellPercentage,
+				shouldMutate(mutatorConfig.mutationChance) ? randomConfig.traderConfig.buyBackoffTimer : config.traderConfig.buyBackoffTimer,
+				shouldMutate(mutatorConfig.mutationChance) ? randomConfig.traderConfig.sellBackoffTimer : config.traderConfig.sellBackoffTimer
 		);
 		
 		final MacdBotConfig mutatedConfig = new MacdBotConfig(config.timestep, analysisConfig, traderConfig);

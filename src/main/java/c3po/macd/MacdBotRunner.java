@@ -74,7 +74,8 @@ public class MacdBotRunner {
 		
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
 				1.5855,
-				-3.8407);
+				-3.8407,
+				1.0, 1.0, 1, 1);
 		MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
 		
 		DbConnection dbConnection = new DbConnection(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");

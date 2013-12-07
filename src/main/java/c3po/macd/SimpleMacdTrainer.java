@@ -22,7 +22,7 @@ public class SimpleMacdTrainer {
 private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner.class);
 	
 	// First timestamp in database: 1384079023000l
-    private final static long simulationStartTime =  new Date().getTime() - Time.DAYS * 2;
+    private final static long simulationStartTime =  new Date().getTime() - Time.DAYS * 7;
 	private final static long simulationEndTime = new Date().getTime();
 	
 	// Timing
@@ -45,6 +45,15 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 	private final static double maxBuyDiffThreshold = 20.0d;
 	private final static double minSellDiffThreshold = -20.0d;
 	private final static double maxSellDiffThreshold = 20.0d;
+	private final static double minBuyPercentage = 0d;
+	private final static double maxBuyPercentage = 1d;
+	private final static double minSellPercentage = 0d;
+	private final static double maxSellPercentage = 1d;
+	
+	private final static long minBuyBackoffTimer = 1 * Time.MINUTES;
+	private final static long maxBuyBackoffTimer = 12 * Time.HOURS;
+	private final static long minSellBackoffTimer = 1 * Time.MINUTES;
+	private final static long maxSellBackoffTimer = 12 * Time.HOURS;
 	
 	// Market context
 	private final static double walletStartUsd = 1000.0d;
@@ -100,7 +109,15 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner
 				minBuyDiffThreshold,
 				maxBuyDiffThreshold,
 				minSellDiffThreshold,
-				maxSellDiffThreshold);
+				maxSellDiffThreshold,
+				minBuyPercentage,
+				maxBuyPercentage,
+				minSellPercentage,
+				maxSellPercentage,
+				minBuyBackoffTimer,
+				maxBuyBackoffTimer,
+				minSellBackoffTimer,
+				maxSellBackoffTimer);
 		
 		MacdBotMutator mutator = new MacdBotMutator(mutatorConfig);
 		

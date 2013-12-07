@@ -73,7 +73,8 @@ public class SimpleTrendBot extends AbstractTickable implements IBot {
 		// Create bot config
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
 				0.1,
-				-2.0
+				-2.0,
+				1d, 1d, 1, 1
 		);
 
 		// Create bot

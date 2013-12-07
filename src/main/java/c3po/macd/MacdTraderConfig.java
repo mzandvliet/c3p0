@@ -1,23 +1,36 @@
 package c3po.macd;
 
-import c3po.Time;
-
 public class MacdTraderConfig {
 	public final double minBuyDiffThreshold;
 	public final double minSellDiffThreshold;
+	public final double sellPercentage;
+	public final double buyPercentage;
+	public final long sellBackoffTimer;
+	public final long buyBackoffTimer;
 	
 	public MacdTraderConfig(
 			double minBuyThreshold,
-			double minSellThreshold) {
-		super();
+			double minSellThreshold,
+			double buyPercentage,
+			double sellPercentage,
+			long sellBackoffTimer,
+			long buyBackoffTimer) {
 		this.minBuyDiffThreshold = minBuyThreshold;
 		this.minSellDiffThreshold = minSellThreshold;
+		this.buyPercentage = buyPercentage;
+		this.sellPercentage = sellPercentage;
+		this.sellBackoffTimer = sellBackoffTimer;
+		this.buyBackoffTimer = buyBackoffTimer;
 	}
 
 	public String toString() {
-		return String.format("[TraderConfig - minBuyThreshold: %,.4f, minSellThreshold: %,.4f]", 
+		return String.format("[TraderConfig - minBuyThreshold: %,.4f, minSellThreshold: %,.4f, buyPercentage: %,.2f max every %d min, sellPercentage: %,.2f max every %d min]", 
 				minBuyDiffThreshold,
-				minSellDiffThreshold);
+				minSellDiffThreshold,
+				buyPercentage,
+				buyBackoffTimer / 1000 / 60,
+				sellPercentage,
+				sellBackoffTimer / 1000 / 60);
 	}
 
 	@Override
