@@ -3,11 +3,7 @@ package c3po.production;
 import c3po.*;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.sql.SQLException;
-import java.util.Date;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -25,7 +21,6 @@ import c3po.macd.*;
 public class RealtimeBotRunner {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RealtimeBotRunner.class);
-	private final static String jsonUrl = "http://www.bitstamp.net/api/ticker/";
 
 	private final static long interpolationTime = 2 * Time.MINUTES;
 	private final static long timestep = 1 * Time.MINUTES;
@@ -86,7 +81,7 @@ public class RealtimeBotRunner {
 			
 			// Log the trades by DB and email
 			DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, dbConnection);
-	
+			
 			//dbTradeLogger.startSession(new Date().getTime());
 			EmailTradeLogger mailLogger = new EmailTradeLogger(bot.getId(), "martijn@ramjetanvil.com", "jopast@gmail.com");
 			bot.addTradeListener(mailLogger);
