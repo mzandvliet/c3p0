@@ -20,8 +20,9 @@ public abstract class AbstractTradeFloor implements ITradeFloor {
 	protected ISignal tickerSignal;
 	protected ISignal bidSignal;
 	protected ISignal askSignal;
+	protected final boolean doLimitOrder = false;
 	
-	public AbstractTradeFloor(ISignal last, ISignal bid, ISignal ask) {
+	public AbstractTradeFloor(ISignal last, ISignal bid, ISignal ask, boolean doLimitOrder) {
 		this.tickerSignal = last;
 		this.bidSignal = bid;
 		this.askSignal = ask;
@@ -106,4 +107,12 @@ public abstract class AbstractTradeFloor implements ITradeFloor {
 	public ITradeFloor getTradeFloor() {
 		return this;
 	}
+	
+	@Override
+	public boolean doLimitOrder() {
+		return doLimitOrder;
+	}
+	
+	@Override
+	public void adjustOrders() {}
 }

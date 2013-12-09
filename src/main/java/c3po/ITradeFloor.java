@@ -18,4 +18,17 @@ public interface ITradeFloor extends ITradeActionSource {
 	void updateWallet(IWallet wallet);
 	
 	public double peekBid() throws Exception;
+	
+	/**
+	 * This method readjusts open orders to match the current prices
+	 * in an attempt to fill them as soon as possible.
+	 */
+	public void adjustOrders();
+	
+	/**
+	 * @return True if the orders need to be set as limit orders, instead of instant fulfillment.
+	 *         Gives potentially a greater margin if there are enough trades, but might be wrong
+	 *         in a market without sell or buy orders.
+	 */
+	public boolean doLimitOrder();
 }

@@ -22,7 +22,7 @@ public class BitstampSimulationTradeFloor extends AbstractTradeFloor {
 	private double tradeFee = 0.33d / 100;
 	
 	public BitstampSimulationTradeFloor(ISignal last, ISignal bid, ISignal ask) {
-		super(last, bid, ask);
+		super(last, bid, ask, false);
 	}
 	
 	@Override

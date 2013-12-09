@@ -27,10 +27,8 @@ import c3po.AbstractTradeFloor;
 import c3po.ISignal;
 import c3po.IWallet;
 import c3po.JsonReader;
-import c3po.Sample;
 import c3po.Time;
 import c3po.TradeAction;
-import c3po.bitstamp.BitstampTickerSource.ServerSampleEntry;
 import c3po.structs.OpenOrder;
 
 
@@ -45,15 +43,15 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	SimpleDateFormat sdf  = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
 	private long lastWalletUpdate;
 	
-	public BitstampTradeFloor(ISignal last, ISignal bid, ISignal ask) {
-		super(last, bid, ask);
+	public BitstampTradeFloor(ISignal last, ISignal bid, ISignal ask, boolean doLimitOrder) {
+		super(last, bid, ask, doLimitOrder);
 		
 		// Real stuff is happening, extra JSON logging
 		JsonReader.debug = true;
 	}
 	
-	public BitstampTradeFloor(ISignal last, ISignal bid, ISignal ask, int clientId, String apiKey, String apiSecret) {
-		this(last, bid, ask);
+	public BitstampTradeFloor(ISignal last, ISignal bid, ISignal ask, boolean doLimitOrder, int clientId, String apiKey, String apiSecret) {
+		this(last, bid, ask, doLimitOrder);
 		BitstampTradeFloor.clientId = clientId;
 		BitstampTradeFloor.apiKey = apiKey;
 		BitstampTradeFloor.apiSecret = apiSecret;
@@ -143,20 +141,58 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 		params.add(new BasicNameValuePair("signature", sig));
 		return JsonReader.readJsonFromUrl(url, params);
 	}
+	
+	/**
+	 * This method decides which price to use for the new order.
+	 * Currently it checks if it must do a limit order, in which
+	 * case he raises the current bid with a dollarcent. If we want
+	 * to use an sell order to make it instant, we use the current ask instead. 
+	 * 
+	 * @uses doLimitOrder
+	 * @return
+	 * @throws JSONException
+	 * @throws IOException
+	 */
+	protected double getBuyPrice() throws JSONException, IOException {
+		if(doLimitOrder) {
+			return this.getCurrentBid() + 0.01d;
+		} else {
+			return this.getCurrentAsk();
+		}
+	}
+	
+	/**
+	 * This method decides which price to use for the new order.
+	 * Currently it checks if it must do a limit order, in which
+	 * case he undercuts the current ask with a dollarcent. If we want
+	 * to use a buy order to make it instant, we use the current bid instead. 
+	 * 
+	 * @uses doLimitOrder
+	 * @return
+	 * @throws JSONException
+	 * @throws IOException
+	 */
+	protected double getSellPrice() throws JSONException, IOException {
+		if(doLimitOrder) {
+			return this.getCurrentAsk() - 0.01d;
+		} else {
+			return this.getCurrentBid();
+		}
+	}
 
 	@Override
 	public double buyImpl(IWallet wallet, TradeAction action) {
 		double boughtBtc = 0;
 		try {
 			// We get the latest ask from the JSON
-			double currentAsk = this.getCurrentAsk();
+			double buyPrice = getBuyPrice();
 					
 			// The amount of Btc we are going to get if we buy for volume USD
-			boughtBtc = action.volume / currentAsk * (1.0d-tradeFee);
-			double soldUsd = action.volume * currentAsk;
+			boughtBtc = action.volume / buyPrice * (1.0d-tradeFee);
+			double soldUsd = action.volume * buyPrice;
 			
 			// Place the actual buy order
-			placeBuyOrder(currentAsk, boughtBtc);
+			placeBuyOrder(buyPrice, boughtBtc);
 			
 			// We assume the trade is fulfilled instantly, for the price of the ask
 			wallet.transact(action.timestamp, -action.volume, boughtBtc);
@@ -175,14 +211,14 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 		double boughtUsd = 0;
 		try {
 			// We get the latest ask, assuming the ticker is updated by some other part of the app
-			double currentBid = this.getCurrentBid();
+			double sellPrice = this.getSellPrice();
 			
 			// We assume the trade is fulfilled instantly, for the price of the ask
-			boughtUsd = action.volume * currentBid * (1.0d-tradeFee);
+			boughtUsd = action.volume * sellPrice * (1.0d-tradeFee);
 			double soldBtc = action.volume;
 			
 			// Place the actual sell order
-			placeSellOrder(currentBid, soldBtc);
+			placeSellOrder(sellPrice, soldBtc);
 			
 			wallet.transact(action.timestamp, boughtUsd, -action.volume);
 		}
@@ -226,25 +262,39 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	 * and readjusts them if the prices are outdated. This makes
 	 * sure open orders are filled as soon as possible.
 	 */
+	@Override
 	public void adjustOrders() {
 		try {
-			Sample currentAsk = this.askSignal.peek();
-			Sample currentBid = this.bidSignal.peek();
+			List<OpenOrder> openOrders = getOpenOrders();
+			
+			// Stop in case of no open orders
+			if(openOrders.size() == 0)
+				return;
+			
+			// Decide which would be the ideal price to buy or sell for
+			double buyPrice, sellPrice;
+			if(doLimitOrder) {
+				buyPrice = this.getCurrentBid();
+				sellPrice = this.getCurrentAsk();
+			} else {
+				buyPrice = this.getCurrentAsk();
+				sellPrice = this.getCurrentBid();
+			}
 			
 			// Loop over all the open orders
-			for(OpenOrder openOrder : getOpenOrders()) {
+			for(OpenOrder openOrder : openOrders) {
 				// Adjust sell order if needed
-				if(openOrder.getType() == OpenOrder.SELL && openOrder.getPrice() != currentBid.value) {
-					LOGGER.info("Adjusting "+ openOrder + " to match price " + currentBid.value);
+				if(openOrder.getType() == OpenOrder.SELL && openOrder.getPrice() != buyPrice) {
+					LOGGER.info("Adjusting "+ openOrder + " to match price " + buyPrice);
 					cancelOrder(openOrder);
-					placeSellOrder(currentBid.value, openOrder.getAmount());
+					placeSellOrder(buyPrice, openOrder.getAmount());
 				}
 				
 				// Adjust buy order if needed
-				if(openOrder.getType() == OpenOrder.BUY && openOrder.getPrice() != currentAsk.value) {
-					LOGGER.info("Adjusting "+ openOrder + " to match price " + currentBid.value);
+				if(openOrder.getType() == OpenOrder.BUY && openOrder.getPrice() != sellPrice) {
+					LOGGER.info("Adjusting "+ openOrder + " to match price " + sellPrice);
 					cancelOrder(openOrder);
-					placeBuyOrder(currentAsk.value, openOrder.getAmount());
+					placeBuyOrder(sellPrice, openOrder.getAmount());
 				}
 			}
 			

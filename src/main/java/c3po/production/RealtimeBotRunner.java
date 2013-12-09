@@ -73,6 +73,7 @@ public class RealtimeBotRunner {
 					tickerNode.getOutputLast(),
 					tickerNode.getOutputBid(),
 					tickerNode.getOutputAsk(),
+					true,
 					clientId, apiKey, apiSecret
 			);
 			
