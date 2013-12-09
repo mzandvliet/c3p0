@@ -36,9 +36,10 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BitstampTradeFloor.class);
 	private double tradeFee = 0.005d;
 	
-	private static int clientId = 665206;
-	private static String apiKey = "8C3i5RNNZ3Hvy3epS7TKRp87a3K6tX4s";
-	private static String apiSecret = "ZPS0qszXKqWtOM8PeTiLrqJuCOjLI3rl";
+	// Default: Dagobert
+	private static int clientId = 821581;
+	private static String apiKey = "rOlWvTyTL0ZZL7OztIH9nCbS66WOEc4h";
+	private static String apiSecret = "NksKaAEE9ZbcMTu1nJ1YiOAbdJT0lqTh";
 	
 	SimpleDateFormat sdf  = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
 	private long lastWalletUpdate;
