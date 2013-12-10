@@ -3,38 +3,22 @@ package c3po.macd;
 public class MacdTraderConfig {
 	public final double minBuyDiffThreshold;
 	public final double minSellDiffThreshold;
-	public final double sellPercentage;
-	public final double buyPercentage;
-	public final long sellBackoffTimer;
-	public final long buyBackoffTimer;
-	public final double lossCuttingPercentage;
+	public final double lossCutThreshold;
 	
 	public MacdTraderConfig(
 			double minBuyThreshold,
 			double minSellThreshold,
-			double buyPercentage,
-			double sellPercentage,
-			long sellBackoffTimer,
-			long buyBackoffTimer,
 			double lossCuttingPercentage) {
 		this.minBuyDiffThreshold = minBuyThreshold;
 		this.minSellDiffThreshold = minSellThreshold;
-		this.buyPercentage = buyPercentage;
-		this.sellPercentage = sellPercentage;
-		this.sellBackoffTimer = sellBackoffTimer;
-		this.buyBackoffTimer = buyBackoffTimer;
-		this.lossCuttingPercentage = lossCuttingPercentage;
+		this.lossCutThreshold = lossCuttingPercentage;
 	}
 
 	public String toString() {
-		return String.format("[TraderConfig - minBuyThreshold: %,.4f, minSellThreshold: %,.4f, buyPercentage: %,.2f max every %d min, sellPercentage: %,.2f max every %d min. Cutting losses at %,.2f]", 
+		return String.format("[TraderConfig - minBuyThreshold: %,.4f, minSellThreshold: %,.4f, lossCutThreshold at %,.2f]", 
 				minBuyDiffThreshold,
 				minSellDiffThreshold,
-				buyPercentage,
-				buyBackoffTimer / 1000 / 60,
-				sellPercentage,
-				sellBackoffTimer / 1000 / 60,
-				lossCuttingPercentage);
+				lossCutThreshold);
 	}
 
 	@Override
@@ -42,6 +26,8 @@ public class MacdTraderConfig {
 		final int prime = 31;
 		int result = 1;
 		long temp;
+		temp = Double.doubleToLongBits(lossCutThreshold);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
 		temp = Double.doubleToLongBits(minBuyDiffThreshold);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		temp = Double.doubleToLongBits(minSellDiffThreshold);
@@ -58,6 +44,9 @@ public class MacdTraderConfig {
 		if (getClass() != obj.getClass())
 			return false;
 		MacdTraderConfig other = (MacdTraderConfig) obj;
+		if (Double.doubleToLongBits(lossCutThreshold) != Double
+				.doubleToLongBits(other.lossCutThreshold))
+			return false;
 		if (Double.doubleToLongBits(minBuyDiffThreshold) != Double
 				.doubleToLongBits(other.minBuyDiffThreshold))
 			return false;

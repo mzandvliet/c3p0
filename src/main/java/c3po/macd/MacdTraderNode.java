@@ -1,6 +1,7 @@
 package c3po.macd;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -14,6 +15,7 @@ import c3po.ITradeFloor;
 import c3po.ITradeListener;
 import c3po.IWallet;
 import c3po.Sample;
+import c3po.Time;
 import c3po.TradeAction;
 import c3po.TradeAction.TradeActionType;
 
@@ -26,14 +28,11 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	private final long startDelay; // Used to avoid trading while macdBuffers are still empty and yield unstable signals
 	
 	private long numSkippedTicks;
-	private long lastBuyTimestamp = 0;
-	private long lastSellTimestamp = 0;
 	
 	private boolean verbose = false;
 	
 	private final List<ITradeListener> listeners;
-	private double lastBuyPrice = 0;
-	private double lossCuttingPercentage = 0;
+	private double lastHighestPositionPrice = -1; // TODO: managing this state explicitely is error prone
 
 	public MacdTraderNode(long timestep, ISignal macdDiff, IWallet wallet, ITradeFloor tradeFloor, MacdTraderConfig config, long startDelay) {
 		super(timestep);
@@ -63,29 +62,23 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		Sample currentDiff = macdDiff.getSample(tick);
 		
 		if (numSkippedTicks > startDelay) {
-			boolean hasEnoughUsd = (wallet.getWalletUsd() / config.buyPercentage > minDollars);
-			boolean hasEnoughBtc = (wallet.getWalletBtc() / config.sellPercentage > tradeFloor.toBtc(minDollars));
-			boolean isAfterBuyBackoff = (tick > lastBuyTimestamp + config.buyBackoffTimer);
-			boolean isAfterSellBackoff = (tick > lastSellTimestamp + config.sellBackoffTimer);		
+			boolean hasEnoughUsd = wallet.getWalletUsd() > minDollars;
+			boolean hasEnoughBtc = wallet.getWalletBtc() > tradeFloor.toBtc(minDollars);	
 			
-			if(verbose)
-				LOGGER.debug(String.format("Decide: hasEnoughUsd: %b, isAfterBuyBackoff: %b, hasEnoughBtc: %b, isAfterSellBackoff: %b", hasEnoughUsd, isAfterBuyBackoff, hasEnoughBtc, isAfterSellBackoff));
+//			if(verbose) {
+//				LOGGER.debug(String.format("Decide: hasEnoughUsd: %b, isAfterBuyBackoff: %b, hasEnoughBtc: %b, isAfterSellBackoff: %b", hasEnoughUsd, isAfterBuyBackoff, hasEnoughBtc, isAfterSellBackoff));
+//			}
 			
-			if(hasEnoughUsd && isAfterBuyBackoff) {
+			// Look at wallet state and determine our current position
+			
+			if(hasEnoughUsd) {
 				tryToOpenPosition(tick, currentDiff);
 			}
 			
-			if(hasEnoughBtc && isAfterSellBackoff) {
+			if(hasEnoughBtc) {
 				tryToClosePosition(tick, currentDiff);
-			}	
-			
-			
-			boolean hasBtc = (wallet.getWalletBtc() > tradeFloor.toBtc(minDollars));
-			
-			if(hasBtc) {
 				tryLossSafeguard(tick);
-			}
-			
+			}			
 		}
 		else {
 			numSkippedTicks++;
@@ -95,22 +88,29 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	private void tryLossSafeguard(long tick) {
 
 		boolean shouldSell = false;
-		double peekBid = 0.0d;
+		double currentPrice = 0.0d;
+		
 		try {
-			 peekBid = tradeFloor.peekBid();
-			shouldSell = (lastBuyPrice != 0 && peekBid < lastBuyPrice * lossCuttingPercentage);
+			currentPrice = tradeFloor.toUsd(1d);
+			
+			if (currentPrice > this.lastHighestPositionPrice)
+				this.lastHighestPositionPrice = currentPrice;
+			
+			shouldSell = (currentPrice < lastHighestPositionPrice * config.lossCutThreshold);
 		} catch (Exception e) {
 			LOGGER.error("Could not check for loss cutting safeguard", e);
 		}
 		
 		if(shouldSell) {
-			LOGGER.info(String.format("Performing loss cutting, because the current bid %,.2f is less then %,.2f of %,.2f", peekBid, lossCuttingPercentage, lastBuyPrice));
+			if (verbose)
+				LOGGER.debug(String.format("Cutting losses at %s, because the current price %,.2f is less than %,.2f of %,.2f", new Date(tick), currentPrice, config.lossCutThreshold, lastHighestPositionPrice));
+			
 			double btcToSell = wallet.getWalletBtc(); // All-in
 			TradeAction sellAction = new TradeAction(TradeActionType.SELL, tick, btcToSell);
 			double usdReceived = tradeFloor.sell(wallet, sellAction);
 			
-			this.lastSellTimestamp = tick;
-			
+			this.lastHighestPositionPrice = -1;
+
 			notify(sellAction);
 		}
 	}
@@ -122,16 +122,15 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	private void tryToOpenPosition(long tick, Sample currentDiff) {
 		boolean buyThresholdReached = currentDiff.value > config.minBuyDiffThreshold;
 		
-		if(verbose)
-			LOGGER.debug(String.format("%,.4f > %,.4f = %b", currentDiff.value, config.minBuyDiffThreshold, buyThresholdReached));
+//		if(verbose)
+//			LOGGER.debug(String.format("%,.4f > %,.4f = %b", currentDiff.value, config.minBuyDiffThreshold, buyThresholdReached));
 
 		if (buyThresholdReached) {
-			double usdToSell = wallet.getWalletUsd() * config.buyPercentage;
+			double usdToSell = wallet.getWalletUsd();
 			TradeAction buyAction = new TradeAction(TradeActionType.BUY, tick, usdToSell);
 			double btcReceived = tradeFloor.buy(wallet, buyAction);
 
-			this.lastBuyTimestamp = tick;
-			this.lastBuyPrice = usdToSell / btcReceived;
+			this.lastHighestPositionPrice = tradeFloor.toUsd(1d);
 			
 			notify(buyAction);
 		}
@@ -140,16 +139,16 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	private void tryToClosePosition(long tick, Sample currentDiff) {
 		boolean sellThresholdReached = currentDiff.value < config.minSellDiffThreshold;
 		
-		if(verbose)
-			LOGGER.debug(String.format("%,.4f < %,.4f = %b", currentDiff.value, config.minSellDiffThreshold, sellThresholdReached));
+//		if(verbose)
+//			LOGGER.debug(String.format("%,.4f < %,.4f = %b", currentDiff.value, config.minSellDiffThreshold, sellThresholdReached));
 		
 		if (sellThresholdReached) {
-			double btcToSell = wallet.getWalletBtc() * config.sellPercentage; 
+			double btcToSell = wallet.getWalletBtc(); 
 			TradeAction sellAction = new TradeAction(TradeActionType.SELL, tick, btcToSell);
 			double usdReceived = tradeFloor.sell(wallet, sellAction);
 			
-			this.lastSellTimestamp = tick;
-			
+			this.lastHighestPositionPrice = -1;
+
 			notify(sellAction);
 		}
 	}
