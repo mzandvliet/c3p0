@@ -42,7 +42,9 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	private static String apiSecret = "NksKaAEE9ZbcMTu1nJ1YiOAbdJT0lqTh";
 	
 	SimpleDateFormat sdf  = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
+	
 	private long lastWalletUpdate;
+	private long lastAdjustOrdersUpdate;
 	
 	public BitstampTradeFloor(ISignal last, ISignal bid, ISignal ask, boolean doLimitOrder) {
 		super(last, bid, ask, doLimitOrder);
@@ -234,6 +236,8 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	public void updateWallet(IWallet wallet) {
 		
 		if(lastWalletUpdate + 1 * Time.MINUTES < new Date().getTime()) {
+			lastWalletUpdate = new Date().getTime();
+			
 			try {
 				JSONObject result = new JSONObject(doAuthenticatedCall("https://www.bitstamp.net/api/balance/"));
 				wallet.update(result.getDouble("usd_available"), result.getDouble("btc_available"));
@@ -244,8 +248,6 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 			} catch (Exception e) {
 				LOGGER.error("Could not update wallet", e);
 			}
-			
-			lastWalletUpdate = new Date().getTime();
 		}
 	}
 	
@@ -265,42 +267,46 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	 */
 	@Override
 	public void adjustOrders() {
-		try {
-			List<OpenOrder> openOrders = getOpenOrders();
+		if(lastAdjustOrdersUpdate + 1 * Time.MINUTES < new Date().getTime()) {
+			lastAdjustOrdersUpdate = new Date().getTime();
 			
-			// Stop in case of no open orders
-			if(openOrders.size() == 0)
-				return;
-			
-			// Decide which would be the ideal price to buy or sell for
-			double buyPrice, sellPrice;
-			if(doLimitOrder) {
-				buyPrice = this.getCurrentBid();
-				sellPrice = this.getCurrentAsk();
-			} else {
-				buyPrice = this.getCurrentAsk();
-				sellPrice = this.getCurrentBid();
-			}
-			
-			// Loop over all the open orders
-			for(OpenOrder openOrder : openOrders) {
-				// Adjust sell order if needed
-				if(openOrder.getType() == OpenOrder.SELL && openOrder.getPrice() != buyPrice) {
-					LOGGER.info("Adjusting "+ openOrder + " to match price " + buyPrice);
-					cancelOrder(openOrder);
-					placeSellOrder(buyPrice, openOrder.getAmount());
+			try {
+				List<OpenOrder> openOrders = getOpenOrders();
+				
+				// Stop in case of no open orders
+				if(openOrders.size() == 0)
+					return;
+				
+				// Decide which would be the ideal price to buy or sell for
+				double buyPrice, sellPrice;
+				if(doLimitOrder) {
+					buyPrice = this.getCurrentBid();
+					sellPrice = this.getCurrentAsk();
+				} else {
+					buyPrice = this.getCurrentAsk();
+					sellPrice = this.getCurrentBid();
 				}
 				
-				// Adjust buy order if needed
-				if(openOrder.getType() == OpenOrder.BUY && openOrder.getPrice() != sellPrice) {
-					LOGGER.info("Adjusting "+ openOrder + " to match price " + sellPrice);
-					cancelOrder(openOrder);
-					placeBuyOrder(sellPrice, openOrder.getAmount());
+				// Loop over all the open orders
+				for(OpenOrder openOrder : openOrders) {
+					// Adjust sell order if needed
+					if(openOrder.getType() == OpenOrder.SELL && openOrder.getPrice() != buyPrice) {
+						LOGGER.info("Adjusting "+ openOrder + " to match price " + buyPrice);
+						cancelOrder(openOrder);
+						placeSellOrder(buyPrice, openOrder.getAmount());
+					}
+					
+					// Adjust buy order if needed
+					if(openOrder.getType() == OpenOrder.BUY && openOrder.getPrice() != sellPrice) {
+						LOGGER.info("Adjusting "+ openOrder + " to match price " + sellPrice);
+						cancelOrder(openOrder);
+						placeBuyOrder(sellPrice, openOrder.getAmount());
+					}
 				}
+				
+			} catch(Exception e) {
+				LOGGER.error("Could not adjust orders", e);
 			}
-			
-		} catch(Exception e) {
-			LOGGER.error("Could not adjust orders", e);
 		}
 	}
 	

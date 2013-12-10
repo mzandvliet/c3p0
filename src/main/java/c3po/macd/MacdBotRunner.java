@@ -12,11 +12,8 @@ import org.slf4j.LoggerFactory;
 
 import c3po.bitstamp.BitstampSimulationTradeFloor;
 import c3po.bitstamp.BitstampSimulationTickerDbSource;
-import c3po.DbConnection;
 import c3po.IClock;
-import c3po.ISignal;
 import c3po.ITradeFloor;
-import c3po.ITradeListener;
 import c3po.IWallet;
 import c3po.Time;
 
@@ -28,8 +25,8 @@ public class MacdBotRunner {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdBotRunner.class);
 	
 	// Earliest time 1384079023000l
-	private final static long simulationStartTime = new Date().getTime() - Time.DAYS * 28;
-	private final static long simulationEndTime = new Date().getTime() - Time.DAYS * 14;
+	private final static long simulationStartTime = 1386676800000l - (Time.DAYS * 8);
+	private final static long simulationEndTime = 1386676800000l - (Time.DAYS * 2);
 	
 	private final static long interpolationTime = 2 * Time.MINUTES;
 	private final static long timestep = 1 * Time.MINUTES;
@@ -37,7 +34,7 @@ public class MacdBotRunner {
 	private final static double walletStartUsd = 100.0d;
 	private final static double walletStartBtcInUsd = 0.0d;
 	
-	private final static long graphInterval = 2 * Time.MINUTES;
+	private final static long graphInterval = 10 * Time.MINUTES;
 	
 	//================================================================================
     // Main
@@ -68,19 +65,19 @@ public class MacdBotRunner {
 		
 		// Create bot config
 		MacdAnalysisConfig buyAnalysisConfig = new MacdAnalysisConfig(
-				49 * Time.MINUTES,
-				281 * Time.MINUTES,
-				272 * Time.MINUTES);
+				47 * Time.MINUTES,
+				410 * Time.MINUTES,
+				137 * Time.MINUTES);
 		
 		MacdAnalysisConfig sellAnalysisConfig = new MacdAnalysisConfig(
-				49 * Time.MINUTES,
-				281 * Time.MINUTES,
-				272 * Time.MINUTES);
+				21 * Time.MINUTES,
+				219 * Time.MINUTES,
+				356 * Time.MINUTES);
 		
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
-				16.4,
-				-2.2,
-				0.9);
+				5.3,
+				-12.6,
+				0.85);
 		
 		MacdBotConfig config = new MacdBotConfig(timestep, buyAnalysisConfig, sellAnalysisConfig, traderConfig);
 		

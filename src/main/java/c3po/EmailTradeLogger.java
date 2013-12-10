@@ -94,11 +94,8 @@ public class EmailTradeLogger implements ITradeListener {
             
             LOGGER.debug("Sent email to " + to.length + " recipients");
         }
-        catch (AddressException ae) {
-            ae.printStackTrace();
-        }
-        catch (MessagingException me) {
-            me.printStackTrace();
+        catch (Exception e) {
+            LOGGER.error("Could not send mail", e);
         }
     }
 }

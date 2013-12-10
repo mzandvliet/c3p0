@@ -45,19 +45,19 @@ public class RealtimeBotRunner {
 			 * Bot Config
 			 */
 			MacdAnalysisConfig buyAnalysisConfig = new MacdAnalysisConfig(
-					Integer.valueOf(prop.getProperty("macdFast")) * Time.MINUTES,
-					Integer.valueOf(prop.getProperty("macdSlow")) * Time.MINUTES,
-					Integer.valueOf(prop.getProperty("macdSignal")) * Time.MINUTES);
+					Integer.valueOf(prop.getProperty("macdBuyFast")) * Time.MINUTES,
+					Integer.valueOf(prop.getProperty("macdBuySlow")) * Time.MINUTES,
+					Integer.valueOf(prop.getProperty("macdBuySignal")) * Time.MINUTES);
 
 			MacdAnalysisConfig sellAnalysisConfig = new MacdAnalysisConfig(
-					Integer.valueOf(prop.getProperty("macdFast")) * Time.MINUTES,
-					Integer.valueOf(prop.getProperty("macdSlow")) * Time.MINUTES,
-					Integer.valueOf(prop.getProperty("macdSignal")) * Time.MINUTES);
+					Integer.valueOf(prop.getProperty("macdSellFast")) * Time.MINUTES,
+					Integer.valueOf(prop.getProperty("macdSellSlow")) * Time.MINUTES,
+					Integer.valueOf(prop.getProperty("macdSellSignal")) * Time.MINUTES);
 			
 			MacdTraderConfig traderConfig = new MacdTraderConfig(
 					Double.valueOf(prop.getProperty("macdMinBuyThreshold")),
 					Double.valueOf(prop.getProperty("macdMinSellThreshold")),
-					Double.valueOf(prop.getProperty("macdLossCuttingPercentage"))
+					0
 			);
 			
 			MacdBotConfig config = new MacdBotConfig(timestep, buyAnalysisConfig, sellAnalysisConfig, traderConfig);
@@ -74,7 +74,7 @@ public class RealtimeBotRunner {
 					tickerNode.getOutputLast(),
 					tickerNode.getOutputBid(),
 					tickerNode.getOutputAsk(),
-					true,
+					(Integer.valueOf(prop.getProperty("tradefloorLimitOrder")).intValue() == 1),
 					clientId, apiKey, apiSecret
 			);
 			
@@ -86,6 +86,7 @@ public class RealtimeBotRunner {
 			
 			// Create bot
 			MacdBot bot = new MacdBot(botId, config, tickerNode.getOutputLast(), wallet, tradeFloor);
+			LOGGER.info("Starting bot: " + bot);
 			
 			// Log the trades by DB and email
 			DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, dbConnection);
