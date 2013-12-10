@@ -47,7 +47,7 @@ public class BitstampTradefloorTest {
 	
 	@Test
 	public void testAuthenticatedCall() throws Exception {
-		BitstampTradeFloor tf = new BitstampTradeFloor(null, null, null);
+		BitstampTradeFloor tf = new BitstampTradeFloor(null, null, null, true);
 		JSONObject result = new JSONObject(tf.doAuthenticatedCall("https://www.bitstamp.net/api/balance/"));
 		System.out.println(result);
 		
@@ -57,7 +57,7 @@ public class BitstampTradefloorTest {
 	
 	@Test
 	public void testOpenOrders() throws Exception {
-		BitstampTradeFloor tf = new BitstampTradeFloor(null, null, null);
+		BitstampTradeFloor tf = new BitstampTradeFloor(null, null, null, true);
 		List<OpenOrder> openOrders = tf.getOpenOrders();
 		System.out.println(openOrders);
 	}
@@ -86,8 +86,14 @@ public class BitstampTradefloorTest {
 	}
 	
 	@Test
+	public void realTestAdjust() throws Exception {
+		BitstampTradeFloor tf = new BitstampTradeFloor(null, null, null, true);
+		tf.adjustOrders();
+	}
+	
+	@Test @Ignore
 	public void realTest() throws Exception {
-		BitstampTradeFloor tf = new BitstampTradeFloor(null, null, null);
+		BitstampTradeFloor tf = new BitstampTradeFloor(null, null, null, true);
 		
 		// Fetch the current open orders
 		List<OpenOrder> openOrders = tf.getOpenOrders();
@@ -137,7 +143,7 @@ public class BitstampTradefloorTest {
 	private class BitstampTradeFloorMock extends BitstampTradeFloor {
 		JSONCallback callback;
 		public BitstampTradeFloorMock(JSONCallback callback) {
-			super(null, null, null);
+			super(null, null, null, true);
 			this.callback = callback;
 		}
 
