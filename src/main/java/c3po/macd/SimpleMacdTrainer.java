@@ -22,7 +22,7 @@ public class SimpleMacdTrainer {
 private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.class);
 	
 	// First timestamp in database: 1384079023000l
-    private final static long simulationStartTime =  new Date().getTime() - Time.DAYS * 7;
+    private final static long simulationStartTime =  new Date().getTime() - Time.DAYS * 21;
 	private final static long simulationEndTime = new Date().getTime();
 	
 	// Timing
@@ -45,7 +45,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 	private final static double maxBuyDiffThreshold = 20.0d;
 	private final static double minSellDiffThreshold = -20.0d;
 	private final static double maxSellDiffThreshold = 20.0d;
-	private final static double minBuyPercentage = 0.3d;
+	private final static double minBuyPercentage = 1d;
 	private final static double maxBuyPercentage = 1d;
 	private final static double minSellPercentage = 1d;
 	private final static double maxSellPercentage = 1d;
@@ -149,14 +149,15 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 		
 		GraphingNode grapher = new GraphingNode(graphInterval, "MacdBot", 
 				simContext.getSignal(),
-				bot.getAnalysisNode().getOutput(0),
-				bot.getAnalysisNode().getOutput(1)
-				);
+				bot.getBuyAnalysisNode().getOutputFast(),
+				bot.getBuyAnalysisNode().getOutputSlow()
+		);
 		bot.addTradeListener(grapher);
 		
 		GraphingNode diffGrapher = new GraphingNode(graphInterval, "Macd", 
-				bot.getAnalysisNode().getOutputDifference()
-				);
+				bot.getBuyAnalysisNode().getOutputDifference(),
+				bot.getSellAnalysisNode().getOutputDifference()
+		);
 		bot.addTradeListener(diffGrapher);
 		
 		// Run

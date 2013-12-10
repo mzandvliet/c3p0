@@ -14,15 +14,17 @@ public class MacdBotMutator implements IBotConfigMutator<MacdBotConfig> {
 
 	@Override
 	public MacdBotConfig createRandomConfig() {
+
+		final MacdAnalysisConfig buyAnalysisConfig = new MacdAnalysisConfig(
+				getRandomLong(mutatorConfig.minAnalysisPeriod, mutatorConfig.maxAnalysisPeriod),
+				getRandomLong(mutatorConfig.minAnalysisPeriod, mutatorConfig.maxAnalysisPeriod),
+				getRandomLong(mutatorConfig.minAnalysisPeriod, mutatorConfig.maxAnalysisPeriod)
+		);
 		
-		final long fast = getRandomLong(mutatorConfig.minAnalysisPeriod, mutatorConfig.maxAnalysisPeriod);
-		final long slow = getRandomLong(mutatorConfig.minAnalysisPeriod, mutatorConfig.maxAnalysisPeriod);
-		final long signal = getRandomLong(mutatorConfig.minAnalysisPeriod, mutatorConfig.maxAnalysisPeriod);
-		
-		final MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
-			fast,
-			slow,
-			signal
+		final MacdAnalysisConfig sellAnalysisConfig = new MacdAnalysisConfig(
+				getRandomLong(mutatorConfig.minAnalysisPeriod, mutatorConfig.maxAnalysisPeriod),
+				getRandomLong(mutatorConfig.minAnalysisPeriod, mutatorConfig.maxAnalysisPeriod),
+				getRandomLong(mutatorConfig.minAnalysisPeriod, mutatorConfig.maxAnalysisPeriod)
 		);
 		
 		final MacdTraderConfig traderConfig = new MacdTraderConfig(
@@ -35,7 +37,7 @@ public class MacdBotMutator implements IBotConfigMutator<MacdBotConfig> {
 				getRandomDouble(mutatorConfig.minLossCuttingPercentage, mutatorConfig.maxLossCuttingPercentage)
 		);
 		
-		final MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
+		final MacdBotConfig config = new MacdBotConfig(timestep, buyAnalysisConfig, sellAnalysisConfig, traderConfig);
 		
 		return config;
 	}
@@ -45,10 +47,16 @@ public class MacdBotMutator implements IBotConfigMutator<MacdBotConfig> {
 		
 		// Each property is randomly selected from either parent
 		
-		final MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
-				which() ? parentA.analysisConfig.fastPeriod : parentB.analysisConfig.fastPeriod,
-				which() ? parentA.analysisConfig.slowPeriod : parentB.analysisConfig.slowPeriod,
-				which() ? parentA.analysisConfig.signalPeriod : parentB.analysisConfig.signalPeriod
+		final MacdAnalysisConfig buyAnalysisConfig = new MacdAnalysisConfig(
+				which() ? parentA.buyAnalysisConfig.fastPeriod : parentB.buyAnalysisConfig.fastPeriod,
+				which() ? parentA.buyAnalysisConfig.slowPeriod : parentB.buyAnalysisConfig.slowPeriod,
+				which() ? parentA.buyAnalysisConfig.signalPeriod : parentB.buyAnalysisConfig.signalPeriod
+		);
+		
+		final MacdAnalysisConfig sellAnalysisConfig = new MacdAnalysisConfig(
+				which() ? parentA.sellAnalysisConfig.fastPeriod : parentB.sellAnalysisConfig.fastPeriod,
+				which() ? parentA.sellAnalysisConfig.slowPeriod : parentB.sellAnalysisConfig.slowPeriod,
+				which() ? parentA.sellAnalysisConfig.signalPeriod : parentB.sellAnalysisConfig.signalPeriod
 		);
 		
 		final MacdTraderConfig traderConfig = new MacdTraderConfig(
@@ -64,7 +72,7 @@ public class MacdBotMutator implements IBotConfigMutator<MacdBotConfig> {
 		
 		final MacdBotConfig childConfig = new MacdBotConfig(
 				which() ? parentA.timestep : parentB.timestep,
-				analysisConfig,
+				buyAnalysisConfig, sellAnalysisConfig,
 				traderConfig);
 		
 		return childConfig;
@@ -77,10 +85,16 @@ public class MacdBotMutator implements IBotConfigMutator<MacdBotConfig> {
 		
 		// Each property has a separately evaluated chance of changing to the above generated value
 		
-		final MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
-				shouldMutate(mutatorConfig.mutationChance) ? randomConfig.analysisConfig.fastPeriod : config.analysisConfig.fastPeriod,
-				shouldMutate(mutatorConfig.mutationChance) ? randomConfig.analysisConfig.slowPeriod : config.analysisConfig.slowPeriod,
-				shouldMutate(mutatorConfig.mutationChance) ? randomConfig.analysisConfig.signalPeriod : config.analysisConfig.signalPeriod
+		final MacdAnalysisConfig buyAnalysisConfig = new MacdAnalysisConfig(
+				shouldMutate(mutatorConfig.mutationChance) ? randomConfig.buyAnalysisConfig.fastPeriod : config.buyAnalysisConfig.fastPeriod,
+				shouldMutate(mutatorConfig.mutationChance) ? randomConfig.buyAnalysisConfig.slowPeriod : config.buyAnalysisConfig.slowPeriod,
+				shouldMutate(mutatorConfig.mutationChance) ? randomConfig.buyAnalysisConfig.signalPeriod : config.buyAnalysisConfig.signalPeriod
+		);
+		
+		final MacdAnalysisConfig sellAnalysisConfig = new MacdAnalysisConfig(
+				shouldMutate(mutatorConfig.mutationChance) ? randomConfig.sellAnalysisConfig.fastPeriod : config.sellAnalysisConfig.fastPeriod,
+				shouldMutate(mutatorConfig.mutationChance) ? randomConfig.sellAnalysisConfig.slowPeriod : config.sellAnalysisConfig.slowPeriod,
+				shouldMutate(mutatorConfig.mutationChance) ? randomConfig.sellAnalysisConfig.signalPeriod : config.sellAnalysisConfig.signalPeriod
 		);
 			
 		final MacdTraderConfig traderConfig = new MacdTraderConfig(
@@ -93,7 +107,7 @@ public class MacdBotMutator implements IBotConfigMutator<MacdBotConfig> {
 				shouldMutate(mutatorConfig.mutationChance) ? randomConfig.traderConfig.lossCuttingPercentage : config.traderConfig.lossCuttingPercentage
 		);
 		
-		final MacdBotConfig mutatedConfig = new MacdBotConfig(config.timestep, analysisConfig, traderConfig);
+		final MacdBotConfig mutatedConfig = new MacdBotConfig(config.timestep, buyAnalysisConfig, sellAnalysisConfig, traderConfig);
 		
 		return mutatedConfig;
 	}
@@ -104,15 +118,23 @@ public class MacdBotMutator implements IBotConfigMutator<MacdBotConfig> {
 		 *  Ensures some basic common sense. The genetic algorithm loves to get stuck on an otherwise insane config that just happens to fit the data.
 		 */
 		
-		final MacdAnalysisConfig validAnalysisConfig = new MacdAnalysisConfig(
-				config.analysisConfig.fastPeriod  > config.analysisConfig.slowPeriod ?
-						getRandomLong(1 * Time.MINUTES, config.analysisConfig.slowPeriod) :
-						config.analysisConfig.fastPeriod,
-				config.analysisConfig.slowPeriod,
-				config.analysisConfig.signalPeriod
+		final MacdAnalysisConfig validBuyAnalysisConfig = new MacdAnalysisConfig(
+				config.buyAnalysisConfig.fastPeriod  > config.buyAnalysisConfig.slowPeriod ?
+						getRandomLong(1 * Time.MINUTES, config.buyAnalysisConfig.slowPeriod) :
+						config.buyAnalysisConfig.fastPeriod,
+				config.buyAnalysisConfig.slowPeriod,
+				config.buyAnalysisConfig.signalPeriod
+		);
+		
+		final MacdAnalysisConfig validSellAnalysisConfig = new MacdAnalysisConfig(
+				config.sellAnalysisConfig.fastPeriod  > config.sellAnalysisConfig.slowPeriod ?
+						getRandomLong(1 * Time.MINUTES, config.sellAnalysisConfig.slowPeriod) :
+						config.sellAnalysisConfig.fastPeriod,
+				config.sellAnalysisConfig.slowPeriod,
+				config.sellAnalysisConfig.signalPeriod
 		);
 			
-		final MacdBotConfig validConfig = new MacdBotConfig(config.timestep, validAnalysisConfig, config.traderConfig);
+		final MacdBotConfig validConfig = new MacdBotConfig(config.timestep, validBuyAnalysisConfig, validSellAnalysisConfig, config.traderConfig);
 		
 		return validConfig;
 	}

@@ -19,7 +19,8 @@ import c3po.TradeAction.TradeActionType;
 
 public class MacdTraderNode extends AbstractTickable implements ITickable, ITradeActionSource {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdTraderNode.class);
-	private final ISignal macdDiff;
+	private final ISignal buyMacdDiff;
+	private final ISignal sellMacdDiff;
 	private final IWallet wallet;
 	private final ITradeFloor tradeFloor;
 	private final MacdTraderConfig config;
@@ -35,9 +36,10 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	private double lastBuyPrice = 0;
 	private double lossCuttingPercentage = 0;
 
-	public MacdTraderNode(long timestep, ISignal macdDiff, IWallet wallet, ITradeFloor tradeFloor, MacdTraderConfig config, long startDelay) {
+	public MacdTraderNode(long timestep, ISignal buyMacdDiff, ISignal sellMacdDiff, IWallet wallet, ITradeFloor tradeFloor, MacdTraderConfig config, long startDelay) {
 		super(timestep);
-		this.macdDiff = macdDiff;
+		this.buyMacdDiff = buyMacdDiff;
+		this.sellMacdDiff = sellMacdDiff;
 		this.wallet = wallet;
 		this.tradeFloor = tradeFloor;
 		this.config = config;
@@ -60,7 +62,8 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	 *  Do trades purely based on zero-crossings in difference signal
 	 */
 	public void decide(long tick) {
-		Sample currentDiff = macdDiff.getSample(tick);
+		Sample buyCurrentDiff = buyMacdDiff.getSample(tick);
+		Sample sellCurrentDiff = sellMacdDiff.getSample(tick);
 		
 		if (numSkippedTicks > startDelay) {
 			boolean hasEnoughUsd = (wallet.getWalletUsd() / config.buyPercentage > minDollars);
@@ -72,11 +75,11 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 				LOGGER.debug(String.format("Decide: hasEnoughUsd: %b, isAfterBuyBackoff: %b, hasEnoughBtc: %b, isAfterSellBackoff: %b", hasEnoughUsd, isAfterBuyBackoff, hasEnoughBtc, isAfterSellBackoff));
 			
 			if(hasEnoughUsd && isAfterBuyBackoff) {
-				tryToOpenPosition(tick, currentDiff);
+				tryToOpenPosition(tick, buyCurrentDiff);
 			}
 			
 			if(hasEnoughBtc && isAfterSellBackoff) {
-				tryToClosePosition(tick, currentDiff);
+				tryToClosePosition(tick, sellCurrentDiff);
 			}	
 			
 			

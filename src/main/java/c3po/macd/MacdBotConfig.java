@@ -4,26 +4,35 @@ import c3po.IBotConfig;
 
 public class MacdBotConfig implements IBotConfig {
 	public final long timestep; // Does not warrant its own class yet
-	public final MacdAnalysisConfig analysisConfig;
+	
+	public final MacdAnalysisConfig buyAnalysisConfig;
+	public final MacdAnalysisConfig sellAnalysisConfig;
 	public final MacdTraderConfig traderConfig;
 	
-	public MacdBotConfig(long timeStep, MacdAnalysisConfig analysisConfig, MacdTraderConfig traderConfig) {
+	public MacdBotConfig(long timeStep, MacdAnalysisConfig buyAnalysisConfig, MacdAnalysisConfig sellAnalysisConfig, MacdTraderConfig traderConfig) {
 		this.timestep = timeStep;
-		this.analysisConfig = analysisConfig;
+		this.buyAnalysisConfig = buyAnalysisConfig;
+		this.sellAnalysisConfig = sellAnalysisConfig;
 		this.traderConfig = traderConfig;
 	}
 
 	@Override
 	public String toString() {
-		return analysisConfig.toString() + ", " + traderConfig.toString();
+		return "Buy: " + buyAnalysisConfig.toString() + ", " + "Sell: " + sellAnalysisConfig.toString() + ", " + traderConfig.toString();
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result
-				+ ((analysisConfig == null) ? 0 : analysisConfig.hashCode());
+		result = prime
+				* result
+				+ ((buyAnalysisConfig == null) ? 0 : buyAnalysisConfig
+						.hashCode());
+		result = prime
+				* result
+				+ ((sellAnalysisConfig == null) ? 0 : sellAnalysisConfig
+						.hashCode());
 		result = prime * result + (int) (timestep ^ (timestep >>> 32));
 		result = prime * result
 				+ ((traderConfig == null) ? 0 : traderConfig.hashCode());
@@ -39,10 +48,15 @@ public class MacdBotConfig implements IBotConfig {
 		if (getClass() != obj.getClass())
 			return false;
 		MacdBotConfig other = (MacdBotConfig) obj;
-		if (analysisConfig == null) {
-			if (other.analysisConfig != null)
+		if (buyAnalysisConfig == null) {
+			if (other.buyAnalysisConfig != null)
 				return false;
-		} else if (!analysisConfig.equals(other.analysisConfig))
+		} else if (!buyAnalysisConfig.equals(other.buyAnalysisConfig))
+			return false;
+		if (sellAnalysisConfig == null) {
+			if (other.sellAnalysisConfig != null)
+				return false;
+		} else if (!sellAnalysisConfig.equals(other.sellAnalysisConfig))
 			return false;
 		if (timestep != other.timestep)
 			return false;

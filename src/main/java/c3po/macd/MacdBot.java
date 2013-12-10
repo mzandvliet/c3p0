@@ -38,7 +38,8 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 	
     // Debug references
 	
-	private final MacdAnalysisNode analysisNode;
+	private final MacdAnalysisNode buyAnalysisNode;
+	private final MacdAnalysisNode sellAnalysisNode;
 	private final MacdTraderNode traderNode;
 	
 
@@ -55,9 +56,11 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 		
 		// Define the signal tree		
 		
-		analysisNode = new MacdAnalysisNode(config.timestep, ticker, config.analysisConfig);
-		long startDelayInTicks = config.analysisConfig.max() / config.timestep;
-		traderNode = new MacdTraderNode(config.timestep, analysisNode.getOutputDifference(), wallet, tradeFloor, config.traderConfig, startDelayInTicks);
+		buyAnalysisNode = new MacdAnalysisNode(config.timestep, ticker, config.buyAnalysisConfig);
+		sellAnalysisNode = new MacdAnalysisNode(config.timestep, ticker, config.sellAnalysisConfig);
+		
+		long startDelayInTicks = Math.max(config.buyAnalysisConfig.max() / config.timestep, config.sellAnalysisConfig.max() / config.timestep);
+		traderNode = new MacdTraderNode(config.timestep, buyAnalysisNode.getOutputDifference(), sellAnalysisNode.getOutputDifference(),  wallet, tradeFloor, config.traderConfig, startDelayInTicks);
 	}
 
 	@Override
@@ -87,8 +90,12 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 		return id;
 	}
 
-	public MacdAnalysisNode getAnalysisNode() {
-		return analysisNode;
+	public MacdAnalysisNode getBuyAnalysisNode() {
+		return buyAnalysisNode;
+	}
+	
+	public MacdAnalysisNode getSellAnalysisNode() {
+		return sellAnalysisNode;
 	}
 	
 	public MacdTraderNode getTraderNode() {
@@ -100,7 +107,7 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 	}
 
 	public String toString() {
-		return String.format("%s, %s", analysisNode.getConfig(), traderNode.getConfig());
+		return String.format("Bot ID: %s, Config: [%s]", id, config);
 	}
 
 	@Override
