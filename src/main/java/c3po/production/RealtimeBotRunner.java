@@ -44,7 +44,12 @@ public class RealtimeBotRunner {
 			/**
 			 * Bot Config
 			 */
-			MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
+			MacdAnalysisConfig buyAnalysisConfig = new MacdAnalysisConfig(
+					Integer.valueOf(prop.getProperty("macdFast")) * Time.MINUTES,
+					Integer.valueOf(prop.getProperty("macdSlow")) * Time.MINUTES,
+					Integer.valueOf(prop.getProperty("macdSignal")) * Time.MINUTES);
+
+			MacdAnalysisConfig sellAnalysisConfig = new MacdAnalysisConfig(
 					Integer.valueOf(prop.getProperty("macdFast")) * Time.MINUTES,
 					Integer.valueOf(prop.getProperty("macdSlow")) * Time.MINUTES,
 					Integer.valueOf(prop.getProperty("macdSignal")) * Time.MINUTES);
@@ -52,14 +57,10 @@ public class RealtimeBotRunner {
 			MacdTraderConfig traderConfig = new MacdTraderConfig(
 					Double.valueOf(prop.getProperty("macdMinBuyThreshold")),
 					Double.valueOf(prop.getProperty("macdMinSellThreshold")),
-					Double.valueOf(prop.getProperty("macdBuyPercentage")),
-					Double.valueOf(prop.getProperty("macdSellPercentage")),
-					Long.valueOf(prop.getProperty("macdBuyBackoffTimer")),
-					Long.valueOf(prop.getProperty("macdSellBackoffTimer")),
 					Double.valueOf(prop.getProperty("macdLossCuttingPercentage"))
 			);
 			
-			MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
+			MacdBotConfig config = new MacdBotConfig(timestep, buyAnalysisConfig, sellAnalysisConfig, traderConfig);
 			
 			// Set up global signal tree
 			final BitstampTickerSource tickerNode = new BitstampTickerDbSource(timestep, interpolationTime, dbConnection);
@@ -94,7 +95,7 @@ public class RealtimeBotRunner {
 			bot.addTradeListener(mailLogger);
 			
 			// Create a clock
-			IClock botClock = new RealtimeClock(timestep, Math.max(analysisConfig.slowPeriod, analysisConfig.signalPeriod), interpolationTime);
+			IClock botClock = new RealtimeClock(timestep, Math.max(buyAnalysisConfig.slowPeriod, buyAnalysisConfig.signalPeriod), interpolationTime);
 			botClock.addListener(bot);
 			
 			// Run the program

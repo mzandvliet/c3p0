@@ -45,24 +45,15 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 	private final static double maxBuyDiffThreshold = 20.0d;
 	private final static double minSellDiffThreshold = -20.0d;
 	private final static double maxSellDiffThreshold = 20.0d;
-	private final static double minBuyPercentage = 1d;
-	private final static double maxBuyPercentage = 1d;
-	private final static double minSellPercentage = 1d;
-	private final static double maxSellPercentage = 1d;
-	
-	private final static long minBuyBackoffTimer = 1 * Time.MINUTES;
-	private final static long maxBuyBackoffTimer = 12 * Time.HOURS;
-	private final static long minSellBackoffTimer = 1 * Time.MINUTES;
-	private final static long maxSellBackoffTimer = 12 * Time.HOURS;
-	
+
 	private final static double minLossCuttingPercentage = 0.0d;
-	private final static double maxLossCuttingPercentage = 0.92d;
+	private final static double maxLossCuttingPercentage = 0.0d; // We do *NOT* train loss cutting right now, because it needs to be trained in a separate pass
 	
 	// Market context
-	private final static double walletStartUsd = 500.0d;
-	private final static double walletStartBtcInUsd = 500.0d;
+	private final static double walletStartUsd = 100.0d;
+	private final static double walletStartBtcInUsd = 0.0d;
 	
-	private final static long graphInterval = 10 * Time.MINUTES;
+	private final static long graphInterval = 20 * Time.MINUTES;
 
 	public static void main(String[] args) {
 		
@@ -110,10 +101,6 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 				minAnalysisPeriod, maxAnalysisPeriod,
 				minBuyDiffThreshold,  maxBuyDiffThreshold,
 				minSellDiffThreshold, maxSellDiffThreshold,
-				minBuyPercentage, maxBuyPercentage,
-				minSellPercentage, maxSellPercentage,
-				minBuyBackoffTimer, maxBuyBackoffTimer,
-				minSellBackoffTimer, maxSellBackoffTimer,
 				minLossCuttingPercentage, maxLossCuttingPercentage);
 		
 		MacdBotMutator mutator = new MacdBotMutator(mutatorConfig);
@@ -141,6 +128,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 		LOGGER.debug("Running winner: " + winningConfig.toString());
 		
 		MacdBot bot = new MacdBot(new Random().nextInt(), winningConfig, simContext.getSignal(), simContext.getWalletInstance(), simContext.getTradeFloor());
+		bot.getTraderNode().setVerbose(true);
 		
 		DebugTradeLogger tradeLogger = new DebugTradeLogger();
 		bot.addTradeListener(tradeLogger);
@@ -184,5 +172,6 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 		
 		tradeLogger.writeLog();
 		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Wallet: " + simContext.getTradeFloor().getWalletValueInUsd(bot.getWallet()));
+		LOGGER.debug("Ran winner: " + winningConfig.toString());
 	}
 }

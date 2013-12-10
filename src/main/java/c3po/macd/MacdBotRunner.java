@@ -28,16 +28,16 @@ public class MacdBotRunner {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdBotRunner.class);
 	
 	// Earliest time 1384079023000l
-	private final static long simulationStartTime = new Date().getTime() - Time.DAYS * 21;
+	private final static long simulationStartTime = new Date().getTime() - Time.DAYS * 28;
 	private final static long simulationEndTime = new Date().getTime() - Time.DAYS * 14;
 	
 	private final static long interpolationTime = 2 * Time.MINUTES;
 	private final static long timestep = 1 * Time.MINUTES;
 	
-	private final static double walletStartUsd = 1000.0d;
+	private final static double walletStartUsd = 100.0d;
 	private final static double walletStartBtcInUsd = 0.0d;
 	
-	private final static long graphInterval = 20 * Time.MINUTES;
+	private final static long graphInterval = 2 * Time.MINUTES;
 	
 	//================================================================================
     // Main
@@ -67,19 +67,25 @@ public class MacdBotRunner {
 		final IWallet wallet = new Wallet(walletStartUsd, walletStartBtc);
 		
 		// Create bot config
-		MacdAnalysisConfig analysisConfig = new MacdAnalysisConfig(
-				37 * Time.MINUTES,
-				248 * Time.MINUTES,
-				308 * Time.MINUTES);
+		MacdAnalysisConfig buyAnalysisConfig = new MacdAnalysisConfig(
+				49 * Time.MINUTES,
+				281 * Time.MINUTES,
+				272 * Time.MINUTES);
+		
+		MacdAnalysisConfig sellAnalysisConfig = new MacdAnalysisConfig(
+				49 * Time.MINUTES,
+				281 * Time.MINUTES,
+				272 * Time.MINUTES);
 		
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
-				17.9489,
-				-4.6600,
-				1.0, 1.0, 1, 1, 0);
-		MacdBotConfig config = new MacdBotConfig(timestep, analysisConfig, traderConfig);
+				16.4,
+				-2.2,
+				0.9);
 		
-		DbConnection dbConnection = new DbConnection(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
-		dbConnection.open();
+		MacdBotConfig config = new MacdBotConfig(timestep, buyAnalysisConfig, sellAnalysisConfig, traderConfig);
+		
+//		DbConnection dbConnection = new DbConnection(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+//		dbConnection.open();
 		
 		// Create the aggregate ticker signal
 		AggregateNode bidAskMedianNode = new AggregateNode(timestep, tickerNode.getOutputBid(), tickerNode.getOutputAsk());
@@ -88,14 +94,15 @@ public class MacdBotRunner {
 		
 		int botId = Math.abs(new Random().nextInt());
 		MacdBot bot = new MacdBot(botId, config, bidAskMedianNode.getOutput(0), wallet, tradeFloor);
+		bot.getTraderNode().setVerbose(true);
 		
 		// Create loggers
 		
 		DebugTradeLogger tradeLogger = new DebugTradeLogger();
 		bot.addTradeListener(tradeLogger);
 		
-		DbTradeLogger dbLogger = new DbTradeLogger(bot, dbConnection);
-		dbLogger.startSession(simulationStartTime);
+//		DbTradeLogger dbLogger = new DbTradeLogger(bot, dbConnection);
+//		dbLogger.startSession(simulationStartTime);
 		
 //		EmailTradeLogger mailLogger = new EmailTradeLogger("martijn@ramjetanvil.com", "jopast@gmail.com");
 //		bot.addTradeListener(mailLogger);
@@ -109,8 +116,9 @@ public class MacdBotRunner {
 		bot.addTradeListener(grapher);
 		
 		GraphingNode diffGrapher = new GraphingNode(graphInterval, "Macd", 
-				bot.getAnalysisNode().getOutputDifference()
-				);
+				bot.getBuyAnalysisNode().getOutputDifference(),
+				bot.getSellAnalysisNode().getOutputDifference());
+		
 		bot.addTradeListener(diffGrapher);
 		
 		// Create a clock
@@ -138,6 +146,6 @@ public class MacdBotRunner {
 		tradeLogger.writeLog();
 		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Wallet: " + tradeFloor.getWalletValueInUsd(wallet));
 
-		dbConnection.close();
+//		dbConnection.close();
 	}
 }

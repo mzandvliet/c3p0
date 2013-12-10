@@ -10,14 +10,6 @@ public class MacdBotMutatorConfig implements IBotMutationConfig<MacdBotConfig>{
 	public final double maxBuyDiffThreshold;
 	public final double minSellDiffThreshold;
 	public final double maxSellDiffThreshold;
-	public final double minSellPercentage;
-	public final double maxSellPercentage;
-	public final double minBuyPercentage;
-	public final double maxBuyPercentage;
-	public final long minSellBackoffTimer;
-	public final long maxSellBackoffTimer;
-	public final long minBuyBackoffTimer;
-	public final long maxBuyBackoffTimer;
 	public final double minLossCuttingPercentage;
 	public final double maxLossCuttingPercentage;	
 	
@@ -25,10 +17,6 @@ public class MacdBotMutatorConfig implements IBotMutationConfig<MacdBotConfig>{
 			long minAnalysisPeriod, long maxAnalysisPeriod, 
 			double minBuyDiffThreshold, double maxBuyDiffThreshold, 
 			double minSellDiffThreshold, double maxSellDiffThreshold,  
-			double minBuyPercentage, double maxBuyPercentage,
-			double minSellPercentage, double maxSellPercentage,
-			long minBuyBackoffTimer, long maxBuyBackoffTimer, 
-			long minSellBackoffTimer, long maxSellBackoffTimer,
 			double minLossCuttingPercentage, double maxLossCuttingPercentage) {
 		this.mutationChance = mutationChance;
 		this.minAnalysisPeriod = minAnalysisPeriod;
@@ -37,14 +25,6 @@ public class MacdBotMutatorConfig implements IBotMutationConfig<MacdBotConfig>{
 		this.maxBuyDiffThreshold = maxBuyDiffThreshold;
 		this.minSellDiffThreshold = minSellDiffThreshold;
 		this.maxSellDiffThreshold = maxSellDiffThreshold;
-		this.minSellPercentage = minSellPercentage;
-		this.maxSellPercentage = maxSellPercentage;
-		this.minBuyPercentage = minBuyPercentage;
-		this.maxBuyPercentage = maxBuyPercentage;
-		this.minSellBackoffTimer = minSellBackoffTimer;
-		this.maxSellBackoffTimer = maxSellBackoffTimer;
-		this.minBuyBackoffTimer = minBuyBackoffTimer;
-		this.maxBuyBackoffTimer = maxBuyBackoffTimer;
 		this.minLossCuttingPercentage = minLossCuttingPercentage;
 		this.maxLossCuttingPercentage = maxLossCuttingPercentage;
 	}
@@ -58,11 +38,15 @@ public class MacdBotMutatorConfig implements IBotMutationConfig<MacdBotConfig>{
 		long temp;
 		temp = Double.doubleToLongBits(maxBuyDiffThreshold);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(maxLossCuttingPercentage);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
 		temp = Double.doubleToLongBits(maxSellDiffThreshold);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		result = prime * result
 				+ (int) (minAnalysisPeriod ^ (minAnalysisPeriod >>> 32));
 		temp = Double.doubleToLongBits(minBuyDiffThreshold);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(minLossCuttingPercentage);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		temp = Double.doubleToLongBits(minSellDiffThreshold);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
@@ -85,6 +69,9 @@ public class MacdBotMutatorConfig implements IBotMutationConfig<MacdBotConfig>{
 		if (Double.doubleToLongBits(maxBuyDiffThreshold) != Double
 				.doubleToLongBits(other.maxBuyDiffThreshold))
 			return false;
+		if (Double.doubleToLongBits(maxLossCuttingPercentage) != Double
+				.doubleToLongBits(other.maxLossCuttingPercentage))
+			return false;
 		if (Double.doubleToLongBits(maxSellDiffThreshold) != Double
 				.doubleToLongBits(other.maxSellDiffThreshold))
 			return false;
@@ -92,6 +79,9 @@ public class MacdBotMutatorConfig implements IBotMutationConfig<MacdBotConfig>{
 			return false;
 		if (Double.doubleToLongBits(minBuyDiffThreshold) != Double
 				.doubleToLongBits(other.minBuyDiffThreshold))
+			return false;
+		if (Double.doubleToLongBits(minLossCuttingPercentage) != Double
+				.doubleToLongBits(other.minLossCuttingPercentage))
 			return false;
 		if (Double.doubleToLongBits(minSellDiffThreshold) != Double
 				.doubleToLongBits(other.minSellDiffThreshold))
@@ -101,6 +91,4 @@ public class MacdBotMutatorConfig implements IBotMutationConfig<MacdBotConfig>{
 			return false;
 		return true;
 	}
-	
-	
 }
