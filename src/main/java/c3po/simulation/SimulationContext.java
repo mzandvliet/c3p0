@@ -7,14 +7,14 @@ public class SimulationContext {
 	private final ISignal signal;
 	private final ITradeFloor tradeFloor;
 	private final IWallet wallet;
-	private final IClock clock;
+	private final SimulationClock clock;
 	
 	public SimulationContext(
 			INonRealtimeSource source,
 			ISignal signal,
 			ITradeFloor tradeFloor,
 			IWallet wallet,
-			IClock clock) {
+			SimulationClock clock) {
 		super();
 		this.source = source;
 		this.signal = signal;
@@ -39,11 +39,15 @@ public class SimulationContext {
 		return wallet.copy();
 	}
 
-	public IClock getClock() {
+	public SimulationClock getClock() {
 		return clock;
 	}
 	
 	public void reset() {
 		source.reset();
+	}
+	
+	public void initializeForTimePeriod(long startTime, long endTime) {
+		source.initializeForTimePeriod(startTime, endTime);
 	}
 }

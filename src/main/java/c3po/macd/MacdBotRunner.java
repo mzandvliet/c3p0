@@ -49,10 +49,9 @@ public class MacdBotRunner {
 		final BitstampSimulationTickerDbSource tickerNode = new BitstampSimulationTickerDbSource(
 				timestep,
 				interpolationTime,
-				dbConnection,
-				simulationStartTime,
-				simulationEndTime
+				dbConnection
 				);
+		tickerNode.initializeForTimePeriod(simulationStartTime, simulationEndTime);
 		tickerNode.open();
 		
 		final ITradeFloor tradeFloor =  new BitstampSimulationTradeFloor(

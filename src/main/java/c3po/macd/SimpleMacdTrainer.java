@@ -61,14 +61,12 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 		
 		DbConnection dbConnection = new DbConnection(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
 		
-		IClock botClock = new SimulationClock(timestep, simulationStartTime, simulationEndTime, interpolationTime);
+		SimulationClock botClock = new SimulationClock(timestep, simulationStartTime, simulationEndTime, interpolationTime);
 		
 		final BitstampSimulationTickerDbSource tickerNode = new BitstampSimulationTickerDbSource(
 				timestep,
 				interpolationTime,
-				dbConnection,
-				simulationStartTime,
-				simulationEndTime
+				dbConnection
 				);
 		tickerNode.open();
 		
@@ -122,9 +120,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 		return winningConfig;
 	}
 	
-	private static void runWinner(final MacdBotConfig winningConfig, SimulationContext simContext) {
-		simContext.reset();
-		
+	private static void runWinner(final MacdBotConfig winningConfig, SimulationContext simContext) {		
 		LOGGER.debug("Running winner: " + winningConfig.toString());
 		
 		MacdBot bot = new MacdBot(new Random().nextInt(), winningConfig, simContext.getSignal(), simContext.getWalletInstance(), simContext.getTradeFloor());
@@ -149,6 +145,8 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 		bot.addTradeListener(diffGrapher);
 		
 		// Run
+		
+		simContext.initializeForTimePeriod(simulationStartTime, simulationEndTime);
 		
 		IClock clock = simContext.getClock();
 		

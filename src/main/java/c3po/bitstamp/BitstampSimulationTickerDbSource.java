@@ -13,20 +13,17 @@ public class BitstampSimulationTickerDbSource extends BitstampTickerSource imple
 	private static final Logger LOGGER = LoggerFactory.getLogger(BitstampSimulationTickerDbSource.class);
 	private static final int MAXRETRIES = 3;
 	
-	private final long startTime;
-	private final long endTime;
+	private long startTime;
+	private long endTime;
 	private DbConnection connection;
 	
 	private ArrayList<ServerSampleEntry> history;
 	private int lastHistoryIndex;
 	
-	public BitstampSimulationTickerDbSource(long timestep, long interpolationTime, DbConnection connection, long startTime, long endTime) {
+	public BitstampSimulationTickerDbSource(long timestep, long interpolationTime, DbConnection connection) {
 		  super(timestep, interpolationTime);
 		  
 		  this.connection = connection;
-		  this.startTime = startTime;
-		  this.endTime = endTime;
-		  
 		  history = new ArrayList<ServerSampleEntry>();
 	}
 	
@@ -56,11 +53,8 @@ public class BitstampSimulationTickerDbSource extends BitstampTickerSource imple
 	    	}
 	    }
 	}
-
-	@Override
-	public boolean open() {
-		connection.open();
-		
+	
+	private void getData() {
 		try {
 			// Get all entries from the simulation start time to the simulation end time
 		    String query = "select * from bitstamp_ticker WHERE `timestamp` BETWEEN " + startTime / 1000  + " AND " + endTime / 1000 + " ORDER BY timestamp ASC";
@@ -84,9 +78,12 @@ public class BitstampSimulationTickerDbSource extends BitstampTickerSource imple
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			return false;
 		}
-		return true;
+	}
+
+	@Override
+	public boolean open() {
+		return connection.open();
 	}
 
 	@Override
@@ -119,5 +116,14 @@ public class BitstampSimulationTickerDbSource extends BitstampTickerSource imple
 		for (OutputSignal signal : signals) {
 			signal.setSample(Sample.none);
 		}
+	}
+
+	@Override
+	public void initializeForTimePeriod(long startTime, long endTime) {
+		this.startTime = startTime;
+		this.endTime = endTime;
+		
+		reset();
+		getData();
 	}
 }
