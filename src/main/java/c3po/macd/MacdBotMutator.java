@@ -16,21 +16,21 @@ public class MacdBotMutator implements IBotConfigMutator<MacdBotConfig> {
 	public MacdBotConfig createRandomConfig() {
 
 		final MacdAnalysisConfig buyAnalysisConfig = new MacdAnalysisConfig(
-				getRandomLong(mutatorConfig.minAnalysisPeriod, mutatorConfig.maxAnalysisPeriod),
-				getRandomLong(mutatorConfig.minAnalysisPeriod, mutatorConfig.maxAnalysisPeriod),
-				getRandomLong(mutatorConfig.minAnalysisPeriod, mutatorConfig.maxAnalysisPeriod)
+				SignalMath.getRandomLong(mutatorConfig.minAnalysisPeriod, mutatorConfig.maxAnalysisPeriod),
+				SignalMath.getRandomLong(mutatorConfig.minAnalysisPeriod, mutatorConfig.maxAnalysisPeriod),
+				SignalMath.getRandomLong(mutatorConfig.minAnalysisPeriod, mutatorConfig.maxAnalysisPeriod)
 		);
 		
 		final MacdAnalysisConfig sellAnalysisConfig = new MacdAnalysisConfig(
-				getRandomLong(mutatorConfig.minAnalysisPeriod, mutatorConfig.maxAnalysisPeriod),
-				getRandomLong(mutatorConfig.minAnalysisPeriod, mutatorConfig.maxAnalysisPeriod),
-				getRandomLong(mutatorConfig.minAnalysisPeriod, mutatorConfig.maxAnalysisPeriod)
+				SignalMath.getRandomLong(mutatorConfig.minAnalysisPeriod, mutatorConfig.maxAnalysisPeriod),
+				SignalMath.getRandomLong(mutatorConfig.minAnalysisPeriod, mutatorConfig.maxAnalysisPeriod),
+				SignalMath.getRandomLong(mutatorConfig.minAnalysisPeriod, mutatorConfig.maxAnalysisPeriod)
 		);
 		
 		final MacdTraderConfig traderConfig = new MacdTraderConfig(
-				getRandomDouble(mutatorConfig.minBuyDiffThreshold, mutatorConfig.maxBuyDiffThreshold),
-				getRandomDouble(mutatorConfig.minSellDiffThreshold, mutatorConfig.maxSellDiffThreshold),
-				getRandomDouble(mutatorConfig.minLossCuttingPercentage, mutatorConfig.maxLossCuttingPercentage)
+				SignalMath.getRandomDouble(mutatorConfig.minBuyDiffThreshold, mutatorConfig.maxBuyDiffThreshold),
+				SignalMath.getRandomDouble(mutatorConfig.minSellDiffThreshold, mutatorConfig.maxSellDiffThreshold),
+				SignalMath.getRandomDouble(mutatorConfig.minLossCuttingPercentage, mutatorConfig.maxLossCuttingPercentage)
 		);
 		
 		final MacdBotConfig config = new MacdBotConfig(timestep, buyAnalysisConfig, sellAnalysisConfig, traderConfig);
@@ -108,7 +108,7 @@ public class MacdBotMutator implements IBotConfigMutator<MacdBotConfig> {
 		
 		final MacdAnalysisConfig validBuyAnalysisConfig = new MacdAnalysisConfig(
 				config.buyAnalysisConfig.fastPeriod  > config.buyAnalysisConfig.slowPeriod ?
-						getRandomLong(1 * Time.MINUTES, config.buyAnalysisConfig.slowPeriod) :
+						SignalMath.getRandomLong(1 * Time.MINUTES, config.buyAnalysisConfig.slowPeriod) :
 						config.buyAnalysisConfig.fastPeriod,
 				config.buyAnalysisConfig.slowPeriod,
 				config.buyAnalysisConfig.signalPeriod
@@ -116,7 +116,7 @@ public class MacdBotMutator implements IBotConfigMutator<MacdBotConfig> {
 		
 		final MacdAnalysisConfig validSellAnalysisConfig = new MacdAnalysisConfig(
 				config.sellAnalysisConfig.fastPeriod  > config.sellAnalysisConfig.slowPeriod ?
-						getRandomLong(1 * Time.MINUTES, config.sellAnalysisConfig.slowPeriod) :
+						SignalMath.getRandomLong(1 * Time.MINUTES, config.sellAnalysisConfig.slowPeriod) :
 						config.sellAnalysisConfig.fastPeriod,
 				config.sellAnalysisConfig.slowPeriod,
 				config.sellAnalysisConfig.signalPeriod
@@ -133,13 +133,5 @@ public class MacdBotMutator implements IBotConfigMutator<MacdBotConfig> {
 	
 	protected boolean shouldMutate(double chance) {
 		return Math.random() < chance;
-	}
-	
-	protected double getRandomDouble(double min, double max) {
-		return min + (Math.random() * (max-min));
-	}
-	
-	protected long getRandomLong(long min, long max) {
-		return min + (long)(Math.random() * (double)(max-min));
 	}
 }

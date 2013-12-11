@@ -87,4 +87,12 @@ public class SignalMath {
 	public static int clamp(int value, int min, int max) {
 		return Math.max(min, Math.min(max, value));
 	}
+	
+	public static double getRandomDouble(double min, double max) {
+		return min + (Math.random() * (max-min));
+	}
+	
+	public static long getRandomLong(long min, long max) {
+		return min + (long)(Math.random() * (double)(max-min));
+	}
 }
