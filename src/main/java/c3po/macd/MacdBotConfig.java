@@ -1,5 +1,7 @@
 package c3po.macd;
 
+import com.google.gson.Gson;
+
 import c3po.IBotConfig;
 
 public class MacdBotConfig implements IBotConfig {
@@ -15,11 +17,34 @@ public class MacdBotConfig implements IBotConfig {
 		this.sellAnalysisConfig = sellAnalysisConfig;
 		this.traderConfig = traderConfig;
 	}
+	
+	/**
+	 * This method takes the configuration in JSON form
+	 * and outputs a new Config object.
+	 * 
+	 * @param json
+	 * @return Config object
+	 */
+	public static MacdBotConfig fromJSON(String json) {
+		Gson gson = new Gson();
+		return gson.fromJson(json, MacdBotConfig.class);
+	}
+	
+	/**
+	 * Outputs the Config as a JSON file
+	 * @return
+	 */
+	public String toJSON() {
+		Gson gson = new Gson();
+		return gson.toJson(this);
+	}
 
 	@Override
 	public String toString() {
-		return "Buy: " + buyAnalysisConfig.toString() + ", " + "Sell: " + sellAnalysisConfig.toString() + ", " + traderConfig.toString();
+		return toJSON();
+		//return "Buy: " + buyAnalysisConfig.toString() + ", " + "Sell: " + sellAnalysisConfig.toString() + ", " + traderConfig.toString();
 	}
+
 
 	@Override
 	public int hashCode() {
