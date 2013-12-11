@@ -24,7 +24,8 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	 * The percentage that the sell threshold will decrease, for every percent that the current price is
 	 * higher then the previous buy.
 	 */
-	private static final int SELL_PROFIT_MULTIPLIER = 0;
+	private static final int SELL_PROFIT_MULTIPLIER = 5;
+	
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdTraderNode.class);
 	private final ISignal buyMacdDiff;
 	private final ISignal sellMacdDiff;
@@ -38,7 +39,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	private boolean verbose = false;
 	
 	private final List<ITradeListener> listeners;
-	private double lastHighestPositionPrice = -1; // TODO: managing this state explicitely is error prone
+//	private double lastHighestPositionPrice = -1; // TODO: managing this state explicitely is error prone
 	private double lastBuyPrice;
 
 	public MacdTraderNode(long timestep, ISignal buyMacdDiff, ISignal sellMacdDiff, IWallet wallet, ITradeFloor tradeFloor, MacdTraderConfig config, long startDelay) {
@@ -84,7 +85,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 			
 			if(hasEnoughBtc) {
 				tryToClosePosition(tick, sellCurrentDiff);
-				tryLossSafeguard(tick);
+//				tryLossSafeguard(tick);
 			}			
 		}
 		else {
@@ -92,35 +93,35 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		}
 	}
 	
-	private void tryLossSafeguard(long tick) {
-
-		boolean shouldSell = false;
-		double currentPrice = 0.0d;
-		
-		try {
-			currentPrice = tradeFloor.toUsd(1d);
-			
-			if (currentPrice > this.lastHighestPositionPrice)
-				this.lastHighestPositionPrice = currentPrice;
-			
-			shouldSell = (currentPrice < lastHighestPositionPrice * config.lossCutThreshold);
-		} catch (Exception e) {
-			LOGGER.error("Could not check for loss cutting safeguard", e);
-		}
-		
-		if(shouldSell) {
-			if (verbose)
-				LOGGER.debug(String.format("Cutting losses at %s, because the current price %,.2f is less than %,.2f of %,.2f", new Date(tick), currentPrice, config.lossCutThreshold, lastHighestPositionPrice));
-			
-			double btcToSell = wallet.getWalletBtc(); // All-in
-			TradeAction sellAction = new TradeAction(TradeActionType.SELL, tick, btcToSell);
-			double usdReceived = tradeFloor.sell(wallet, sellAction);
-			
-			this.lastHighestPositionPrice = -1;
-
-			notify(sellAction);
-		}
-	}
+//	private void tryLossSafeguard(long tick) {
+//
+//		boolean shouldSell = false;
+//		double currentPrice = 0.0d;
+//		
+//		try {
+//			currentPrice = tradeFloor.toUsd(1d);
+//			
+//			if (currentPrice > this.lastHighestPositionPrice)
+//				this.lastHighestPositionPrice = currentPrice;
+//			
+//			shouldSell = (currentPrice < lastHighestPositionPrice * config.lossCutThreshold);
+//		} catch (Exception e) {
+//			LOGGER.error("Could not check for loss cutting safeguard", e);
+//		}
+//		
+//		if(shouldSell) {
+//			if (verbose)
+//				LOGGER.debug(String.format("Cutting losses at %s, because the current price %,.2f is less than %,.2f of %,.2f", new Date(tick), currentPrice, config.lossCutThreshold, lastHighestPositionPrice));
+//			
+//			double btcToSell = wallet.getWalletBtc(); // All-in
+//			TradeAction sellAction = new TradeAction(TradeActionType.SELL, tick, btcToSell);
+//			double usdReceived = tradeFloor.sell(wallet, sellAction);
+//			
+//			this.lastHighestPositionPrice = -1;
+//
+//			notify(sellAction);
+//		}
+//	}
 
 	public void setVerbose(boolean verbose) {
 		this.verbose = verbose;
@@ -138,11 +139,33 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 			double btcReceived = tradeFloor.buy(wallet, buyAction);
 
 			// TODO: Get the buy price from the tradeFloor buy action instead
-			double ticker = tradeFloor.toUsd(1d);
-			this.lastBuyPrice = ticker;
-			this.lastHighestPositionPrice = ticker;
+			double currentPrice = tradeFloor.toUsd(1d);
+			this.lastBuyPrice = currentPrice;
+//			this.lastHighestPositionPrice = ticker;
 			
 			notify(buyAction);
+		}
+	}
+
+	private void tryToClosePosition(long tick, Sample currentDiff) {
+		
+		double currentPrice = tradeFloor.toUsd(1d);
+		double currentSellThreshold = calculateCurrentSellThreshold(config.minSellDiffThreshold, lastBuyPrice, currentPrice, SELL_PROFIT_MULTIPLIER);
+		boolean sellThresholdReached = currentDiff.value < currentSellThreshold;
+		
+//		if(verbose)
+//			LOGGER.debug(String.format("%,.4f < %,.4f = %b", currentDiff.value, config.minSellDiffThreshold, sellThresholdReached));
+		
+		if (sellThresholdReached) {
+			double btcToSell = wallet.getWalletBtc(); 
+			TradeAction sellAction = new TradeAction(TradeActionType.SELL, tick, btcToSell);
+			double usdReceived = tradeFloor.sell(wallet, sellAction);
+			
+			LOGGER.debug("Last Buy: " + String.valueOf(lastBuyPrice) + ", Current Price: " + String.valueOf(currentPrice) + ", Current Diff: " + String.valueOf(currentDiff.value) + ", New Treshold: " + String.valueOf(currentSellThreshold));
+			
+//			this.lastHighestPositionPrice = -1;
+
+			notify(sellAction);
 		}
 	}
 	
@@ -156,32 +179,12 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	 * @return
 	 */
 	public static double  calculateCurrentSellThreshold(double baseSellDiffTreshold, double lastBuyPrice, double currentPrice, double multiplier) {
-		if(lastBuyPrice > 0d && lastBuyPrice < currentPrice) {      			
-			double mod = Math.max(0, 1 - (((currentPrice-lastBuyPrice)/lastBuyPrice) * multiplier));
-			return baseSellDiffTreshold * mod;
+		if(currentPrice > lastBuyPrice) {  
+			double priceDifference = currentPrice - lastBuyPrice;
+			double thresholdScalar = 1d - Math.min((priceDifference/lastBuyPrice) * multiplier, 1d);
+			return baseSellDiffTreshold * thresholdScalar; // TODO: Don't let the new threshold become positive
 		} else {
 			return baseSellDiffTreshold;
-		}
-	}
-	
-	private void tryToClosePosition(long tick, Sample currentDiff) {
-		
-		double currentPrice = tradeFloor.toUsd(1d);
-		double currentSellThreshold = calculateCurrentSellThreshold(config.minSellDiffThreshold, lastBuyPrice, currentPrice, SELL_PROFIT_MULTIPLIER);
-		//LOGGER.debug("Last Buy: " + String.valueOf(lastBuyPrice) + ", Current Price: " + String.valueOf(currentPrice) + ", New Treshold: " + String.valueOf(currentSellThreshold));
-		boolean sellThresholdReached = currentDiff.value < currentSellThreshold;
-		
-//		if(verbose)
-//			LOGGER.debug(String.format("%,.4f < %,.4f = %b", currentDiff.value, config.minSellDiffThreshold, sellThresholdReached));
-		
-		if (sellThresholdReached) {
-			double btcToSell = wallet.getWalletBtc(); 
-			TradeAction sellAction = new TradeAction(TradeActionType.SELL, tick, btcToSell);
-			double usdReceived = tradeFloor.sell(wallet, sellAction);
-			
-			this.lastHighestPositionPrice = -1;
-
-			notify(sellAction);
 		}
 	}
 

@@ -26,8 +26,8 @@ public class MacdBotRunner {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdBotRunner.class);
 	
 	// Earliest time 1384079023000l
-	private final static long simulationStartTime = 1386676800000l - (Time.DAYS * 8);
-	private final static long simulationEndTime = 1386676800000l - (Time.DAYS * 2);
+	private final static long simulationStartTime = 1386676800000l - (Time.DAYS * 28);
+	private final static long simulationEndTime = 1386676800000l - (Time.DAYS * 0);
 	
 	private final static long interpolationTime = 2 * Time.MINUTES;
 	private final static long timestep = 1 * Time.MINUTES;
@@ -51,8 +51,8 @@ public class MacdBotRunner {
 				interpolationTime,
 				dbConnection
 				);
-		tickerNode.initializeForTimePeriod(simulationStartTime, simulationEndTime);
 		tickerNode.open();
+		tickerNode.initializeForTimePeriod(simulationStartTime, simulationEndTime);
 		
 		final ITradeFloor tradeFloor =  new BitstampSimulationTradeFloor(
 				tickerNode.getOutputLast(),
@@ -65,19 +65,19 @@ public class MacdBotRunner {
 		
 		// Create bot config
 		MacdAnalysisConfig buyAnalysisConfig = new MacdAnalysisConfig(
-				47 * Time.MINUTES,
-				410 * Time.MINUTES,
-				137 * Time.MINUTES);
+				53 * Time.MINUTES,
+				323 * Time.MINUTES,
+				161 * Time.MINUTES);
 		
 		MacdAnalysisConfig sellAnalysisConfig = new MacdAnalysisConfig(
-				21 * Time.MINUTES,
-				219 * Time.MINUTES,
-				356 * Time.MINUTES);
+				43 * Time.MINUTES,
+				360 * Time.MINUTES,
+				193 * Time.MINUTES);
 		
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
-				5.3,
-				-12.6,
-				0.85);
+				1.46,
+				-4.97,
+				0.64);
 		
 		MacdBotConfig config = new MacdBotConfig(timestep, buyAnalysisConfig, sellAnalysisConfig, traderConfig);
 		
