@@ -31,7 +31,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 	private final static long timestep = 1 * Time.MINUTES;
 
 	// Simulation and fitness test
-	private final static int numEpochs = 10;
+	private final static int numEpochs = 50;
 	private final static int numSimulationsPerEpoch = 5;
 	private final static int numBots = 250;
 	
