@@ -118,7 +118,7 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 			clock.addListener(bot);
 		}
 		
-		clock.run();
+		simContext.run();
 		
 		for (IBot<TBotConfig> bot : population) {
 			clock.removeListener(bot);

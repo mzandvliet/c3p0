@@ -96,7 +96,7 @@ public class RealtimeBotRunner {
 			bot.addTradeListener(mailLogger);
 			
 			// Create a clock
-			IClock botClock = new RealtimeClock(timestep, Math.max(buyAnalysisConfig.slowPeriod, buyAnalysisConfig.signalPeriod), interpolationTime);
+			IRealtimeClock botClock = new RealtimeClock(timestep, Math.max(buyAnalysisConfig.slowPeriod, buyAnalysisConfig.signalPeriod), interpolationTime);
 			botClock.addListener(bot);
 			
 			// Run the program

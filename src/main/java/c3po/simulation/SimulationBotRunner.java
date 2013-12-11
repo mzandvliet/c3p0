@@ -62,10 +62,10 @@ public class SimulationBotRunner {
 		
 		// Run the bot
 		
-		final IClock botClock = new SimulationClock(timestep, simulationStartTime, simulationEndTime, interpolationTime);
+		final ISimulationClock botClock = new SimulationClock(timestep, interpolationTime);
 		botClock.addListener(bot);
 		
-		botClock.run();
+		botClock.run(simulationStartTime, simulationEndTime);
 		
 		tickerNode.close();
 		

@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import c3po.*;
 
-public class RealtimeClock implements IClock, Runnable {
+public class RealtimeClock implements IRealtimeClock, Runnable {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(RealtimeClock.class);
 	
@@ -53,6 +53,7 @@ public class RealtimeClock implements IClock, Runnable {
 		listeners.remove(tickable);
 	}
 	
+	@Override
 	public void run() {
 		LOGGER.debug("Prewarming...");
 		prewarm();

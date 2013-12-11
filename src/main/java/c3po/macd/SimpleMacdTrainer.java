@@ -61,7 +61,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 		
 		DbConnection dbConnection = new DbConnection(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
 		
-		SimulationClock botClock = new SimulationClock(timestep, simulationStartTime, simulationEndTime, interpolationTime);
+		ISimulationClock botClock = new SimulationClock(timestep, interpolationTime);
 		
 		final BitstampSimulationTickerDbSource tickerNode = new BitstampSimulationTickerDbSource(
 				timestep,
@@ -79,7 +79,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 		double walletStartBtc = walletStartBtcInUsd / tickerNode.getOutputLast().getSample(simulationStartTime).value;
 		final IWallet wallet = new Wallet(walletStartUsd, walletStartBtc);
 		
-		SimulationContext simContext = new SimulationContext(tickerNode, tickerNode.getOutputLast(), tradeFloor, wallet, botClock);
+		SimulationContext simContext = new SimulationContext(tickerNode, botClock, tickerNode.getOutputLast(), tradeFloor, wallet);
 		
 		
 		// Create and run the trainer on the context
@@ -148,13 +148,13 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 		
 		simContext.initializeForTimePeriod(simulationStartTime, simulationEndTime);
 		
-		IClock clock = simContext.getClock();
+		ISimulationClock clock = simContext.getClock();
 		
 		clock.addListener(bot);
 		clock.addListener(grapher);
 		clock.addListener(diffGrapher);
 		
-		clock.run();
+		clock.run(simulationStartTime, simulationEndTime);
 		
 		clock.removeListener(bot);
 		clock.removeListener(grapher);

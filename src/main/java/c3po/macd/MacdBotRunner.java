@@ -120,14 +120,14 @@ public class MacdBotRunner {
 		
 		// Create a clock
 		
-		IClock botClock = new SimulationClock(timestep, simulationStartTime, simulationEndTime, interpolationTime);
+		ISimulationClock botClock = new SimulationClock(timestep, interpolationTime);
 		botClock.addListener(bot);
 		botClock.addListener(grapher);
 		botClock.addListener(diffGrapher);
 		
 		// Run the program
 
-		botClock.run();
+		botClock.run(simulationStartTime, simulationEndTime);
 		
 		tickerNode.close();
 		
