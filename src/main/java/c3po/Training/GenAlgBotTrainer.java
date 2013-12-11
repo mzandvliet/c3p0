@@ -72,7 +72,7 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 		for (int i = 0; i < config.numEpochs; i++) {
 			HashMap<TBotConfig, PerformanceResult> results = createResults(configs);
 			
-			for (int j = 0; j < 5; j++) {
+			for (int j = 0; j < config.numSimulationsPerEpoch; j++) {
 				// Create the population and loggers
 				List<IBot<TBotConfig>> population = createPopulationFromConfigs(configs, botFactory);
 				HashMap<IBot<TBotConfig>, DebugTradeLogger> loggers = createLoggers(population);
@@ -96,8 +96,8 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 			// Average the results for this epoch's simulations
 			for (TBotConfig config : configs) {
 				PerformanceResult result = results.get(config);
-				result.averageNumTrades /= 5;
-				result.averageWalletValue /= 5;
+				result.averageNumTrades /= this.config.numSimulationsPerEpoch;
+				result.averageWalletValue /= this.config.numSimulationsPerEpoch;
 			}
 			
 			// Sort

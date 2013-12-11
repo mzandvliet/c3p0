@@ -111,11 +111,6 @@ public class BitstampSimulationTickerDbSource extends BitstampTickerSource imple
 		super.reset();
 		
 		lastHistoryIndex = 0;
-		buffer.clear();
-		
-		for (OutputSignal signal : signals) {
-			signal.setSample(Sample.none);
-		}
 	}
 
 	@Override

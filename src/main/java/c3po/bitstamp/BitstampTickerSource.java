@@ -101,6 +101,17 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 		return signals[i];
 	}
 	
+	@Override
+	public void reset() {
+		super.reset();
+		
+		buffer.clear();
+		
+		for (OutputSignal signal : signals) {
+			signal.setSample(Sample.none);
+		}
+	}
+
 	public OutputSignal getOutputBid() {
 		return signals[SignalName.BID.ordinal()];
 	}
