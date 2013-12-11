@@ -20,7 +20,11 @@ import c3po.TradeAction;
 import c3po.TradeAction.TradeActionType;
 
 public class MacdTraderNode extends AbstractTickable implements ITickable, ITradeActionSource {
-	private static final int SELL_PROFIT_MULTIPLIER = 10;
+	/**
+	 * The percentage that the sell threshold will decrease, for every percent that the current price is
+	 * higher then the previous buy.
+	 */
+	private static final int SELL_PROFIT_MULTIPLIER = 0;
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdTraderNode.class);
 	private final ISignal buyMacdDiff;
 	private final ISignal sellMacdDiff;
