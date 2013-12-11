@@ -17,8 +17,8 @@ public class BitstampTickerDbSourceTest {
 	
 	@Test
 	public void testRealtime() throws ClassNotFoundException, SQLException, InterruptedException {
-		BitstampTickerDbSource tickerNode = new BitstampTickerDbSource(timestep, interpolationTime, new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
-		
+		DbConnection dbConnection = new DbConnection(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+		BitstampTickerDbSource tickerNode = new BitstampTickerDbSource(timestep, interpolationTime, dbConnection);
 		
 		tickerNode.open();
 		
