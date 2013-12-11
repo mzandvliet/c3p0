@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import c3po.bitstamp.BitstampSimulationTradeFloor;
 import c3po.bitstamp.BitstampSimulationTickerDbSource;
+import c3po.DbConnection;
 import c3po.IClock;
 import c3po.ITradeFloor;
 import c3po.IWallet;
@@ -43,12 +44,12 @@ public class MacdBotRunner {
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		// Set up global signal tree
 		
+		DbConnection dbConnection = new DbConnection(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+		
 		final BitstampSimulationTickerDbSource tickerNode = new BitstampSimulationTickerDbSource(
 				timestep,
 				interpolationTime,
-				new InetSocketAddress("94.208.87.249", 3309),
-				"c3po",
-				"D7xpJwzGJEWf5qWB",
+				dbConnection,
 				simulationStartTime,
 				simulationEndTime
 				);

@@ -11,30 +11,23 @@ import c3po.*;
 
 public class BitstampSimulationTickerDbSource extends BitstampTickerSource implements INonRealtimeSource {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BitstampSimulationTickerDbSource.class);
+	private static final int MAXRETRIES = 3;
 	
 	private final long startTime;
 	private final long endTime;
-	private Connection connection = null;
+	private DbConnection connection;
 	
 	private ArrayList<ServerSampleEntry> history;
 	private int lastHistoryIndex;
 	
-	public BitstampSimulationTickerDbSource(long timestep, long interpolationTime, InetSocketAddress host, String user, String pwd, long startTime, long endTime) {
+	public BitstampSimulationTickerDbSource(long timestep, long interpolationTime, DbConnection connection, long startTime, long endTime) {
 		  super(timestep, interpolationTime);
 		  
+		  this.connection = connection;
 		  this.startTime = startTime;
 		  this.endTime = endTime;
 		  
 		  history = new ArrayList<ServerSampleEntry>();
-		  
-		  try {
-			  // This will load the MySQL driver, each DB has its own driver
-			  Class.forName("com.mysql.jdbc.Driver");
-			  // Setup the connection with the DB
-			  connection = DriverManager.getConnection("jdbc:mysql://"+host.getHostName()+":"+host.getPort()+"/c3po?user="+user+"&password="+pwd);
-		  } catch (Exception e) {
-				  throw new RuntimeException(e);
-		  }
 	}
 	
 	@Override
@@ -65,13 +58,13 @@ public class BitstampSimulationTickerDbSource extends BitstampTickerSource imple
 	}
 
 	@Override
-	public boolean open() {		
+	public boolean open() {
+		connection.open();
+		
 		try {
-			// Statements allow to issue SQL queries to the database
-			Statement statement = connection.createStatement();
 			// Get all entries from the simulation start time to the simulation end time
 		    String query = "select * from bitstamp_ticker WHERE `timestamp` BETWEEN " + startTime / 1000  + " AND " + endTime / 1000 + " ORDER BY timestamp ASC";
-		    ResultSet resultSet = statement.executeQuery(query);
+		    ResultSet resultSet = connection.executeQueryWithRetries(query, MAXRETRIES);
 		    
 		    // Add them all to the buffer
 		    while(resultSet.next()) {
@@ -98,13 +91,7 @@ public class BitstampSimulationTickerDbSource extends BitstampTickerSource imple
 
 	@Override
 	public boolean close() {
-		try {
-			connection.close();
-			return true;
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return false;
-		}
+		return connection.close();
 	}
 
 	@Override

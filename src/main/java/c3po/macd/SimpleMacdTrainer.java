@@ -59,14 +59,14 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 		
 		// Create the simulation context
 		
+		DbConnection dbConnection = new DbConnection(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+		
 		IClock botClock = new SimulationClock(timestep, simulationStartTime, simulationEndTime, interpolationTime);
 		
 		final BitstampSimulationTickerDbSource tickerNode = new BitstampSimulationTickerDbSource(
 				timestep,
 				interpolationTime,
-				new InetSocketAddress("94.208.87.249", 3309),
-				"c3po",
-				"D7xpJwzGJEWf5qWB",
+				dbConnection,
 				simulationStartTime,
 				simulationEndTime
 				);
