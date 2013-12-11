@@ -38,11 +38,11 @@ public class BitstampTradefloorTest {
 	
 	@Test
 	public void testCurrencyFormatter() {
-		assertEquals("1322.99", BitstampTradeFloor.doubleToCurrencyString(1322.99d));
-		assertEquals("1322.99", BitstampTradeFloor.doubleToCurrencyString(1322.991d));
-		assertEquals("1322.99", BitstampTradeFloor.doubleToCurrencyString(1322.989d));
-		assertEquals("1322.99", BitstampTradeFloor.doubleToCurrencyString(001322.989d));
-		assertEquals("322.99", BitstampTradeFloor.doubleToCurrencyString(322.989d));
+		assertEquals("1322.99", BitstampTradeFloor.doubleToPriceString(1322.99d));
+		assertEquals("1322.99", BitstampTradeFloor.doubleToPriceString(1322.991d));
+		assertEquals("1322.99", BitstampTradeFloor.doubleToPriceString(1322.989d));
+		assertEquals("1322.99", BitstampTradeFloor.doubleToPriceString(001322.989d));
+		assertEquals("322.99", BitstampTradeFloor.doubleToPriceString(322.989d));
 	}
 	
 	@Test

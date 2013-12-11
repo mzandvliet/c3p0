@@ -1,6 +1,7 @@
 package c3po.bitstamp;
 
 import java.io.IOException;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
@@ -123,14 +124,16 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	 * @param input
 	 * @return String with maximum of 6 digits
 	 */
-	public static String doubleToCurrencyString(double input) {		
+	public static String doubleToPriceString(double input) {		
 		DecimalFormat df = new DecimalFormat("#.00", new DecimalFormatSymbols(Locale.US));
+		df.setRoundingMode(RoundingMode.DOWN);
 		df.applyLocalizedPattern("####.00");
 		return df.format(input);
 	}
 	
 	public static String doubleToAmountString(double input) {		
 		DecimalFormat df = new DecimalFormat("########.########", new DecimalFormatSymbols(Locale.US));
+		df.setRoundingMode(RoundingMode.DOWN);
 		df.applyLocalizedPattern("########.########");
 		return df.format(input);
 	}
@@ -331,14 +334,14 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	public OpenOrder placeSellOrder(double price, double amount) throws JSONException, Exception {
 
 		List<NameValuePair> params = new LinkedList<NameValuePair>();
-		params.add(new BasicNameValuePair("price", String.valueOf(doubleToCurrencyString(price))));
+		params.add(new BasicNameValuePair("price", String.valueOf(doubleToPriceString(price))));
 		params.add(new BasicNameValuePair("amount", String.valueOf(doubleToAmountString(amount))));
 		JSONObject result = new JSONObject(doAuthenticatedCall("https://www.bitstamp.net/api/sell/", params));
 
 		if(result.has("error"))
 			throw new Exception(result.get("error").toString());
 		
-		LOGGER.info("Placed sell order: Sell " + doubleToAmountString(amount) + " BTC for " + doubleToCurrencyString(price) + " USD. Result: " + result);
+		LOGGER.info("Placed sell order: Sell " + doubleToAmountString(amount) + " BTC for " + doubleToPriceString(price) + " USD. Result: " + result);
 		
 		return new OpenOrder(result.getLong("id"), dateStringToSec(result.getString("datetime")), result.getInt("type"), result.getDouble("price"), result.getDouble("amount"));
 	}
@@ -354,14 +357,14 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	 */
 	public OpenOrder placeBuyOrder(double price, double amount) throws JSONException, Exception {
 		List<NameValuePair> params = new LinkedList<NameValuePair>();
-		params.add(new BasicNameValuePair("price", String.valueOf(doubleToCurrencyString(price))));
+		params.add(new BasicNameValuePair("price", String.valueOf(doubleToPriceString(price))));
 		params.add(new BasicNameValuePair("amount", String.valueOf(doubleToAmountString(amount))));
 		JSONObject result = new JSONObject(doAuthenticatedCall("https://www.bitstamp.net/api/buy/", params));
 		
 		if(result.has("error"))
 			throw new Exception(result.get("error").toString());
 		
-		LOGGER.info("Placed buy order: Buy " + doubleToAmountString(amount) + " BTC for " + doubleToCurrencyString(price) + " USD. Result: " + result);
+		LOGGER.info("Placed buy order: Buy " + doubleToAmountString(amount) + " BTC for " + doubleToPriceString(price) + " USD. Result: " + result);
 		
 		return new OpenOrder(result.getLong("id"), dateStringToSec(result.getString("datetime")), result.getInt("type"), result.getDouble("price"), result.getDouble("amount"));
 	}
