@@ -19,6 +19,7 @@ import c3po.IClock;
 import c3po.ISignal;
 import c3po.ITradeFloor;
 import c3po.IWallet;
+import c3po.SignalMath;
 import c3po.SimulationClock;
 import c3po.Time;
 import c3po.Wallet;
@@ -65,25 +66,49 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 	}
 
 	public TBotConfig train(IBotFactory<TBotConfig> botFactory, SimulationContext simContext) {
+		// Start with random configs
 		List<TBotConfig> configs = createRandomConfigs(config.numBots);
 		
 		for (int i = 0; i < config.numEpochs; i++) {
-			List<IBot<TBotConfig>> population = createPopulationFromConfigs(configs, botFactory);
-			HashMap<IBot<TBotConfig>, DebugTradeLogger> loggers = createLoggers(population);
+			HashMap<TBotConfig, PerformanceResult> results = createResults(configs);
 			
-			simulateEpoch(population, simContext);
-			simContext.reset();
-			
-			sortByScore(population, loggers);
-			
-			configs.clear();
-			for (IBot<TBotConfig> bot : population) {
-				configs.add(bot.getConfig());
+			for (int j = 0; j < 5; j++) {
+				// Create the population and loggers
+				List<IBot<TBotConfig>> population = createPopulationFromConfigs(configs, botFactory);
+				HashMap<IBot<TBotConfig>, DebugTradeLogger> loggers = createLoggers(population);
+				
+				// Set simulation data to some time window between the first and last available data
+				long startTime = SignalMath.getRandomLong(config.dataStartTime, config.dataEndTime - config.simulationLength);
+				long endTime = startTime + config.simulationLength;
+				simContext.initializeForTimePeriod(startTime, endTime);
+				
+				// Run the simulation
+				simulate(population, simContext);
+				
+				// Store the results of this run
+				for (IBot<TBotConfig> bot : population) {
+					PerformanceResult result = results.get(bot.getConfig());
+					result.averageNumTrades += loggers.get(bot).getActions().size();
+					result.averageWalletValue += getBotDollarValue(bot);
+				}
 			}
 			
-			logEpoch(i, population, loggers);
+			// Average the results for this epoch's simulations
+			for (TBotConfig config : configs) {
+				PerformanceResult result = results.get(config);
+				result.averageNumTrades /= 5;
+				result.averageWalletValue /= 5;
+			}
 			
-			if (i < config.numEpochs-1) { // Leave configs alone at last run
+			// Sort
+			sortByPerformance(configs, results);
+			
+			// Log results
+			LOGGER.debug("Finished epoch " + i);
+			logEpochResults(configs, results);
+			
+			// Evolve the configs (Oh, but leave them alone when we're done)
+			if (i < config.numEpochs-1) {
 				List<TBotConfig> winners = configs.subList(0, config.numParents);
 				configs = evolveConfigs(winners, config.numBots, config.numElites);
 			}
@@ -92,24 +117,21 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 		return configs.get(0);
 	}
 
-	private void logEpoch(int i, List<IBot<TBotConfig>> population,
-			HashMap<IBot<TBotConfig>, DebugTradeLogger> loggers) {
-		LOGGER.debug("Finished epoch " + i);
-		
-		IBot<TBotConfig> bestBot = population.get(0);
-		LOGGER.debug("Best bot was: " + bestBot.getConfig().toString());
-		LOGGER.debug("Wallet: " + getBotDollarValue(bestBot));
-		LOGGER.debug("Trades: " + loggers.get(bestBot).getActions().size());
+	private void logEpochResults(List<TBotConfig> configs, HashMap<TBotConfig, PerformanceResult> results) {
+		TBotConfig bestConfig = configs.get(0);
+		LOGGER.debug("Best config was: " + bestConfig.toString());
+		LOGGER.debug("Average wallet: " + results.get(bestConfig).averageWalletValue);
+		LOGGER.debug("Average trades: " + results.get(bestConfig).averageNumTrades);
 
-		IBot<TBotConfig> worstBot = population.get(population.size()-1);
-		LOGGER.debug("Worst bot was: " + worstBot.getConfig().toString());
-		LOGGER.debug("Wallet: " + getBotDollarValue(worstBot));
-		LOGGER.debug("Trades: " + loggers.get(worstBot).getActions().size());
+		TBotConfig worstConfig = configs.get(configs.size()-1);
+		LOGGER.debug("Worst config was: " + worstConfig.toString());
+		LOGGER.debug("Average wallet: " + results.get(worstConfig).averageWalletValue);
+		LOGGER.debug("Average trades: " + results.get(worstConfig).averageNumTrades);
 		
 		LOGGER.debug("...");
 	}
 	
-	private void simulateEpoch(final List<IBot<TBotConfig>> population, SimulationContext simContext) {
+	private void simulate(final List<IBot<TBotConfig>> population, SimulationContext simContext) {
 		// Run the simulation
 		
 		IClock clock = simContext.getClock();
@@ -125,40 +147,43 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 		}
 	}
 	
-	private void sortByScore(List<IBot<TBotConfig>> population, final HashMap<IBot<TBotConfig>, DebugTradeLogger> loggers) {
-		Collections.sort(population, new Comparator<IBot<TBotConfig>>() {
+	private void sortByPerformance(List<TBotConfig> configs, final HashMap<TBotConfig, PerformanceResult> results) {
+		Collections.sort(configs, new Comparator<TBotConfig>() {
 
-	        public int compare(IBot<TBotConfig> botA, IBot<TBotConfig> botB) {
+	        public int compare(TBotConfig configA, TBotConfig configB) {
             	// Move bigger earners to the start, losers to the end
 	        	// A minimum # of trade is required, but importance of trade frequency falls off after just a couple of them
 	            	
-	        	double botAWallet = getBotDollarValue(botA);
+	        	double botAWallet = results.get(configA).averageWalletValue;
+	        	double botBWallet = results.get(configB).averageWalletValue;
 	        	
-	        	
-	        	double botAActivity = 0;
-	        	double botBActivity = 0; 
-	        	if(loggers.get(botA).getActions().size() > 40)
-	        		botAActivity += 1000;
-	        	if(loggers.get(botB).getActions().size() > 40)
-	        		botBActivity += 1000;
+	        	double botAActivity = Math.min(results.get(configA).averageNumTrades, 2);
+	        	double botBActivity = Math.min(results.get(configB).averageNumTrades, 2);
 
-            	double botAPerformance = botAWallet * botAActivity;
+            	double configAPerformance = botAWallet * botAActivity;	        	
+            	double configBPerformance = botBWallet * botBActivity;
             	
-            	double botBWallet = getBotDollarValue(botB);
-	        	
-            	double botBPerformance = botBWallet * botBActivity;
-            	
-            	if (botAPerformance == botBPerformance) {
+            	if (configAPerformance == configBPerformance) {
             		return 0;
             	}
             	
-            	return botAPerformance > botBPerformance ? -1 : 1;
+            	return configAPerformance > configBPerformance ? -1 : 1;
 	        }
 	    });
 	}
 	
 	private double getBotDollarValue(final IBot<TBotConfig> bot) {
 		return bot.getTradeFloor().getWalletValueInUsd(bot.getWallet());
+	}
+	
+	private HashMap<TBotConfig, PerformanceResult> createResults(List<TBotConfig> configs) {
+		HashMap<TBotConfig, PerformanceResult> results = new HashMap<TBotConfig, PerformanceResult>();
+		
+		for (TBotConfig config : configs) {
+			results.put(config, new PerformanceResult());
+		}
+		
+		return results;
 	}
 	
 	private List<IBot<TBotConfig>> createPopulationFromConfigs(List<TBotConfig> configs, IBotFactory<TBotConfig> botFactory) {
@@ -227,5 +252,10 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 	
 	private TBotConfig getRandomConfig(final List<TBotConfig> list) {
 		return list.get( (int)(Math.random() * list.size()) );
+	}
+	
+	private class PerformanceResult {
+		public int averageNumTrades;
+		public double averageWalletValue;
 	}
 }
