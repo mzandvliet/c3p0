@@ -40,7 +40,8 @@ public class RealtimeBotRunner {
 	    	String apiSecret = prop.getProperty("apiSecret");
 	    	
 	    	DbConnection dbConnection = new DbConnection(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
-	    			
+	    	dbConnection.open();	
+	    	
 			/**
 			 * Bot Config
 			 */

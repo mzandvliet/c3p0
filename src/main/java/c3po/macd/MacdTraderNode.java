@@ -20,6 +20,7 @@ import c3po.TradeAction;
 import c3po.TradeAction.TradeActionType;
 
 public class MacdTraderNode extends AbstractTickable implements ITickable, ITradeActionSource {
+	private static final int SELL_PROFIT_MULTIPLIER = 10;
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdTraderNode.class);
 	private final ISignal buyMacdDiff;
 	private final ISignal sellMacdDiff;
@@ -34,6 +35,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	
 	private final List<ITradeListener> listeners;
 	private double lastHighestPositionPrice = -1; // TODO: managing this state explicitely is error prone
+	private double lastBuyPrice;
 
 	public MacdTraderNode(long timestep, ISignal buyMacdDiff, ISignal sellMacdDiff, IWallet wallet, ITradeFloor tradeFloor, MacdTraderConfig config, long startDelay) {
 		super(timestep);
@@ -131,14 +133,39 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 			TradeAction buyAction = new TradeAction(TradeActionType.BUY, tick, usdToSell);
 			double btcReceived = tradeFloor.buy(wallet, buyAction);
 
-			this.lastHighestPositionPrice = tradeFloor.toUsd(1d);
+			// TODO: Get the buy price from the tradeFloor buy action instead
+			double ticker = tradeFloor.toUsd(1d);
+			this.lastBuyPrice = ticker;
+			this.lastHighestPositionPrice = ticker;
 			
 			notify(buyAction);
 		}
 	}
 	
+	/**
+	 * This method can lessen the sell diff threshold if we currently already looking at a nice profit
+	 * 
+	 * @param baseSellDiffTreshold The base sell diff threshold
+	 * @param lastBuyPrice The price that we bought
+	 * @param currentPrice The current price of the stock
+	 * @param multiplier The modifier percentage per profit percentage
+	 * @return
+	 */
+	public static double  calculateCurrentSellThreshold(double baseSellDiffTreshold, double lastBuyPrice, double currentPrice, double multiplier) {
+		if(lastBuyPrice > 0d && lastBuyPrice < currentPrice) {      			
+			double mod = Math.max(0, 1 - (((currentPrice-lastBuyPrice)/lastBuyPrice) * multiplier));
+			return baseSellDiffTreshold * mod;
+		} else {
+			return baseSellDiffTreshold;
+		}
+	}
+	
 	private void tryToClosePosition(long tick, Sample currentDiff) {
-		boolean sellThresholdReached = currentDiff.value < config.minSellDiffThreshold;
+		
+		double currentPrice = tradeFloor.toUsd(1d);
+		double currentSellThreshold = calculateCurrentSellThreshold(config.minSellDiffThreshold, lastBuyPrice, currentPrice, SELL_PROFIT_MULTIPLIER);
+		//LOGGER.debug("Last Buy: " + String.valueOf(lastBuyPrice) + ", Current Price: " + String.valueOf(currentPrice) + ", New Treshold: " + String.valueOf(currentSellThreshold));
+		boolean sellThresholdReached = currentDiff.value < currentSellThreshold;
 		
 //		if(verbose)
 //			LOGGER.debug(String.format("%,.4f < %,.4f = %b", currentDiff.value, config.minSellDiffThreshold, sellThresholdReached));
