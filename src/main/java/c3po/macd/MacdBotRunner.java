@@ -77,7 +77,7 @@ public class MacdBotRunner {
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
 				1.46,
 				-4.97,
-				0.64);
+				0.85);
 		
 		MacdBotConfig config = new MacdBotConfig(timestep, buyAnalysisConfig, sellAnalysisConfig, traderConfig);
 		
