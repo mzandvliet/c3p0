@@ -72,7 +72,7 @@ public class GraphingNode extends ApplicationFrame implements ITickable, ITradeL
 	public void tick(long tick) {
 		if (tick >= lastTick + timestep) {
 			for (int i = 0; i < inputs.length; i++) {
-				Sample newest = inputs[i].peek();
+				Sample newest = inputs[i].getSample(tick);
 				signalTimeSeries[i].addOrUpdate(new Second(newest.getDate()), newest.value);
 			}
 			

@@ -24,14 +24,14 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 	// First timestamp in database: 1384079023000l
     private final static long simulationStartTime =  new Date().getTime() - Time.DAYS * 28;
 	private final static long simulationEndTime = new Date().getTime();
-	private final static long simulationLength = Time.DAYS * 5;
+	private final static long simulationLength = Time.DAYS * 3;
 	
 	// Timing
 	private final static long interpolationTime = 2 * Time.MINUTES;
 	private final static long timestep = 1 * Time.MINUTES;
 
 	// Simulation and fitness test
-	private final static int numEpochs = 50;
+	private final static int numEpochs = 100;
 	private final static int numSimulationsPerEpoch = 5;
 	private final static int numBots = 250;
 	
@@ -61,9 +61,6 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 		// Create the simulation context
 		
 		DbConnection dbConnection = new DbConnection(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
-		
-		ISimulationClock botClock = new SimulationClock(timestep, interpolationTime);
-		
 		final BitstampSimulationTickerDbSource tickerNode = new BitstampSimulationTickerDbSource(
 				timestep,
 				interpolationTime,
@@ -76,6 +73,8 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 				tickerNode.getOutputBid(),
 				tickerNode.getOutputAsk()
 		);
+		
+		ISimulationClock botClock = new SimulationClock(timestep, interpolationTime);
 		
 		final IWallet wallet = new Wallet(walletStartUsd, 0d);
 		
@@ -125,7 +124,12 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 	private static void runWinner(final MacdBotConfig winningConfig, SimulationContext simContext) {		
 		LOGGER.debug("Running winner: " + winningConfig.toString());
 		
-		MacdBot bot = new MacdBot(new Random().nextInt(), winningConfig, simContext.getSignal(), simContext.getWalletInstance(), simContext.getTradeFloor());
+		MacdBot bot = new MacdBot(
+				Math.abs(new Random().nextInt()),
+				winningConfig,
+				simContext.getSignal(),
+				simContext.getWalletInstance(),
+				simContext.getTradeFloor());
 		bot.getTraderNode().setVerbose(true);
 		
 		DebugTradeLogger tradeLogger = new DebugTradeLogger();

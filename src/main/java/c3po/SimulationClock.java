@@ -35,8 +35,6 @@ public class SimulationClock implements ISimulationClock {
 		long delayedEndTime = endTime - interpolationTime;
 		
 		for (long currentTick = delayedStartTime; currentTick < delayedEndTime; currentTick += clockTimestep) {
-			// Iterate over all tickables, see which needs to be ticked
-			
 			for (ITickable listener : listeners) {
 				listener.tick(currentTick);
 			}

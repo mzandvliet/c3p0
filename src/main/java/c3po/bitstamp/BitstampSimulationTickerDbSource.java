@@ -3,6 +3,7 @@ package c3po.bitstamp;
 import java.net.InetSocketAddress;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +18,7 @@ public class BitstampSimulationTickerDbSource extends BitstampTickerSource imple
 	private long endTime;
 	private DbConnection connection;
 	
-	private ArrayList<ServerSampleEntry> history;
+	private List<ServerSampleEntry> history;
 	private int lastHistoryIndex;
 	
 	public BitstampSimulationTickerDbSource(long timestep, long interpolationTime, DbConnection connection) {
@@ -75,6 +76,8 @@ public class BitstampSimulationTickerDbSource extends BitstampTickerSource imple
 		    	history.add(entry);
 		    }
 		    
+		    resultSet.close();
+		    
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -110,6 +113,7 @@ public class BitstampSimulationTickerDbSource extends BitstampTickerSource imple
 	public void reset() {
 		super.reset();
 		
+		history.clear();
 		lastHistoryIndex = 0;
 	}
 

@@ -7,10 +7,9 @@ import c3po.Training.*;
 import c3po.simulation.SimulationContext;
 
 /*
- * Todo:
+ * TODO:
  * 
- * This wouldn't be necessary if you could create bots without supplying ticker, tradefloor, wallet, etc.
- * AND if you could create instances of generic types, which you can't.
+ * Replace this with factory methods in bot implementations, taking an instance of their specific BotConfig implementation
  */
 
 public class MacdBotFactory implements IBotFactory<MacdBotConfig> {
