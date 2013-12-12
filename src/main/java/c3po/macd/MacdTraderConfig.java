@@ -4,21 +4,24 @@ public class MacdTraderConfig {
 	public final double minBuyDiffThreshold;
 	public final double minSellDiffThreshold;
 	public final double lossCutThreshold;
-	
-	public MacdTraderConfig(
-			double minBuyThreshold,
-			double minSellThreshold,
-			double lossCuttingPercentage) {
-		this.minBuyDiffThreshold = minBuyThreshold;
-		this.minSellDiffThreshold = minSellThreshold;
-		this.lossCutThreshold = lossCuttingPercentage;
+	public final double sellThresholdRelaxationFactor;
+
+	public MacdTraderConfig(double minBuyDiffThreshold,
+			double minSellDiffThreshold, double lossCutThreshold,
+			double sellThresholdRelaxationFactor) {
+		super();
+		this.minBuyDiffThreshold = minBuyDiffThreshold;
+		this.minSellDiffThreshold = minSellDiffThreshold;
+		this.lossCutThreshold = lossCutThreshold;
+		this.sellThresholdRelaxationFactor = sellThresholdRelaxationFactor;
 	}
 
 	public String toString() {
-		return String.format("[TraderConfig - minBuyThreshold: %,.4f, minSellThreshold: %,.4f, lossCutThreshold at %,.2f]", 
+		return String.format("[TraderConfig - minBuyThreshold: %,.4f, minSellThreshold: %,.4f, lossCutThreshold at %,.2f, sellThresholdRelaxationFactor at %,.2f]", 
 				minBuyDiffThreshold,
 				minSellDiffThreshold,
-				lossCutThreshold);
+				lossCutThreshold,
+				sellThresholdRelaxationFactor);
 	}
 
 	@Override
@@ -31,6 +34,8 @@ public class MacdTraderConfig {
 		temp = Double.doubleToLongBits(minBuyDiffThreshold);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		temp = Double.doubleToLongBits(minSellDiffThreshold);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(sellThresholdRelaxationFactor);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		return result;
 	}
@@ -52,6 +57,9 @@ public class MacdTraderConfig {
 			return false;
 		if (Double.doubleToLongBits(minSellDiffThreshold) != Double
 				.doubleToLongBits(other.minSellDiffThreshold))
+			return false;
+		if (Double.doubleToLongBits(sellThresholdRelaxationFactor) != Double
+				.doubleToLongBits(other.sellThresholdRelaxationFactor))
 			return false;
 		return true;
 	}

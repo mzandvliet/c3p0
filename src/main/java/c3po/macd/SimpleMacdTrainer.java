@@ -37,24 +37,25 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 	
 	// Selection
 	private final static int numParents = 125;
-	private final static int numElites = 10;
+	private final static int numElites = 25;
 	
 	// Config mutation ranges
-	private final static double mutationChance = 0.1d;
+	private final static double mutationChance = 0.05d;
 	private final static long minAnalysisPeriod = 1 * Time.MINUTES;
 	private final static long maxAnalysisPeriod = 12 * Time.HOURS;
 	private final static double minBuyDiffThreshold = -20.0d;
 	private final static double maxBuyDiffThreshold = 20.0d;
 	private final static double minSellDiffThreshold = -20.0d;
 	private final static double maxSellDiffThreshold = 20.0d;
-
 	private final static double minLossCuttingPercentage = 0.0d;
 	private final static double maxLossCuttingPercentage = 1d;
+	private final static double minSellThresholdRelaxationFactor = 0d;
+	private final static double maxSellThresholdRelaxationFactor = 50d;
 	
 	// Market context
 	private final static double walletStartUsd = 100.0d;
 	
-	private final static long graphInterval = 20 * Time.MINUTES;
+	private final static long graphInterval = 2 * Time.MINUTES;
 
 	public static void main(String[] args) {
 		
@@ -98,7 +99,8 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 				minAnalysisPeriod, maxAnalysisPeriod,
 				minBuyDiffThreshold,  maxBuyDiffThreshold,
 				minSellDiffThreshold, maxSellDiffThreshold,
-				minLossCuttingPercentage, maxLossCuttingPercentage);
+				minLossCuttingPercentage, maxLossCuttingPercentage,
+				minSellThresholdRelaxationFactor, maxSellThresholdRelaxationFactor);
 		
 		MacdBotMutator mutator = new MacdBotMutator(mutatorConfig);
 		

@@ -11,13 +11,18 @@ public class MacdBotMutatorConfig implements IBotMutationConfig<MacdBotConfig>{
 	public final double minSellDiffThreshold;
 	public final double maxSellDiffThreshold;
 	public final double minLossCuttingPercentage;
-	public final double maxLossCuttingPercentage;	
-	
-	public MacdBotMutatorConfig(double mutationChance, 
-			long minAnalysisPeriod, long maxAnalysisPeriod, 
-			double minBuyDiffThreshold, double maxBuyDiffThreshold, 
-			double minSellDiffThreshold, double maxSellDiffThreshold,  
-			double minLossCuttingPercentage, double maxLossCuttingPercentage) {
+	public final double maxLossCuttingPercentage;
+	public final double minSellThresholdRelaxationFactor;
+	public final double maxSellThresholdRelaxationFactor;
+
+	public MacdBotMutatorConfig(double mutationChance, long minAnalysisPeriod,
+			long maxAnalysisPeriod, double minBuyDiffThreshold,
+			double maxBuyDiffThreshold, double minSellDiffThreshold,
+			double maxSellDiffThreshold, double minLossCuttingPercentage,
+			double maxLossCuttingPercentage,
+			double minSellThresholdRelaxationFactor,
+			double maxSellThresholdRelaxationFactor) {
+		super();
 		this.mutationChance = mutationChance;
 		this.minAnalysisPeriod = minAnalysisPeriod;
 		this.maxAnalysisPeriod = maxAnalysisPeriod;
@@ -27,6 +32,8 @@ public class MacdBotMutatorConfig implements IBotMutationConfig<MacdBotConfig>{
 		this.maxSellDiffThreshold = maxSellDiffThreshold;
 		this.minLossCuttingPercentage = minLossCuttingPercentage;
 		this.maxLossCuttingPercentage = maxLossCuttingPercentage;
+		this.minSellThresholdRelaxationFactor = minSellThresholdRelaxationFactor;
+		this.maxSellThresholdRelaxationFactor = maxSellThresholdRelaxationFactor;
 	}
 
 	@Override
@@ -42,6 +49,8 @@ public class MacdBotMutatorConfig implements IBotMutationConfig<MacdBotConfig>{
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		temp = Double.doubleToLongBits(maxSellDiffThreshold);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(maxSellThresholdRelaxationFactor);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
 		result = prime * result
 				+ (int) (minAnalysisPeriod ^ (minAnalysisPeriod >>> 32));
 		temp = Double.doubleToLongBits(minBuyDiffThreshold);
@@ -49,6 +58,8 @@ public class MacdBotMutatorConfig implements IBotMutationConfig<MacdBotConfig>{
 		temp = Double.doubleToLongBits(minLossCuttingPercentage);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		temp = Double.doubleToLongBits(minSellDiffThreshold);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(minSellThresholdRelaxationFactor);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		temp = Double.doubleToLongBits(mutationChance);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
@@ -75,6 +86,9 @@ public class MacdBotMutatorConfig implements IBotMutationConfig<MacdBotConfig>{
 		if (Double.doubleToLongBits(maxSellDiffThreshold) != Double
 				.doubleToLongBits(other.maxSellDiffThreshold))
 			return false;
+		if (Double.doubleToLongBits(maxSellThresholdRelaxationFactor) != Double
+				.doubleToLongBits(other.maxSellThresholdRelaxationFactor))
+			return false;
 		if (minAnalysisPeriod != other.minAnalysisPeriod)
 			return false;
 		if (Double.doubleToLongBits(minBuyDiffThreshold) != Double
@@ -85,6 +99,9 @@ public class MacdBotMutatorConfig implements IBotMutationConfig<MacdBotConfig>{
 			return false;
 		if (Double.doubleToLongBits(minSellDiffThreshold) != Double
 				.doubleToLongBits(other.minSellDiffThreshold))
+			return false;
+		if (Double.doubleToLongBits(minSellThresholdRelaxationFactor) != Double
+				.doubleToLongBits(other.minSellThresholdRelaxationFactor))
 			return false;
 		if (Double.doubleToLongBits(mutationChance) != Double
 				.doubleToLongBits(other.mutationChance))

@@ -41,8 +41,8 @@ public class MacdBotConfig implements IBotConfig {
 
 	@Override
 	public String toString() {
-		return toJSON();
-		//return "Buy: " + buyAnalysisConfig.toString() + ", " + "Sell: " + sellAnalysisConfig.toString() + ", " + traderConfig.toString();
+		//return toJSON();
+		return "Buy: " + buyAnalysisConfig.toString() + ", " + "Sell: " + sellAnalysisConfig.toString() + ", " + traderConfig.toString();
 	}
 
 

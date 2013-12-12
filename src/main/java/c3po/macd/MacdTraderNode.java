@@ -24,7 +24,6 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	 * The percentage that the sell threshold will decrease, for every percent that the current price is
 	 * higher then the previous buy.
 	 */
-	private static final double SELL_PROFIT_MULTIPLIER = 10;
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdTraderNode.class);
 	private final ISignal buyMacdDiff;
@@ -150,7 +149,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	private void tryToClosePosition(long tick, Sample currentDiff) {
 		
 		double currentPrice = tradeFloor.toUsd(1d);
-		double currentSellThreshold = calculateCurrentSellThreshold(config.minSellDiffThreshold, lastBuyPrice, currentPrice, SELL_PROFIT_MULTIPLIER);
+		double currentSellThreshold = calculateCurrentSellThreshold(config.minSellDiffThreshold, lastBuyPrice, currentPrice, config.sellThresholdRelaxationFactor);
 		boolean sellThresholdReached = currentDiff.value < currentSellThreshold;
 		
 //		if(verbose)
@@ -161,7 +160,8 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 			TradeAction sellAction = new TradeAction(TradeActionType.SELL, tick, btcToSell);
 			double usdReceived = tradeFloor.sell(wallet, sellAction);
 			
-			LOGGER.debug("Last Buy: " + String.valueOf(lastBuyPrice) + ", Current Price: " + String.valueOf(currentPrice) + ", Current Diff: " + String.valueOf(currentDiff.value) + ", New Treshold: " + String.valueOf(currentSellThreshold));
+			if (verbose)
+				LOGGER.debug("Last Buy: " + String.valueOf(lastBuyPrice) + ", Current Price: " + String.valueOf(currentPrice) + ", Current Diff: " + String.valueOf(currentDiff.value) + ", New Treshold: " + String.valueOf(currentSellThreshold));
 			
 			this.lastHighestPositionPrice = -1;
 
