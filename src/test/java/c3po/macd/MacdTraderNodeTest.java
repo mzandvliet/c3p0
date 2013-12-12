@@ -18,8 +18,7 @@ public class MacdTraderNodeTest {
 		assertEquals(-5.4, MacdTraderNode.calculateCurrentSellThreshold(-6, 100, 101, 10), 0.001d);
 		assertEquals(-6, MacdTraderNode.calculateCurrentSellThreshold(-6, 0, 101, 10), 0.001d);
 		assertEquals(-6, MacdTraderNode.calculateCurrentSellThreshold(-6, 100, 90, 10), 0.001d);
-
-		
+		assertEquals(0, MacdTraderNode.calculateCurrentSellThreshold(-6, 100, 120, 200), 0.001d);
+		assertEquals(-6, MacdTraderNode.calculateCurrentSellThreshold(-6, 100, 120, -10), 0.001d);
 	}
-
 }

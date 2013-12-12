@@ -8,14 +8,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import c3po.AbstractTickable;
-import c3po.ISignal;
 import c3po.ITickable;
 import c3po.ITradeActionSource;
 import c3po.ITradeFloor;
 import c3po.ITradeListener;
 import c3po.IWallet;
 import c3po.Sample;
-import c3po.Time;
 import c3po.TradeAction;
 import c3po.TradeAction.TradeActionType;
 
@@ -26,8 +24,8 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	 */
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdTraderNode.class);
-	private final ISignal buyMacdDiff;
-	private final ISignal sellMacdDiff;
+	private final MacdAnalysisNode buyAnalysis;
+	private final MacdAnalysisNode sellAnalysis;
 	private final IWallet wallet;
 	private final ITradeFloor tradeFloor;
 	private final MacdTraderConfig config;
@@ -39,12 +37,12 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	
 	private final List<ITradeListener> listeners;
 	private double lastHighestPositionPrice = -1; // TODO: managing this state explicitly is error prone
-	private double lastBuyPrice;
+	private double lastBuyPrice = -1;
 
-	public MacdTraderNode(long timestep, ISignal buyMacdDiff, ISignal sellMacdDiff, IWallet wallet, ITradeFloor tradeFloor, MacdTraderConfig config, long startDelay) {
+	public MacdTraderNode(long timestep, MacdAnalysisNode buyAnalysis, MacdAnalysisNode sellAnalysis, IWallet wallet, ITradeFloor tradeFloor, MacdTraderConfig config, long startDelay) {
 		super(timestep);
-		this.buyMacdDiff = buyMacdDiff;
-		this.sellMacdDiff = sellMacdDiff;
+		this.buyAnalysis = buyAnalysis;
+		this.sellAnalysis = sellAnalysis;
 		this.wallet = wallet;
 		this.tradeFloor = tradeFloor;
 		this.config = config;
@@ -63,12 +61,9 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	
 	private final static double minDollars = 1.0d;
 	
-	/*
-	 *  Do trades purely based on zero-crossings in difference signal
-	 */
 	public void decide(long tick) {
-		Sample buyCurrentDiff = buyMacdDiff.getSample(tick);
-		Sample sellCurrentDiff = sellMacdDiff.getSample(tick);
+		Sample buyCurrentDiff = buyAnalysis.getOutputDifference().getSample(tick);
+		Sample sellCurrentDiff = sellAnalysis.getOutputDifference().getSample(tick);
 		
 		if (numSkippedTicks > startDelay) {
 			boolean hasEnoughUsd = wallet.getWalletUsd() > minDollars;
@@ -98,7 +93,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		double currentPrice = 0.0d;
 		
 		try {
-			currentPrice = tradeFloor.toUsd(1d);
+			currentPrice = sellAnalysis.getOutputFast().getSample(tick).value;
 			
 			if (currentPrice > this.lastHighestPositionPrice)
 				this.lastHighestPositionPrice = currentPrice;
@@ -110,7 +105,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		
 		if(shouldSell) {
 			if (verbose)
-				LOGGER.debug(String.format("Cutting losses at %s, because the current price %,.2f is less than %,.2f of %,.2f", new Date(tick), currentPrice, config.lossCutThreshold, lastHighestPositionPrice));
+				LOGGER.debug(String.format("Cutting at %s, because the current price %,.2f is less than %,.2f of %,.2f", new Date(tick), currentPrice, config.lossCutThreshold, lastHighestPositionPrice));
 			
 			double btcToSell = wallet.getWalletBtc(); // All-in
 			TradeAction sellAction = new TradeAction(TradeActionType.SELL, tick, btcToSell);
@@ -140,7 +135,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 			// TODO: Get the buy price from the tradeFloor buy action instead
 			double currentPrice = tradeFloor.toUsd(1d);
 			this.lastBuyPrice = currentPrice;
-			this.lastHighestPositionPrice = currentPrice;
+			this.lastHighestPositionPrice = sellAnalysis.getOutputFast().getSample(tick).value;
 			
 			notify(buyAction);
 		}
@@ -161,7 +156,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 			double usdReceived = tradeFloor.sell(wallet, sellAction);
 			
 			if (verbose)
-				LOGGER.debug("Last Buy: " + String.valueOf(lastBuyPrice) + ", Current Price: " + String.valueOf(currentPrice) + ", Current Diff: " + String.valueOf(currentDiff.value) + ", New Treshold: " + String.valueOf(currentSellThreshold));
+				LOGGER.debug("Closing at " + new Date(tick) + ". Last Buy: " + String.valueOf(lastBuyPrice) + ", Current Price: " + String.valueOf(currentPrice) + ", Current Diff: " + String.valueOf(currentDiff.value) + ", New Treshold: " + String.valueOf(currentSellThreshold));
 			
 			this.lastHighestPositionPrice = -1;
 
@@ -179,10 +174,14 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	 * @return
 	 */
 	public static double  calculateCurrentSellThreshold(double baseSellDiffTreshold, double lastBuyPrice, double currentPrice, double multiplier) {
-		if(currentPrice > lastBuyPrice) {  
+		if(lastBuyPrice > 0 && currentPrice > lastBuyPrice) {  
 			double priceDifference = currentPrice - lastBuyPrice;
+			
+			// Multiplier is in range between 0 and 100
+			multiplier = Math.max(Math.min(100, multiplier),0);
+			
 			double thresholdScalar = 1d - Math.min((priceDifference/lastBuyPrice) * multiplier, 1d);
-			return baseSellDiffTreshold * thresholdScalar; // TODO: Don't let the new threshold become positive
+			return baseSellDiffTreshold * thresholdScalar; 
 		} else {
 			return baseSellDiffTreshold;
 		}
