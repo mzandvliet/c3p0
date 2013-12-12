@@ -26,8 +26,8 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	 */
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdTraderNode.class);
-	private final ISignal buyMacdDiff;
-	private final ISignal sellMacdDiff;
+	private final MacdAnalysisNode buyAnalysis;
+	private final MacdAnalysisNode sellAnalysis;
 	private final IWallet wallet;
 	private final ITradeFloor tradeFloor;
 	private final MacdTraderConfig config;
@@ -41,10 +41,10 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	private double lastHighestPositionPrice = -1; // TODO: managing this state explicitly is error prone
 	private double lastBuyPrice;
 
-	public MacdTraderNode(long timestep, ISignal buyMacdDiff, ISignal sellMacdDiff, IWallet wallet, ITradeFloor tradeFloor, MacdTraderConfig config, long startDelay) {
+	public MacdTraderNode(long timestep, MacdAnalysisNode buyAnalysis, MacdAnalysisNode sellAnalysis, IWallet wallet, ITradeFloor tradeFloor, MacdTraderConfig config, long startDelay) {
 		super(timestep);
-		this.buyMacdDiff = buyMacdDiff;
-		this.sellMacdDiff = sellMacdDiff;
+		this.buyAnalysis = buyAnalysis;
+		this.sellAnalysis = sellAnalysis;
 		this.wallet = wallet;
 		this.tradeFloor = tradeFloor;
 		this.config = config;
@@ -63,12 +63,9 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	
 	private final static double minDollars = 1.0d;
 	
-	/*
-	 *  Do trades purely based on zero-crossings in difference signal
-	 */
 	public void decide(long tick) {
-		Sample buyCurrentDiff = buyMacdDiff.getSample(tick);
-		Sample sellCurrentDiff = sellMacdDiff.getSample(tick);
+		Sample buyCurrentDiff = buyAnalysis.getOutputDifference().getSample(tick);
+		Sample sellCurrentDiff = sellAnalysis.getOutputDifference().getSample(tick);
 		
 		if (numSkippedTicks > startDelay) {
 			boolean hasEnoughUsd = wallet.getWalletUsd() > minDollars;
@@ -98,7 +95,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		double currentPrice = 0.0d;
 		
 		try {
-			currentPrice = tradeFloor.toUsd(1d);
+			currentPrice = sellAnalysis.getOutputFast().getSample(tick).value;
 			
 			if (currentPrice > this.lastHighestPositionPrice)
 				this.lastHighestPositionPrice = currentPrice;
@@ -110,7 +107,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		
 		if(shouldSell) {
 			if (verbose)
-				LOGGER.debug(String.format("Cutting losses at %s, because the current price %,.2f is less than %,.2f of %,.2f", new Date(tick), currentPrice, config.lossCutThreshold, lastHighestPositionPrice));
+				LOGGER.debug(String.format("Cutting at %s, because the current price %,.2f is less than %,.2f of %,.2f", new Date(tick), currentPrice, config.lossCutThreshold, lastHighestPositionPrice));
 			
 			double btcToSell = wallet.getWalletBtc(); // All-in
 			TradeAction sellAction = new TradeAction(TradeActionType.SELL, tick, btcToSell);
@@ -140,7 +137,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 			// TODO: Get the buy price from the tradeFloor buy action instead
 			double currentPrice = tradeFloor.toUsd(1d);
 			this.lastBuyPrice = currentPrice;
-			this.lastHighestPositionPrice = currentPrice;
+			this.lastHighestPositionPrice = sellAnalysis.getOutputFast().getSample(tick).value;
 			
 			notify(buyAction);
 		}
@@ -161,7 +158,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 			double usdReceived = tradeFloor.sell(wallet, sellAction);
 			
 			if (verbose)
-				LOGGER.debug("Last Buy: " + String.valueOf(lastBuyPrice) + ", Current Price: " + String.valueOf(currentPrice) + ", Current Diff: " + String.valueOf(currentDiff.value) + ", New Treshold: " + String.valueOf(currentSellThreshold));
+				LOGGER.debug("Closing at " + new Date(tick) + ". Last Buy: " + String.valueOf(lastBuyPrice) + ", Current Price: " + String.valueOf(currentPrice) + ", Current Diff: " + String.valueOf(currentDiff.value) + ", New Treshold: " + String.valueOf(currentSellThreshold));
 			
 			this.lastHighestPositionPrice = -1;
 

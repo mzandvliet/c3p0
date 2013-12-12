@@ -22,18 +22,18 @@ public class SimpleMacdTrainer {
 private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.class);
 	
 	// First timestamp in database: 1384079023000l
-    private final static long simulationStartTime =  new Date().getTime() - Time.DAYS * 28;
+    private final static long simulationStartTime =  new Date().getTime() - Time.DAYS * 31;
 	private final static long simulationEndTime = new Date().getTime();
-	private final static long simulationLength = Time.DAYS * 3;
+	private final static long simulationLength = Time.DAYS * 2;
 	
 	// Timing
 	private final static long interpolationTime = 2 * Time.MINUTES;
 	private final static long timestep = 1 * Time.MINUTES;
 
 	// Simulation and fitness test
-	private final static int numEpochs = 100;
-	private final static int numSimulationsPerEpoch = 5;
-	private final static int numBots = 250;
+	private final static int numEpochs = 500;
+	private final static int numSimulationsPerEpoch = 10;
+	private final static int numBots = 500;
 	
 	// Selection
 	private final static int numParents = 125;
@@ -43,19 +43,19 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 	private final static double mutationChance = 0.05d;
 	private final static long minAnalysisPeriod = 1 * Time.MINUTES;
 	private final static long maxAnalysisPeriod = 12 * Time.HOURS;
-	private final static double minBuyDiffThreshold = -20.0d;
+	private final static double minBuyDiffThreshold = 0.0d;
 	private final static double maxBuyDiffThreshold = 20.0d;
 	private final static double minSellDiffThreshold = -20.0d;
-	private final static double maxSellDiffThreshold = 20.0d;
+	private final static double maxSellDiffThreshold = 0.0d;
 	private final static double minLossCuttingPercentage = 0.0d;
 	private final static double maxLossCuttingPercentage = 1d;
 	private final static double minSellThresholdRelaxationFactor = 0d;
-	private final static double maxSellThresholdRelaxationFactor = 50d;
+	private final static double maxSellThresholdRelaxationFactor = 100d;
 	
 	// Market context
 	private final static double walletStartUsd = 100.0d;
 	
-	private final static long graphInterval = 2 * Time.MINUTES;
+	private final static long graphInterval = 5 * Time.MINUTES;
 
 	public static void main(String[] args) {
 		
