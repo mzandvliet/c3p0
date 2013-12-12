@@ -73,6 +73,7 @@ public class SimulationBotRunner {
 	}
 	
 	private static SelfOptimizingMacdBotConfig createConfig() {
+		/*
 		MacdBotMutatorConfig mutatorConfig = new MacdBotMutatorConfig(
 				mutationChance,
 				minAnalysisPeriod,
@@ -90,5 +91,6 @@ public class SimulationBotRunner {
 				mutationChance);
 		
 		return new SelfOptimizingMacdBotConfig(timestep, optimizationTimestep, genAlgConfig, mutatorConfig);
+		*/ return null;
 	}
 }
