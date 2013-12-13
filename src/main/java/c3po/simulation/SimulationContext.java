@@ -5,7 +5,8 @@ import c3po.*;
 public class SimulationContext {
 	private final INonRealtimeSource source;
 	private final ISimulationClock clock;
-	private final ISignal signal;
+	private final ISignal priceSignal;
+	private final ISignal volumeSignal;
 	private final ITradeFloor tradeFloor;
 	private final IWallet wallet;
 	
@@ -15,14 +16,16 @@ public class SimulationContext {
 	public SimulationContext(
 			INonRealtimeSource source,
 			ISimulationClock clock,
-			ISignal signal,
+			ISignal price,
+			ISignal volume,
 			ITradeFloor tradeFloor,
 			IWallet wallet
 			) {
 		super();
 		this.source = source;
 		this.clock = clock;
-		this.signal = signal;
+		this.priceSignal = price;
+		this.volumeSignal = volume;
 		this.tradeFloor = tradeFloor;
 		this.wallet = wallet;
 	}
@@ -31,8 +34,12 @@ public class SimulationContext {
 		return source;
 	}
 
-	public ISignal getSignal() {
-		return signal;
+	public ISignal getPriceSignal() {
+		return priceSignal;
+	}
+	
+	public ISignal getVolumeSignal() {
+		return volumeSignal;
 	}
 
 	public ITradeFloor getTradeFloor() {

@@ -87,7 +87,7 @@ public class RealtimeBotRunner {
 			tradeFloor.addTradeListener(tradeLogger);
 			
 			// Create bot
-			MacdBot bot = new MacdBot(botId, config, tickerNode.getOutputLast(), wallet, tradeFloor);
+			MacdBot bot = new MacdBot(botId, config, tickerNode.getOutputLast(), tickerNode.getOutputVolume(), wallet, tradeFloor);
 			LOGGER.info("Starting bot: " + bot);
 			
 			// Log the trades by DB and email

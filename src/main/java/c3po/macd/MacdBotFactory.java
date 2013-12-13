@@ -23,6 +23,6 @@ public class MacdBotFactory implements IBotFactory<MacdBotConfig> {
 
 	@Override
 	public MacdBot create(MacdBotConfig config) {
-		return new MacdBot(new Random().nextInt(), config, context.getSignal(), context.getWalletInstance(), context.getTradeFloor());
+		return new MacdBot(new Random().nextInt(), config, context.getPriceSignal(), context.getVolumeSignal(), context.getWalletInstance(), context.getTradeFloor());
 	}
 }

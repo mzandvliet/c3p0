@@ -22,7 +22,7 @@ public class SimpleMacdTrainer {
 private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.class);
 	
 	// First timestamp in database: 1384079023000l
-    private final static long simulationStartTime =  new Date().getTime() - Time.DAYS * 31;
+    private final static long simulationStartTime =  new Date().getTime() - Time.DAYS * 14;
 	private final static long simulationEndTime = new Date().getTime();
 	private final static long simulationLength = Time.DAYS * 2;
 	
@@ -33,7 +33,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 	// Simulation and fitness test
 	private final static int numEpochs = 500;
 	private final static int numSimulationsPerEpoch = 10;
-	private final static int numBots = 500;
+	private final static int numBots = 250;
 	
 	// Selection
 	private final static int numParents = 125;
@@ -79,7 +79,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 		
 		final IWallet wallet = new Wallet(walletStartUsd, 0d);
 		
-		SimulationContext simContext = new SimulationContext(tickerNode, botClock, tickerNode.getOutputLast(), tradeFloor, wallet);
+		SimulationContext simContext = new SimulationContext(tickerNode, botClock, tickerNode.getOutputLast(), tickerNode.getOutputVolume(), tradeFloor, wallet);
 		
 		
 		// Create and run the trainer on the context
@@ -129,7 +129,8 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 		MacdBot bot = new MacdBot(
 				Math.abs(new Random().nextInt()),
 				winningConfig,
-				simContext.getSignal(),
+				simContext.getPriceSignal(),
+				simContext.getVolumeSignal(),
 				simContext.getWalletInstance(),
 				simContext.getTradeFloor());
 		bot.getTraderNode().setVerbose(true);
@@ -140,7 +141,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 		// Create the grapher
 		
 		GraphingNode grapher = new GraphingNode(graphInterval, "MacdBot", 
-				simContext.getSignal(),
+				simContext.getPriceSignal(),
 				bot.getBuyAnalysisNode().getOutputFast(),
 				bot.getBuyAnalysisNode().getOutputSlow()
 		);
