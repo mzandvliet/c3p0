@@ -60,6 +60,8 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 	private final GenAlgBotTrainerConfig config;
 	private final IBotConfigMutator<TBotConfig> mutator;
 	
+	private TBotConfig lastWinner;
+	
 	public GenAlgBotTrainer(GenAlgBotTrainerConfig config, IBotConfigMutator<TBotConfig> mutator) {
 		this.config = config;
 		this.mutator = mutator;
@@ -106,6 +108,11 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 			// Log results
 			LOGGER.debug("Finished epoch " + i);
 			logEpochResults(configs, results);
+			
+			if (configs.get(0) == lastWinner) {
+				LOGGER.debug("Convergence threshold reached!");
+				break;
+			}
 			
 			// Evolve the configs (Oh, but leave them alone when we're done)
 			if (i < config.numEpochs-1) {
@@ -157,8 +164,8 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 	        	double botAWallet = results.get(configA).averageWalletValue;
 	        	double botBWallet = results.get(configB).averageWalletValue;
 	        	
-	        	double botAActivity = Math.min(results.get(configA).averageNumTrades, 2);
-	        	double botBActivity = Math.min(results.get(configB).averageNumTrades, 2);
+	        	double botAActivity = Math.min(results.get(configA).averageNumTrades, config.tradeBias);
+	        	double botBActivity = Math.min(results.get(configB).averageNumTrades, config.tradeBias);
 
             	double configAPerformance = botAWallet * botAActivity;	        	
             	double configBPerformance = botBWallet * botBActivity;

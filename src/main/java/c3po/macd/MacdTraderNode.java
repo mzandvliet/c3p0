@@ -7,14 +7,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import c3po.AbstractTickable;
-import c3po.ITickable;
-import c3po.ITradeActionSource;
-import c3po.ITradeFloor;
-import c3po.ITradeListener;
-import c3po.IWallet;
-import c3po.Sample;
-import c3po.TradeAction;
+import c3po.*;
 import c3po.TradeAction.TradeActionType;
 
 public class MacdTraderNode extends AbstractTickable implements ITickable, ITradeActionSource {
@@ -105,7 +98,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		
 		if(shouldSell) {
 			if (verbose)
-				LOGGER.debug(String.format("Cutting at %s, because the current price %,.2f is less than %,.2f of %,.2f", new Date(tick), currentPrice, config.lossCutThreshold, lastHighestPositionPrice));
+				LOGGER.debug(String.format("Cutting at %s. Last buy: %s, because the current price %,.2f is less than %,.2f of %,.2f", new Date(tick), String.valueOf(lastBuyPrice), currentPrice, config.lossCutThreshold, lastHighestPositionPrice));
 			
 			double btcToSell = wallet.getWalletBtc(); // All-in
 			TradeAction sellAction = new TradeAction(TradeActionType.SELL, tick, btcToSell);
@@ -178,7 +171,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 			double priceDifference = currentPrice - lastBuyPrice;
 			
 			// Multiplier is in range between 0 and 100
-			multiplier = Math.max(Math.min(100, multiplier),0);
+			multiplier = SignalMath.clamp(multiplier, 0d, 100d);
 			
 			double thresholdScalar = 1d - Math.min((priceDifference/lastBuyPrice) * multiplier, 1d);
 			return baseSellDiffTreshold * thresholdScalar; 

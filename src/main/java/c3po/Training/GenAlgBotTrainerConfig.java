@@ -10,20 +10,31 @@ public class GenAlgBotTrainerConfig {
 	public final int numEpochs;
 	public final int numSimulationsPerEpoch;
 	
+	// Scoring
+	public final int tradeBias;
+	
 	// Selection
 	public final int numBots;
 	public final int numParents;
 	public final int numElites;
 	
-	public GenAlgBotTrainerConfig(long dataStartTime, long dataEndTime,
-			long simulationLength, int numEpochs, int numSimulationsPerEpoch,
-			int numBots, int numParents, int numElites) {
+	public GenAlgBotTrainerConfig(
+			long dataStartTime,
+			long dataEndTime,
+			long simulationLength,
+			int numEpochs,
+			int numSimulationsPerEpoch,
+			int tradeBias,
+			int numBots,
+			int numParents,
+			int numElites) {
 		super();
 		this.dataStartTime = dataStartTime;
 		this.dataEndTime = dataEndTime;
 		this.simulationLength = simulationLength;
 		this.numEpochs = numEpochs;
 		this.numSimulationsPerEpoch = numSimulationsPerEpoch;
+		this.tradeBias = tradeBias;
 		this.numBots = numBots;
 		this.numParents = numParents;
 		this.numElites = numElites;
@@ -43,6 +54,7 @@ public class GenAlgBotTrainerConfig {
 		result = prime * result + numSimulationsPerEpoch;
 		result = prime * result
 				+ (int) (simulationLength ^ (simulationLength >>> 32));
+		result = prime * result + tradeBias;
 		return result;
 	}
 
@@ -70,6 +82,8 @@ public class GenAlgBotTrainerConfig {
 		if (numSimulationsPerEpoch != other.numSimulationsPerEpoch)
 			return false;
 		if (simulationLength != other.simulationLength)
+			return false;
+		if (tradeBias != other.tradeBias)
 			return false;
 		return true;
 	}
