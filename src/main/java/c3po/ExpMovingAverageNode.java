@@ -5,14 +5,14 @@ import java.util.List;
 public class ExpMovingAverageNode extends AbstractTickable implements INode {
 	private ISignal input;
 	private int kernelSize;
-	private CircularArrayList<Sample> buffer;
+	private Sample lastSample;
 	private OutputSignal output;
 	
 	public ExpMovingAverageNode(long timestep, long window, ISignal input) {
 		super(timestep);
 		this.input = input;
 		this.kernelSize = (int) (window / timestep + 1);
-		this.buffer = new CircularArrayList<Sample>(kernelSize * 2);
+		this.lastSample = Sample.none;
 		this.output = new OutputSignal(this);
 	}
 
@@ -28,12 +28,12 @@ public class ExpMovingAverageNode extends AbstractTickable implements INode {
 	
 	@Override
 	public void onNewTick(long tick) {
-		Sample newest = transform(buffer, input.getSample(tick), kernelSize);
-		buffer.add(newest);
+		Sample newest = transform(lastSample, input.getSample(tick), kernelSize);
+		lastSample = newest;
 		output.setSample(newest);
 	}
 
-	private Sample transform(List<Sample> lastSignals, Sample newest, int kernelSize) {
-		return SignalMath.filterExpMovingAverage(lastSignals, newest, kernelSize);
+	private static Sample transform(Sample lastSample, Sample newest, int kernelSize) {
+		return SignalMath.filterExpMovingAverage(lastSample, newest, kernelSize);
 	}
 }

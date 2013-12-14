@@ -65,26 +65,28 @@ public class SignalMath {
 		List<Sample> smoothSignals = new ArrayList<Sample>(size);
 		  
 		for (int i = 0; i < size; i++) {
-			smoothSignals.add(filterExpMovingAverage(smoothSignals, signals.get(i), kernelSize));
+			smoothSignals.add(filterExpMovingAverage(signals.get(Math.max(i-1,0)), signals.get(i), kernelSize));
 		}
 		
 		return smoothSignals;
 	}
 	
-	public static Sample filterExpMovingAverage(final List<Sample> smoothSignals, final Sample newest, final int kernelSize) {
-		int size = smoothSignals.size();
-		
-		if (size == 0)
+	public static Sample filterExpMovingAverage(final Sample lastSample, final Sample newest, final int kernelSize) {		
+		if (lastSample == Sample.none)
 			return Sample.copy(newest);
 		
 		double alpha = 2.0 / ((double)kernelSize + 1.0);
-		double previous = smoothSignals.get(size-1).value;
+		double previous = lastSample.value;
 		double current = newest.value * alpha + previous * (1.0 - alpha);
 
 		return new Sample(newest.timestamp, current);
 	}
 	
 	public static int clamp(int value, int min, int max) {
+		return Math.max(min, Math.min(max, value));
+	}
+	
+	public static double clamp(double value, double min, double max) {
 		return Math.max(min, Math.min(max, value));
 	}
 	
