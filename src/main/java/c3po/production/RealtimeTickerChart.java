@@ -14,8 +14,8 @@ import c3po.utils.Time;
 public class RealtimeTickerChart {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RealtimeBotRunner.class);
 
-	private final static long interpolationTime = 2 * Time.SECONDS;
-	private final static long timestep = 10 * Time.SECONDS;
+	private final static long interpolationTime = 4 * Time.SECONDS;
+	private final static long timestep = 2 * Time.SECONDS;
 
 	public static void main(String[] args) {
 		 
