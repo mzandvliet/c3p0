@@ -42,8 +42,6 @@ public class MovingAverageNodeTest {
 		assertEquals(3.5, movingAverageNode.getOutput(0).getSample(4000l).value, 0.01);
 		movingAverageNode.tick(5000l);
 		assertEquals(4.5, movingAverageNode.getOutput(0).getSample(5000l).value, 0.01);
-		
-		
 	}
 
 }

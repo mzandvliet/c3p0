@@ -17,47 +17,15 @@ public class SignalMath {
 		return new Sample(timestamp, value);
 	}
 	
-	public static Sample basicMovingAverage(final List<Sample> signals, final int kernelSize) {
-		int size = signals.size();	
-
-		int sampleCount = Math.min(size, kernelSize);
+	public static Sample basicMovingAverage(final List<Sample> kernelBuffer) {
+		int size = kernelBuffer.size();
 		
 		double total = 0;
-		for (int i = 0; i < sampleCount; i++) {
-			total += signals.get(i).value;
-		}
-		
-		return new Sample(signals.get(0).timestamp, total / (double) kernelSize);
-	}
-	
-	public static List<Sample> filterMovingAverage(final List<Sample> signals, final int kernelSize) {
-		int size = signals.size();
-		List<Sample> smoothSignals = new ArrayList<Sample>(size);
-		
 		for (int i = 0; i < size; i++) {
-			smoothSignals.add(filterMovingAverage(smoothSignals, signals.get(i), kernelSize));
+			total += kernelBuffer.get(i).value;
 		}
 		
-		return smoothSignals;
-	}
-	
-	public static Sample filterMovingAverage(final List<Sample> smoothSignals, final Sample newest, final int kernelSize) {
-		int size = smoothSignals.size();
-		
-		if (size == 0)
-			return Sample.copy(newest);
-		
-		double kernelSum = 0;
-		
-		// From oldest to newest in kernel, clamping in case we don't have enough samples
-		for (int j = 0; j < kernelSize-1; j++) {
-			int kernelIndex = clamp(size - j, 0, size-1);
-			Sample current = smoothSignals.get(kernelIndex);
-			kernelSum += current.value;
-		}
-		kernelSum += newest.value;
-
-		return new Sample(newest.timestamp, kernelSum / kernelSize);
+		return new Sample(kernelBuffer.get(0).timestamp, total / (double) size);
 	}
 
 	public static List<Sample> filterExpMovingAverage(List<Sample> signals, int kernelSize) {

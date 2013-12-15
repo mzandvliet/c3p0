@@ -11,8 +11,8 @@ public class MovingAverageNode extends AbstractTickable implements INode {
 	public MovingAverageNode(long timestep, long window, ISignal input) {
 		super(timestep);
 		this.input = input;
-		this.kernelSize = (int) (window / timestep + 1);
-		this.buffer = new CircularArrayList<Sample>(kernelSize * 2);
+		this.kernelSize = (int) Math.round(window / timestep);
+		this.buffer = new CircularArrayList<Sample>(kernelSize);
 		this.output = new OutputSignal(this);
 	}
 
@@ -28,7 +28,8 @@ public class MovingAverageNode extends AbstractTickable implements INode {
 	
 	@Override
 	public void onNewTick(long tick) {
-		buffer.add(input.getSample(tick));
-		output.setSample(SignalMath.basicMovingAverage(buffer, kernelSize));
+		Sample newest = input.getSample(tick);
+		buffer.add(newest);
+		output.setSample(SignalMath.basicMovingAverage(buffer));
 	}
 }
