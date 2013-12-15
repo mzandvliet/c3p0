@@ -18,36 +18,36 @@ public class MacdAnalysisNode extends AbstractTickable implements INode {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdAnalysisNode.class);
 	
-	private final int numSignals = 5;
-	private ISignal[] signals;
+	private final ISignal[] signals;
 	
-	INode fastNode;
-	INode slowNode;
-	INode macdNode;
-	INode signalNode;
-	INode diffNode;
+	private final INode fastNode;
+	private final INode slowNode;
+	private final INode macdNode;
+	private final INode signalNode;
+	private final INode diffNode;
+	private final INode volumeNode;
 	
 	private final MacdAnalysisConfig config;
 	
-	public MacdAnalysisNode(long timestep, ISignal input, MacdAnalysisConfig config) {
+	public MacdAnalysisNode(long timestep, ISignal price, ISignal volume, MacdAnalysisConfig config) {
 		super(timestep);
 		this.config = config;
-		this.signals = new OutputSignal[numSignals];
+		this.signals = new OutputSignal[6];
 		
 		// Create internal signal tree, hook all intermediate results up to outputs
-		fastNode = new ExpMovingAverageNode(timestep, config.fastPeriod, input);
-		slowNode = new ExpMovingAverageNode(timestep, config.slowPeriod, input);
+		fastNode = new ExpMovingAverageNode(timestep, config.fastPeriod, price);
+		slowNode = new ExpMovingAverageNode(timestep, config.slowPeriod, price);
 		macdNode = new SubtractNode(timestep, fastNode.getOutput(0), slowNode.getOutput(0));
 		signalNode = new ExpMovingAverageNode(timestep, config.signalPeriod, macdNode.getOutput(0));
 		diffNode = new SubtractNode(timestep, macdNode.getOutput(0), signalNode.getOutput(0));
+		volumeNode = new ExpMovingAverageNode(timestep, config.fastPeriod, volume);
 		
 		this.signals[SignalNames.FAST.ordinal()] = fastNode.getOutput(0);
 		this.signals[SignalNames.SLOW.ordinal()] = slowNode.getOutput(0);
 		this.signals[SignalNames.MACD.ordinal()] = macdNode.getOutput(0);
 		this.signals[SignalNames.SIGNAL.ordinal()] = signalNode.getOutput(0);
 		this.signals[SignalNames.DIFFERENCE.ordinal()] = diffNode.getOutput(0);
-		
-		//LOGGER.debug(String.format("Initiated AnalysisNode with " + config));
+		this.signals[SignalNames.VOLUME.ordinal()] = volumeNode.getOutput(0);
 	}
 	
 	public ISignal getOutputFast() {
@@ -70,7 +70,10 @@ public class MacdAnalysisNode extends AbstractTickable implements INode {
 		return this.signals[SignalNames.DIFFERENCE.ordinal()];
 	}
 	
-		
+	public ISignal getOutputVolume() {
+		return this.signals[SignalNames.VOLUME.ordinal()];
+	}
+			
 	public MacdAnalysisConfig getConfig() {
 		return config;
 	}
@@ -78,7 +81,7 @@ public class MacdAnalysisNode extends AbstractTickable implements INode {
 
 	@Override
 	public int getNumOutputs() {
-		return numSignals;
+		return signals.length;
 	}
 	
 	@Override
@@ -89,6 +92,7 @@ public class MacdAnalysisNode extends AbstractTickable implements INode {
 	@Override
 	public void onNewTick(long tick) {
 		diffNode.tick(tick);
+		volumeNode.tick(tick);
 	}
 	
 	public enum SignalNames {
@@ -96,6 +100,7 @@ public class MacdAnalysisNode extends AbstractTickable implements INode {
 		SLOW,
 		MACD,
 		SIGNAL,
-		DIFFERENCE
+		DIFFERENCE,
+		VOLUME
 	}
 }

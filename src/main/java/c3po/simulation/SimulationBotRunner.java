@@ -58,7 +58,7 @@ public class SimulationBotRunner {
 		
 		// Create the bot
 		
-		final SelfOptimizingMacdBot bot = new SelfOptimizingMacdBot(createConfig(), tickerNode.getOutputLast(), wallet, tradeFloor);
+		final SelfOptimizingMacdBot bot = new SelfOptimizingMacdBot(createConfig(), tickerNode.getOutputLast(), tickerNode.getOutputVolume(), wallet, tradeFloor);
 		
 		// Run the bot
 		

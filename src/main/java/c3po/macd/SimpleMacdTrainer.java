@@ -22,30 +22,33 @@ public class SimpleMacdTrainer {
 private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.class);
 	
 	// First timestamp in database: 1384079023000l
-    private final static long simulationStartTime =  new Date().getTime() - Time.DAYS * 31;
-	private final static long simulationEndTime = new Date().getTime();
-	private final static long simulationLength = Time.DAYS * 2;
+	private final static long simulationEndTime = 1386965802000l;
+	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 7;
+	private final static long simulationLength = Time.DAYS * 1;
 	
 	// Timing
 	private final static long interpolationTime = 2 * Time.MINUTES;
 	private final static long timestep = 1 * Time.MINUTES;
 
 	// Simulation and fitness test
-	private final static int numEpochs = 500;
+	private final static int numEpochs = 200;
 	private final static int numSimulationsPerEpoch = 10;
-	private final static int numBots = 500;
+	private final static int numBots = 250;
+	
+	// Scoring
+	private final static int tradeBias = 6;
 	
 	// Selection
 	private final static int numParents = 125;
 	private final static int numElites = 25;
 	
 	// Config mutation ranges
-	private final static double mutationChance = 0.05d;
+	private final static double mutationChance = 0.1d;
 	private final static long minAnalysisPeriod = 1 * Time.MINUTES;
 	private final static long maxAnalysisPeriod = 12 * Time.HOURS;
 	private final static double minBuyDiffThreshold = 0.0d;
-	private final static double maxBuyDiffThreshold = 20.0d;
-	private final static double minSellDiffThreshold = -20.0d;
+	private final static double maxBuyDiffThreshold = 30.0d;
+	private final static double minSellDiffThreshold = -30.0d;
 	private final static double maxSellDiffThreshold = 0.0d;
 	private final static double minLossCuttingPercentage = 0.0d;
 	private final static double maxLossCuttingPercentage = 1d;
@@ -79,7 +82,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 		
 		final IWallet wallet = new Wallet(walletStartUsd, 0d);
 		
-		SimulationContext simContext = new SimulationContext(tickerNode, botClock, tickerNode.getOutputLast(), tradeFloor, wallet);
+		SimulationContext simContext = new SimulationContext(tickerNode, botClock, tickerNode.getOutputLast(), tickerNode.getOutputVolume(), tradeFloor, wallet);
 		
 		
 		// Create and run the trainer on the context
@@ -110,6 +113,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 				simulationLength,
 				numEpochs,
 				numSimulationsPerEpoch,
+				tradeBias,
 				numBots,
 				numParents,
 				numElites);
@@ -129,7 +133,8 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 		MacdBot bot = new MacdBot(
 				Math.abs(new Random().nextInt()),
 				winningConfig,
-				simContext.getSignal(),
+				simContext.getPriceSignal(),
+				simContext.getVolumeSignal(),
 				simContext.getWalletInstance(),
 				simContext.getTradeFloor());
 		bot.getTraderNode().setVerbose(true);
@@ -140,7 +145,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 		// Create the grapher
 		
 		GraphingNode grapher = new GraphingNode(graphInterval, "MacdBot", 
-				simContext.getSignal(),
+				simContext.getPriceSignal(),
 				bot.getBuyAnalysisNode().getOutputFast(),
 				bot.getBuyAnalysisNode().getOutputSlow()
 		);

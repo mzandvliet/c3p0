@@ -10,7 +10,8 @@ import c3po.Training.*;
 
 public class SelfOptimizingMacdBot extends AbstractTickable implements IBot<SelfOptimizingMacdBotConfig> {
 	private final SelfOptimizingMacdBotConfig config;
-	private final ISignal ticker;
+	private final ISignal price;
+	private final ISignal volume;
 	private final IWallet wallet;
 	private final ITradeFloor tradeFloor;
 	
@@ -20,18 +21,19 @@ public class SelfOptimizingMacdBot extends AbstractTickable implements IBot<Self
 	
 	private long lastOptimizationTime = -1;
 	
-	public SelfOptimizingMacdBot(SelfOptimizingMacdBotConfig config, ISignal ticker, IWallet wallet, ITradeFloor tradeFloor) {
+	public SelfOptimizingMacdBot(SelfOptimizingMacdBotConfig config, ISignal price, ISignal volume, IWallet wallet, ITradeFloor tradeFloor) {
 		super(config.timestep);
 		
 		this.config = config;
-		this.ticker = ticker;
+		this.price = price;
+		this.volume = volume;
 		this.wallet = wallet;
 		this.tradeFloor = tradeFloor;
 		
 		this.trainer = null;
 		MacdBotConfig initialConfig = null; // TODO: train on data from *before* the current time, WHICH NEEDS MORE CONFIGURATION
 		
-		this.bot = new MacdBot(0, initialConfig, ticker, wallet, tradeFloor);
+		this.bot = new MacdBot(0, initialConfig, price, volume, wallet, tradeFloor);
 	}
 	
 	@Override
@@ -69,7 +71,7 @@ public class SelfOptimizingMacdBot extends AbstractTickable implements IBot<Self
 		
 		if (tick > lastOptimizationTime) {
 			MacdBotConfig newConfig = trainer.train(null, null);
-			bot = new MacdBot(0, newConfig, ticker, wallet, tradeFloor); // TODO: are Bots immutable or mutable? Either way, we need to apply the new config to our wrapped bot
+			bot = new MacdBot(0, newConfig, price, volume, wallet, tradeFloor); // TODO: are Bots immutable or mutable? Either way, we need to apply the new config to our wrapped bot
 		}
 		lastOptimizationTime = tick;
 		
