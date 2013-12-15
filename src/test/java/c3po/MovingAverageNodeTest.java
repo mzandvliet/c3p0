@@ -32,6 +32,11 @@ public class MovingAverageNodeTest {
 			public Sample getSample(long tick) {
 				return inputData.get((int) ((tick / 1000) - 1));
 			}
+
+			@Override
+			public String getName() {
+				return null;
+			}
 		});
 		
 		// Expecting the average of the past 2 samples
