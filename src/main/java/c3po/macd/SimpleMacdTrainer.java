@@ -28,15 +28,15 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 	
 	// First timestamp in database: 1384079023000l
 	private final static long simulationEndTime = 1386965802000l;
-	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 7;
-	private final static long simulationLength = Time.DAYS * 1;
+	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 14;
+	private final static long simulationLength = Time.DAYS * 3;
 	
 	// Timing
 	private final static long interpolationTime = 2 * Time.MINUTES;
 	private final static long timestep = 1 * Time.MINUTES;
 
 	// Simulation and fitness test
-	private final static int numEpochs = 200;
+	private final static int numEpochs = 120;
 	private final static int numSimulationsPerEpoch = 10;
 	private final static int numBots = 250;
 	
@@ -55,7 +55,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 	private final static double maxBuyDiffThreshold = 30.0d;
 	private final static double minSellDiffThreshold = -30.0d;
 	private final static double maxSellDiffThreshold = 0.0d;
-	private final static double minLossCuttingPercentage = 0.0d;
+	private final static double minLossCuttingPercentage = 0.7d;
 	private final static double maxLossCuttingPercentage = 1d;
 	private final static double minSellThresholdRelaxationFactor = 0d;
 	private final static double maxSellThresholdRelaxationFactor = 100d;
