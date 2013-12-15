@@ -4,6 +4,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+
 import au.com.bytecode.opencsv.CSVReader;
 
 /**
@@ -32,18 +33,22 @@ public class PearsonCorrelation {
 		}
 		
 		// Combinations that we wish to try		
-		List<SignalName> correlationProperties = Arrays.asList(new SignalName[] {SignalName.volume_bid, SignalName.volume_ask, SignalName.p99_bid});
-		
-		for(SignalName signal1 : correlationProperties) {
-			for(SignalName signal2 : correlationProperties) {
+		List<SignalName> tickerProperties = Arrays.asList(new SignalName[] {SignalName.bid, SignalName.ask, SignalName.last});
+		List<SignalName> orderbookProperties = Arrays.asList(new SignalName[] {SignalName.volume_bid, SignalName.volume_ask, SignalName.p99_bid, SignalName.p99_ask});
+		List<Integer> timeshifts = Arrays.asList(60, 300, 600, 3600);
+		for(SignalName signal1 : tickerProperties) {
+			for(SignalName signal2 : orderbookProperties) {
 				// Dont correlate with self
 				if(signal1 == signal2) continue;
-				
-				// TODO Add extra while loop that can remove some array elements from one fo the data sets so we essentially get a shift in time
-				// TODO Record for each combination the top correlation score and the used time shift.
-				
-				double pearsonCorrelation = getPearsonCorrelation(data[signal1.ordinal()], data[signal2.ordinal()]);
-				System.out.println("Correlation between " + signal1 + " and " + signal2 + " = " + pearsonCorrelation);
+
+				for(Integer timeshift : timeshifts) {
+					// Shift the data so that the ticker data is matched with the earlier order book data)
+					Double[] range1 = Arrays.copyOfRange(data[signal1.ordinal()], timeshift, data[signal1.ordinal()].length);
+					Double[] range2 = Arrays.copyOfRange(data[signal2.ordinal()], 0, data[signal2.ordinal()].length - timeshift);
+					
+					double pearsonCorrelation = getPearsonCorrelation(range1, range2);
+					System.out.println("Correlation between " + signal1 + " and " + signal2 + " (="+ timeshift + "secs) = " + Math.round(pearsonCorrelation*1000.0d)/1000.0d);					
+				}
 			}
 		}
 		
