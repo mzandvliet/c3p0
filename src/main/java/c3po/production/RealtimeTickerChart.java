@@ -9,6 +9,8 @@ import c3po.clock.IRealtimeClock;
 import c3po.node.GraphingNode;
 import c3po.utils.Time;
 
+/* TODO: Set a fixed data range, so it grow until a memory crash, obviously. */
+
 public class RealtimeTickerChart {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RealtimeBotRunner.class);
 
@@ -31,6 +33,7 @@ public class RealtimeTickerChart {
 					);
 			botClock.addListener(tickerGraph);
 			
+			tickerGraph.setMaximumItemAge(60 * 60);
 			tickerGraph.pack();
 			tickerGraph.setVisible(true);
 			

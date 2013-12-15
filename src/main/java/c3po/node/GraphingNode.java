@@ -103,13 +103,19 @@ public class GraphingNode extends ApplicationFrame implements ITickable, ITradeL
 		
 		plot.addAnnotation(annotation);
 	}
+	
+	public void setMaximumItemAge(long seconds) {
+		for (int i = 0; i < inputs.length; i++) {
+			signalTimeSeries[i].setMaximumItemAge(seconds); // Because new data is added as Second
+		}
+	}
 
 	/**
      * Creates a panel
      *
      * @return A panel.
      */
-    public JPanel createPanel(JFreeChart chart) {
+    private JPanel createPanel(JFreeChart chart) {
         
         ChartPanel panel = new ChartPanel(chart);
         panel.setFillZoomRectangle(true);
