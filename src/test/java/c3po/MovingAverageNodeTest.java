@@ -7,6 +7,8 @@ import java.util.List;
 
 import org.junit.Test;
 
+import c3po.node.MovingAverageNode;
+
 public class MovingAverageNodeTest {
 
 	@Test

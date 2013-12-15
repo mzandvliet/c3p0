@@ -2,7 +2,6 @@ package c3po.macd;
 
 import java.util.Random;
 
-import c3po.*;
 import c3po.Training.*;
 import c3po.simulation.SimulationContext;
 

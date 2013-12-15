@@ -3,13 +3,10 @@
  */
 package c3po;
 
-import static org.junit.Assert.*;
-
-import org.junit.Before;
 import org.junit.Test;
 
 import c3po.production.RealtimeClock;
-import static org.mockito.Mockito.*;
+import c3po.wallet.IWallet;
 
 /**
  * @author Joost

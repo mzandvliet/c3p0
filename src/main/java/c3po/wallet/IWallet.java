@@ -1,4 +1,4 @@
-package c3po;
+package c3po.wallet;
 
 public interface IWallet {
 	public double getWalletUsd();

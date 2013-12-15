@@ -2,6 +2,8 @@ package c3po;
 
 import java.util.*;
 
+import c3po.utils.SignalMath;
+
 /*
  * Stores history of a signal in chronological order.
  * 

@@ -1,18 +1,21 @@
-package c3po;
+package c3po.node;
 
 import java.awt.Color;
-import java.util.Date;
-
 import javax.swing.JPanel;
 
 import org.jfree.chart.*;
 import org.jfree.chart.annotations.XYPointerAnnotation;
-import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.plot.*;
 import org.jfree.chart.renderer.xy.*;
 import org.jfree.data.time.*;
 import org.jfree.data.xy.*;
 import org.jfree.ui.*;
+
+import c3po.ISignal;
+import c3po.ITickable;
+import c3po.ITradeListener;
+import c3po.Sample;
+import c3po.TradeAction;
 
 /*
  * 

@@ -12,11 +12,13 @@ import org.slf4j.LoggerFactory;
 import c3po.bitstamp.BitstampTickerSource;
 import c3po.bitstamp.BitstampTickerDbSource;
 import c3po.bitstamp.BitstampTradeFloor;
+import c3po.clock.IRealtimeClock;
 import c3po.EmailTradeLogger;
-import c3po.IClock;
 import c3po.ITradeFloor;
-import c3po.Time;
 import c3po.macd.*;
+import c3po.utils.Time;
+import c3po.wallet.IWallet;
+import c3po.wallet.Wallet;
 
 public class RealtimeBotRunner {
 

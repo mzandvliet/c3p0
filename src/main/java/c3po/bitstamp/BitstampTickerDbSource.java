@@ -1,13 +1,11 @@
 package c3po.bitstamp;
 
-import java.net.InetSocketAddress;
 import java.sql.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import c3po.*;
-import c3po.bitstamp.BitstampTickerSource.SignalName;
 
 /**
  * Work in progress in using the database as source

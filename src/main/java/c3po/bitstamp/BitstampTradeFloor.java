@@ -26,11 +26,11 @@ import org.slf4j.LoggerFactory;
 
 import c3po.AbstractTradeFloor;
 import c3po.ISignal;
-import c3po.IWallet;
-import c3po.JsonReader;
-import c3po.Time;
 import c3po.TradeAction;
 import c3po.structs.OpenOrder;
+import c3po.utils.JsonReader;
+import c3po.utils.Time;
+import c3po.wallet.IWallet;
 
 
 public class BitstampTradeFloor extends AbstractTradeFloor {

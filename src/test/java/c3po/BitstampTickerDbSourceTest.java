@@ -1,7 +1,5 @@
 package c3po;
 
-import static org.junit.Assert.*;
-
 import java.net.InetSocketAddress;
 import java.sql.SQLException;
 import java.util.Date;

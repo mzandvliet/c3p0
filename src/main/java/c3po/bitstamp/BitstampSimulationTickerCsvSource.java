@@ -1,6 +1,5 @@
 package c3po.bitstamp;
 
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 

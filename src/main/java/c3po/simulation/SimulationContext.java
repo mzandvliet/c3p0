@@ -1,6 +1,8 @@
 package c3po.simulation;
 
 import c3po.*;
+import c3po.clock.ISimulationClock;
+import c3po.wallet.IWallet;
 
 public class SimulationContext {
 	private final INonRealtimeSource source;

@@ -1,6 +1,5 @@
 package c3po.bitstamp;
 
-import java.net.InetSocketAddress;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;

@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import c3po.*;
+import c3po.clock.IRealtimeClock;
+import c3po.utils.Time;
 
 public class RealtimeClock implements IRealtimeClock, Runnable {
 	

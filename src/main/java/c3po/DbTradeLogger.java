@@ -3,6 +3,9 @@ package c3po;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import c3po.wallet.IWalletTransactionListener;
+import c3po.wallet.WalletTransactionResult;
+
 /**
  * Work in progress in using the database as source
  */

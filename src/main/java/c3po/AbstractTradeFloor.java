@@ -6,6 +6,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import c3po.wallet.IWallet;
+
 /**
  * Bootstrap Tradefloor is an abstract implementation of the tradefloor that
  * helps reduce the boilerplate of concrete Tradefloors.

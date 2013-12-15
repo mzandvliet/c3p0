@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 
 import c3po.*;
 import c3po.TradeAction.TradeActionType;
+import c3po.utils.SignalMath;
+import c3po.wallet.IWallet;
 
 public class MacdTraderNode extends AbstractTickable implements ITickable, ITradeActionSource {
 	/**

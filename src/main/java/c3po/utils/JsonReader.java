@@ -1,4 +1,4 @@
-package c3po;
+package c3po.utils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,8 +21,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import c3po.macd.MacdTraderNode;
 
 /*
  * From: http://stackoverflow.com/questions/4308554/simplest-way-to-read-json-from-a-url-in-java

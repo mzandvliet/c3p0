@@ -1,6 +1,6 @@
 package c3po.macd;
 
-import c3po.Time;
+import c3po.utils.Time;
 
 /**
  * Configuration struct for the MacdNode.

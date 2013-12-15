@@ -1,4 +1,5 @@
-package c3po;
+package c3po.clock;
+
 
 public interface IRealtimeClock extends IClock {
 	public void run();

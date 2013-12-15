@@ -2,6 +2,7 @@ package c3po.macd;
 
 import c3po.*;
 import c3po.Training.*;
+import c3po.wallet.IWallet;
 
 /* 
  * TODO: Threaded training execution

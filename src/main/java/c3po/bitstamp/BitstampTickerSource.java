@@ -1,8 +1,8 @@
 package c3po.bitstamp;
 
-import java.util.Arrays;
-
 import c3po.*;
+import c3po.node.INode;
+import c3po.utils.SignalMath;
 
 /* Todo:
  * - Implement server timeout strategy (extrapolation for a little while, then crisis mode)

@@ -7,8 +7,12 @@ import org.slf4j.LoggerFactory;
 
 import c3po.*;
 import c3po.macd.*;
-import c3po.Training.*;
+import c3po.utils.Time;
+import c3po.wallet.IWallet;
+import c3po.wallet.Wallet;
 import c3po.bitstamp.*;
+import c3po.clock.ISimulationClock;
+import c3po.clock.SimulationClock;
 
 public class SimulationBotRunner {
 	private static final Logger LOGGER = LoggerFactory.getLogger(SimulationBotRunner.class);

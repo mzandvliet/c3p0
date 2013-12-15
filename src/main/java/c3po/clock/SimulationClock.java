@@ -1,7 +1,9 @@
-package c3po;
+package c3po.clock;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import c3po.ITickable;
 
 /* 
  * Clocks should tick at a rate that is not specific to any bot (much faster, in fact).

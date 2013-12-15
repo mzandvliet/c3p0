@@ -8,6 +8,8 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import c3po.wallet.Wallet;
+
 /**
  * @author Joost
  *
@@ -22,7 +24,7 @@ public class WalletTest {
 	}
 
 	/**
-	 * Test method for {@link c3po.Wallet#Wallet(double, double)}.
+	 * Test method for {@link c3po.wallet.Wallet#Wallet(double, double)}.
 	 */
 	@Test
 	public void testWallet() {
@@ -34,7 +36,7 @@ public class WalletTest {
 	}
 
 	/**
-	 * Test method for {@link c3po.Wallet#update(double, double)}.
+	 * Test method for {@link c3po.wallet.Wallet#update(double, double)}.
 	 */
 	@Test
 	public void testUpdate() {

@@ -1,5 +1,7 @@
 package c3po;
 
+import c3po.node.INode;
+
 /*
  * Used to encapsulate a single output value for a Node
  * 

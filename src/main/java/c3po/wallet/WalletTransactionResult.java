@@ -1,4 +1,4 @@
-package c3po;
+package c3po.wallet;
 
 public class WalletTransactionResult {
 	public final double timestamp;

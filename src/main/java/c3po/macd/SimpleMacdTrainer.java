@@ -1,7 +1,6 @@
 package c3po.macd;
 
 import java.net.InetSocketAddress;
-import java.util.Date;
 import java.util.Random;
 
 import org.slf4j.Logger;
@@ -10,7 +9,13 @@ import org.slf4j.LoggerFactory;
 import c3po.*;
 import c3po.Training.*;
 import c3po.bitstamp.*;
+import c3po.clock.ISimulationClock;
+import c3po.clock.SimulationClock;
+import c3po.node.GraphingNode;
 import c3po.simulation.*;
+import c3po.utils.Time;
+import c3po.wallet.IWallet;
+import c3po.wallet.Wallet;
 
 /* TODO: SimContext.reset() is STILL BROKEN
  *

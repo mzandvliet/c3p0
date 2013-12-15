@@ -12,11 +12,14 @@ import org.slf4j.LoggerFactory;
 
 import c3po.bitstamp.BitstampSimulationTradeFloor;
 import c3po.bitstamp.BitstampSimulationTickerDbSource;
+import c3po.clock.ISimulationClock;
+import c3po.clock.SimulationClock;
+import c3po.node.GraphingNode;
+import c3po.utils.Time;
+import c3po.wallet.IWallet;
+import c3po.wallet.Wallet;
 import c3po.DbConnection;
-import c3po.IClock;
 import c3po.ITradeFloor;
-import c3po.IWallet;
-import c3po.Time;
 
 public class MacdBotRunner {
 	//================================================================================

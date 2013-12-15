@@ -1,4 +1,9 @@
-package c3po;
+package c3po.node;
+
+import c3po.AbstractTickable;
+import c3po.ISignal;
+import c3po.OutputSignal;
+import c3po.Sample;
 
 public class AggregateNode extends AbstractTickable implements INode {
 	private final ISignal[] inputs;

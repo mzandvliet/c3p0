@@ -1,5 +1,7 @@
 package c3po;
 
+import c3po.utils.Time;
+
 /* TODO:
  * 
  * - Reference or handle to bot who initiated the trade

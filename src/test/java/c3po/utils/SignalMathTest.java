@@ -1,4 +1,4 @@
-package c3po;
+package c3po.utils;
 
 import static org.junit.Assert.*;
 
@@ -7,6 +7,9 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import c3po.Sample;
+import c3po.utils.SignalMath;
 
 public class SignalMathTest {
 
@@ -28,7 +31,7 @@ public class SignalMathTest {
 		signals.add(new Sample(9l, 9.0d));
 		signals.add(new Sample(10l, 10.0d));
 		
-		Sample movingAvg = SignalMath.basicMovingAverage(signals, 3);
+		Sample movingAvg = SignalMath.basicMovingAverage(signals);
 		
 		assertEquals(5, movingAvg.value, 0.01);
 		

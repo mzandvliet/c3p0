@@ -1,4 +1,6 @@
-package c3po;
+package c3po.clock;
+
+import c3po.ITickable;
 
 public interface IClock {
 	public void addListener(ITickable listener);

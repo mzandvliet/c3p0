@@ -1,6 +1,10 @@
-package c3po;
+package c3po.node;
 
-import java.util.List;
+import c3po.AbstractTickable;
+import c3po.ISignal;
+import c3po.OutputSignal;
+import c3po.Sample;
+import c3po.utils.SignalMath;
 
 public class ExpMovingAverageNode extends AbstractTickable implements INode {
 	private ISignal input;

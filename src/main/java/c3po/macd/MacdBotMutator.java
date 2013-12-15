@@ -1,7 +1,8 @@
 package c3po.macd;
 
-import c3po.*;
 import c3po.Training.*;
+import c3po.utils.SignalMath;
+import c3po.utils.Time;
 
 public class MacdBotMutator implements IBotConfigMutator<MacdBotConfig> {
 	private final MacdBotMutatorConfig mutatorConfig;

@@ -1,20 +1,13 @@
 package c3po.bitstamp;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import c3po.ISignal;
 import c3po.structs.OpenOrder;
 
 public class BitstampTradefloorTest {
@@ -131,29 +124,5 @@ public class BitstampTradefloorTest {
 		
 		List<OpenOrder> openOrders3 = tf.getOpenOrders();
 		assertEquals(openOrders.size(), openOrders3.size());
-	}
-	
-	
-	
-	/**
-	 * Class used to help testing the TradeFloor.
-	 * Takes an callback which is returned on calling
-	 * doAuthenticatedCall.
-	 */
-	private class BitstampTradeFloorMock extends BitstampTradeFloor {
-		JSONCallback callback;
-		public BitstampTradeFloorMock(JSONCallback callback) {
-			super(null, null, null, true);
-			this.callback = callback;
-		}
-
-		@Override
-		public String doAuthenticatedCall(String url, List<NameValuePair> params) throws Exception {
-			return callback.getData(url, params);
-		}
-	}
-	
-	private interface JSONCallback {
-		public String getData(String url, List<NameValuePair> params);
 	}
 }

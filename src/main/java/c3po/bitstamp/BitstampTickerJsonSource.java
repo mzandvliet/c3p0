@@ -6,6 +6,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import c3po.*;
+import c3po.node.INode;
+import c3po.utils.JsonReader;
 
 public class BitstampTickerJsonSource extends BitstampTickerSource implements INode {
 	private final String url;

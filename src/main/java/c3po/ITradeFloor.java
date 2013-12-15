@@ -1,5 +1,7 @@
 package c3po;
 
+import c3po.wallet.IWallet;
+
 /* Todo:
  * 
  * - This is a really poor and impromptu interface, but it demonstrates the principle

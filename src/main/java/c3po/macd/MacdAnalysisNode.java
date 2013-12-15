@@ -1,6 +1,9 @@
 package c3po.macd;
 
 import c3po.*;
+import c3po.node.ExpMovingAverageNode;
+import c3po.node.INode;
+import c3po.node.SubtractNode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,6 +1,5 @@
 package c3po.Training;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -10,20 +9,11 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import c3po.bitstamp.BitstampTickerSource;
-import c3po.bitstamp.BitstampSimulationTradeFloor;
 import c3po.DebugTradeLogger;
 import c3po.IBot;
 import c3po.IBotConfig;
-import c3po.IClock;
-import c3po.ISignal;
-import c3po.ITradeFloor;
-import c3po.IWallet;
-import c3po.SignalMath;
-import c3po.SimulationClock;
-import c3po.Time;
-import c3po.Wallet;
-import c3po.bitstamp.BitstampSimulationTickerCsvSource;
+import c3po.utils.SignalMath;
+import c3po.clock.IClock;
 import c3po.simulation.SimulationContext;
 
 /**
