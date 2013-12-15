@@ -18,8 +18,6 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 	protected final long interpolationTime;
 	protected final CircularArrayList<ServerSampleEntry> buffer;
 	
-	private final long serverPollPeriod = 60000; // Expected time between server entries
-	
 	public BitstampTickerSource(long timestep, long interpolationTime) {
 		super(timestep);
 		
@@ -30,7 +28,7 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 			this.signals[i] = new OutputSignal(this);
 		}
 		
-		int bufferLength = (int)(interpolationTime / serverPollPeriod * 2);
+		int bufferLength = (int)Math.round(interpolationTime / timestep) + 1;
 		buffer = new CircularArrayList<ServerSampleEntry>(bufferLength);
 	}
 	

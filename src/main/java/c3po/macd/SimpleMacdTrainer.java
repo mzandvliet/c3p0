@@ -19,7 +19,7 @@ import c3po.wallet.IWallet;
 import c3po.wallet.Wallet;
 
 public class SimpleMacdTrainer {
-private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.class);
 	
 	// First timestamp in database: 1384079023000l
 	private final static long simulationEndTime = new Date().getTime();

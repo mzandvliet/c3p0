@@ -4,12 +4,18 @@ import java.io.IOException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import c3po.*;
+import c3po.bitstamp.BitstampTickerSource.SignalName;
+import c3po.macd.SimpleMacdTrainer;
 import c3po.node.INode;
 import c3po.utils.JsonReader;
 
 public class BitstampTickerJsonSource extends BitstampTickerSource implements INode {
+	private static final Logger LOGGER = LoggerFactory.getLogger(BitstampTickerJsonSource.class);
+	
 	private final String url;
 	
 	public BitstampTickerJsonSource(long timestep, long interpolationTime, String url) {
@@ -46,21 +52,17 @@ public class BitstampTickerJsonSource extends BitstampTickerSource implements IN
 			long serverTimestamp = json.getLong("timestamp") * 1000;
 			
 			ServerSampleEntry entry = new ServerSampleEntry(serverTimestamp, 6);
-    		entry.set(0, new Sample(serverTimestamp, json.getDouble("last")));
-    		entry.set(1, new Sample(serverTimestamp, json.getDouble("high")));
-    		entry.set(2, new Sample(serverTimestamp, json.getDouble("low")));
-    		entry.set(3, new Sample(serverTimestamp, json.getDouble("volume")));
-    		entry.set(4, new Sample(serverTimestamp, json.getDouble("bid")));
-    		entry.set(5, new Sample(serverTimestamp, json.getDouble("ask")));
+    		entry.set(SignalName.LAST.ordinal(), new Sample(serverTimestamp, json.getDouble("last")));
+    		entry.set(SignalName.HIGH.ordinal(), new Sample(serverTimestamp, json.getDouble("high")));
+    		entry.set(SignalName.LOW.ordinal(), new Sample(serverTimestamp, json.getDouble("low")));
+    		entry.set(SignalName.VOLUME.ordinal(), new Sample(serverTimestamp, json.getDouble("volume")));
+    		entry.set(SignalName.BID.ordinal(), new Sample(serverTimestamp, json.getDouble("bid")));
+    		entry.set(SignalName.ASK.ordinal(), new Sample(serverTimestamp, json.getDouble("ask")));
     		
     		buffer.add(entry);
     		
-		} catch (JSONException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (Exception e) { // No biggie, just try again next tick
+			LOGGER.debug("Failed to fetch json, reason: " + e);
 		}
 	}
-
-	
 }
