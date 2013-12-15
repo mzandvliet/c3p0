@@ -1,15 +1,13 @@
 package c3po.bitstamp;
 
 import java.io.IOException;
-
 import org.json.JSONException;
+
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import c3po.*;
-import c3po.bitstamp.BitstampTickerSource.SignalName;
-import c3po.macd.SimpleMacdTrainer;
 import c3po.node.INode;
 import c3po.utils.JsonReader;
 
@@ -59,9 +57,11 @@ public class BitstampTickerJsonSource extends BitstampTickerSource implements IN
     		entry.set(SignalName.BID.ordinal(), new Sample(serverTimestamp, json.getDouble("bid")));
     		entry.set(SignalName.ASK.ordinal(), new Sample(serverTimestamp, json.getDouble("ask")));
     		
-    		buffer.add(entry);
+    		ServerSampleEntry lastEntry = buffer.size() > 0 ? buffer.get(buffer.size()-1) : null; 
+			if (!entry.equals(lastEntry))
+				buffer.add(entry);
     		
-		} catch (Exception e) { // No biggie, just try again next tick
+		} catch (Exception e) { // No biggie, just try again next tick (TODO: catch json, io and connection exceptions specifically)
 			LOGGER.debug("Failed to fetch json, reason: " + e);
 		}
 	}

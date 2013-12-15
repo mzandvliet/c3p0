@@ -19,7 +19,7 @@ public class RealtimeTickerChart {
 		 
 		try {
 			// Set up global signal tree
-			final BitstampTickerSource tickerNode = new BitstampTickerJsonSource(timestep, interpolationTime, "http://www.bitstamp.net/api/ticker/");
+			final BitstampTickerSource tickerNode = new BitstampTickerJsonSource(timestep, interpolationTime, "https://www.bitstamp.net/api/ticker/");
 
 			// Create a clock
 			IRealtimeClock botClock = new RealtimeClock(timestep, 0, interpolationTime);
