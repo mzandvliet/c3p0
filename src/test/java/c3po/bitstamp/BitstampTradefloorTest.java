@@ -85,7 +85,7 @@ public class BitstampTradefloorTest {
 		
 	}
 	
-	@Test
+	@Test @Ignore
 	public void realTestAdjust() throws Exception {
 		BitstampTradeFloor tf = new BitstampTradeFloor(null, null, null, true);
 		tf.adjustOrders();
