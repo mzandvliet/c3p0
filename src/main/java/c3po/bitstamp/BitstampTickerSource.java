@@ -25,7 +25,7 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 		
 		this.signals = new OutputSignal[numSignals];
 		for (int i = 0; i < numSignals; i++) {
-			this.signals[i] = new OutputSignal(this);
+			this.signals[i] = new OutputSignal(this, SignalName.values()[i].toString());
 		}
 		
 		int bufferLength = (int)Math.round(interpolationTime / timestep) + 1;

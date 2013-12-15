@@ -9,10 +9,12 @@ import c3po.node.INode;
  */
 public class OutputSignal implements ISignal {
 	private INode ownerNode;
+	private String name;
 	private Sample latestSample = Sample.none;
 	
-	public OutputSignal(INode node) {
+	public OutputSignal(INode node, String name) {
 		this.ownerNode = node;
+		this.name = name;
 	}
 	
 	public void setSample(Sample sample) {
@@ -32,5 +34,10 @@ public class OutputSignal implements ISignal {
 	
 	public String toString() {
 		return String.format("%s from %s", latestSample, ownerNode);
+	}
+
+	@Override
+	public String getName() {
+		return this.name;
 	}
 }

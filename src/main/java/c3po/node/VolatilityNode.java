@@ -16,7 +16,7 @@ public class VolatilityNode extends AbstractTickable implements INode {
 	public VolatilityNode(long timestep, ISignal input) {
 		super(timestep);
 		this.input = input;
-		this.output = new OutputSignal(this);
+		this.output = new OutputSignal(this, "Volatility");
 	}
 
 	@Override

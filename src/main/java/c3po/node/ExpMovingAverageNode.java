@@ -17,7 +17,7 @@ public class ExpMovingAverageNode extends AbstractTickable implements INode {
 		this.input = input;
 		this.kernelSize = (int) (window / timestep + 1);
 		this.lastSample = Sample.none;
-		this.output = new OutputSignal(this);
+		this.output = new OutputSignal(this, "Exponential Moving Average");
 	}
 
 	@Override

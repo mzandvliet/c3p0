@@ -55,7 +55,7 @@ public class GraphingNode extends ApplicationFrame implements ITickable, ITradeL
 		
 		signalTimeSeries = new TimeSeries[inputs.length];
 		for (int i = 0; i < inputs.length; i++) {
-			signalTimeSeries[i] = new TimeSeries("Signal_" + i);
+			signalTimeSeries[i] = new TimeSeries(inputs[i].getName());
 		}
 		
 		dataset = createDatasetFromSeries(signalTimeSeries);

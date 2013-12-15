@@ -14,7 +14,7 @@ public class SubtractNode extends AbstractTickable implements INode {
 		super(timestep);
 		this.inputA = inputA;
 		this.inputB = inputB;
-		this.output = new OutputSignal(this);
+		this.output = new OutputSignal(this, "Substration");
 	}
 
 	@Override

@@ -12,7 +12,7 @@ public class AggregateNode extends AbstractTickable implements INode {
 	public AggregateNode(long timestep, ISignal ... inputs) {
 		super(timestep);
 		this.inputs = inputs;
-		this.output = new OutputSignal(this);
+		this.output = new OutputSignal(this, "Aggregate");
 	}
 	
 	@Override

@@ -18,7 +18,7 @@ public class MovingAverageNode extends AbstractTickable implements INode {
 		this.input = input;
 		this.kernelSize = (int) Math.round(window / timestep);
 		this.buffer = new CircularArrayList<Sample>(kernelSize);
-		this.output = new OutputSignal(this);
+		this.output = new OutputSignal(this, "Moving Average");
 	}
 
 	@Override

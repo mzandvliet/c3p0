@@ -15,7 +15,7 @@ public class RealtimeTickerChart {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RealtimeBotRunner.class);
 
 	private final static long interpolationTime = 2 * Time.SECONDS;
-	private final static long timestep = 1 * Time.SECONDS;
+	private final static long timestep = 10 * Time.SECONDS;
 
 	public static void main(String[] args) {
 		 

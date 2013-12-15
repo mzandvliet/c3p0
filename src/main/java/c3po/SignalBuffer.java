@@ -94,4 +94,9 @@ public class SignalBuffer extends AbstractList<Sample> implements ISignalBuffer,
 			lastTick = tick;
 		}
 	}
+
+	@Override
+	public String getName() {
+		return "Buffer of " + this.source.getName();
+	}
 }
