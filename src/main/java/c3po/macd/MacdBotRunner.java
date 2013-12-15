@@ -30,7 +30,7 @@ public class MacdBotRunner {
 	
 	// Earliest time 1384079023000l
 	private final static long simulationEndTime = new Date().getTime();
-	private final static long simulationStartTime = simulationEndTime - (Time.DAYS * 18);
+	private final static long simulationStartTime = simulationEndTime - (Time.DAYS * 7);
 	
 	private final static long interpolationTime = 2 * Time.MINUTES;
 	private final static long timestep = 1 * Time.MINUTES;
@@ -68,20 +68,20 @@ public class MacdBotRunner {
 		
 		// Create bot config
 		MacdAnalysisConfig buyAnalysisConfig = new MacdAnalysisConfig(
-				29 * Time.MINUTES,
-				470 * Time.MINUTES,
+				30 * Time.MINUTES,
+				362 * Time.MINUTES,
 				323 * Time.MINUTES);
 		
 		MacdAnalysisConfig sellAnalysisConfig = new MacdAnalysisConfig(
-				115 * Time.MINUTES,
-				240 * Time.MINUTES,
-				290 * Time.MINUTES);
+				87 * Time.MINUTES,
+				349 * Time.MINUTES,
+				641 * Time.MINUTES);
 		
 		MacdTraderConfig traderConfig = new MacdTraderConfig(
-				4.97,
-				-19.24,
+				5.2,
+				-28.65,
 				0.97,
-				20.35);
+				13.38);
 		
 		MacdBotConfig config = new MacdBotConfig(timestep, buyAnalysisConfig, sellAnalysisConfig, traderConfig);
 		
