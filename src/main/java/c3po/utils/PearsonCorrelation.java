@@ -1,21 +1,18 @@
 package c3po.utils;
 
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
-
 import au.com.bytecode.opencsv.CSVReader;
 
+/**
+ * This class tries to correlate different signals with eachother and see if 
+ * they can be used to predict the future!
+ * 
+ * @author Joost Pastoor
+ *
+ */
 public class PearsonCorrelation {
 	
 	public static void main(String[] args) throws IOException {
@@ -42,14 +39,15 @@ public class PearsonCorrelation {
 				// Dont correlate with self
 				if(signal1 == signal2) continue;
 				
+				// TODO Add extra while loop that can remove some array elements from one fo the data sets so we essentially get a shift in time
+				// TODO Record for each combination the top correlation score and the used time shift.
+				
 				double pearsonCorrelation = getPearsonCorrelation(data[signal1.ordinal()], data[signal2.ordinal()]);
 				System.out.println("Correlation between " + signal1 + " and " + signal2 + " = " + pearsonCorrelation);
 			}
 		}
-
 		
-		double pearsonCorrelation = getPearsonCorrelation(data[SignalName.last.ordinal()], data[SignalName.bid.ordinal()]);
-		System.out.println(pearsonCorrelation);
+		reader.close();
 	}
 	
 	public static double getPearsonCorrelation(Double[] scores1, Double[] scores2) {
