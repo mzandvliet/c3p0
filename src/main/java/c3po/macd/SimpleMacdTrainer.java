@@ -18,12 +18,6 @@ import c3po.utils.Time;
 import c3po.wallet.IWallet;
 import c3po.wallet.Wallet;
 
-/* TODO: SimContext.reset() is STILL BROKEN
- *
- * resultSet.first() is likely not doing what I think it is.
- * 
- */
-
 public class SimpleMacdTrainer {
 private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.class);
 	
