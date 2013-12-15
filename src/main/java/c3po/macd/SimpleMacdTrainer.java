@@ -1,6 +1,7 @@
 package c3po.macd;
 
 import java.net.InetSocketAddress;
+import java.util.Date;
 import java.util.Random;
 
 import org.slf4j.Logger;
@@ -27,8 +28,8 @@ public class SimpleMacdTrainer {
 private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.class);
 	
 	// First timestamp in database: 1384079023000l
-	private final static long simulationEndTime = 1386965802000l;
-	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 14;
+	private final static long simulationEndTime = new Date().getTime();
+	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 17;
 	private final static long simulationLength = Time.DAYS * 3;
 	
 	// Timing
@@ -36,7 +37,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.c
 	private final static long timestep = 1 * Time.MINUTES;
 
 	// Simulation and fitness test
-	private final static int numEpochs = 120;
+	private final static int numEpochs = 100;
 	private final static int numSimulationsPerEpoch = 10;
 	private final static int numBots = 250;
 	
