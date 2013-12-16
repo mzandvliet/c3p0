@@ -30,12 +30,19 @@ public class RealtimeTickerChart {
 					tickerNode.getOutputLast(),
 					tickerNode.getOutputBid(),
 					tickerNode.getOutputAsk()
-					);
-			botClock.addListener(tickerGraph);
-			
+					);			
 			tickerGraph.setMaximumItemAge(60 * 60);
 			tickerGraph.pack();
 			tickerGraph.setVisible(true);
+			botClock.addListener(tickerGraph);
+			
+			GraphingNode volumeGraph = new GraphingNode(timestep, "Volume",
+					tickerNode.getOutputVolume()
+					);			
+			volumeGraph.setMaximumItemAge(60 * 60);
+			volumeGraph.pack();
+			volumeGraph.setVisible(true);
+			botClock.addListener(volumeGraph);
 			
 			// Run the program
 			tickerNode.open();
