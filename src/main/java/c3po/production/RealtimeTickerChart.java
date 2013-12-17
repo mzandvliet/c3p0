@@ -31,7 +31,7 @@ public class RealtimeTickerChart {
 					tickerNode.getOutputBid(),
 					tickerNode.getOutputAsk()
 					);			
-			tickerGraph.setMaximumItemAge(60 * 60);
+			tickerGraph.setMaximumItemAge(120 * 60);
 			tickerGraph.pack();
 			tickerGraph.setVisible(true);
 			botClock.addListener(tickerGraph);
