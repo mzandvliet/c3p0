@@ -125,17 +125,11 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	 * @return String with maximum of 6 digits
 	 */
 	public static String doubleToPriceString(double input) {		
-		DecimalFormat df = new DecimalFormat("#.00", new DecimalFormatSymbols(Locale.US));
-		df.setRoundingMode(RoundingMode.DOWN);
-		df.applyLocalizedPattern("####.00");
-		return df.format(input);
+		return String.valueOf(Math.floor(input * 100.0d) / 100.d);
 	}
 	
 	public static String doubleToAmountString(double input) {		
-		DecimalFormat df = new DecimalFormat("########.########", new DecimalFormatSymbols(Locale.US));
-		df.setRoundingMode(RoundingMode.DOWN);
-		df.applyLocalizedPattern("########.########");
-		return df.format(input);
+		return String.valueOf(Math.floor(input * 100000000.0d) / 100000000.d);
 	}
 	
 	public String doAuthenticatedCall(String url, List<NameValuePair> params) throws Exception {	
