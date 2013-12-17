@@ -56,10 +56,10 @@ public class SimulationContext {
 		return clock;
 	}
 	
-	public void initializeForTimePeriod(long startTime, long endTime) {
+	public void setSimulationRange(long startTime, long endTime) {
 		this.startTime = startTime;
 		this.endTime = endTime;
-		source.initializeForTimePeriod(startTime, endTime);
+		source.setSimulationRange(startTime, endTime);
 	}
 	
 	public void run() {

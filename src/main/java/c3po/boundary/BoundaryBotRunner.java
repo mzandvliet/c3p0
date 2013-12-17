@@ -49,14 +49,15 @@ public class BoundaryBotRunner {
 		// Set up global signal tree
 		
 		DbConnection dbConnection = new DbConnection(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+		dbConnection.open();
 		
 		final BitstampSimulationTickerDbSource tickerNode = new BitstampSimulationTickerDbSource(
 				timestep,
 				interpolationTime,
-				dbConnection
+				dbConnection,
+				simulationStartTime,
+				simulationEndTime
 				);
-		tickerNode.open();
-		tickerNode.initializeForTimePeriod(simulationStartTime, simulationEndTime);
 		
 		final ITradeFloor tradeFloor =  new BitstampSimulationTradeFloor(
 				tickerNode.getOutputLast(),
@@ -128,8 +129,7 @@ public class BoundaryBotRunner {
 
 		botClock.run(simulationStartTime, simulationEndTime);
 		
-		tickerNode.close();
-		
+		dbConnection.close();
 		
 		// Log results
 		

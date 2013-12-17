@@ -77,7 +77,7 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 				// Set simulation data to some time window between the first and last available data
 				long startTime = SignalMath.getRandomLong(config.dataStartTime, config.dataEndTime - simulationTime);
 				long endTime = startTime + config.simulationLength;
-				simContext.initializeForTimePeriod(startTime, endTime);
+				simContext.setSimulationRange(startTime, endTime);
 				
 				// Run the simulation
 				simulate(population, simContext);
@@ -88,6 +88,8 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 					result.averageNumTrades += loggers.get(bot).getActions().size();
 					result.averageWalletValue += getBotDollarValue(bot);
 				}
+				
+				LOGGER.debug("Finished run " + j );
 			}
 			
 			// Average the results for this epoch's simulations

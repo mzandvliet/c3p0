@@ -12,19 +12,22 @@ import c3po.*;
 public class BitstampSimulationTickerDbSource extends BitstampTickerSource implements INonRealtimeSource {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BitstampSimulationTickerDbSource.class);
 	private static final int MAXRETRIES = 3;
-	
-	private long startTime;
-	private long endTime;
+
 	private DbConnection connection;
 	
-	private List<ServerSampleEntry> history;
-	private int lastHistoryIndex;
+	private List<ServerSampleEntry> data;
 	
-	public BitstampSimulationTickerDbSource(long timestep, long interpolationTime, DbConnection connection) {
+	private long simulationStartTime;
+	private long simulationEndTime;
+	
+	private int lastDataIndex;
+	
+	public BitstampSimulationTickerDbSource(long timestep, long interpolationTime, DbConnection connection, long dataStartTime, long dataEndTime) {
 		  super(timestep, interpolationTime);
 		  
 		  this.connection = connection;
-		  history = new ArrayList<ServerSampleEntry>();
+		  data = new ArrayList<ServerSampleEntry>();
+		  fetchDataFromDatabase(dataStartTime, dataEndTime);
 	}
 	
 	@Override
@@ -41,23 +44,25 @@ public class BitstampSimulationTickerDbSource extends BitstampTickerSource imple
 		long serverTime = clientTimestamp + interpolationTime;
 		
 		boolean done = false;
-	    while(!done && lastHistoryIndex < history.size()) {	   
+	    while(!done && lastDataIndex < data.size()) {	   
 	    	ServerSampleEntry newest = buffer.peek();
 			long newestTimeInBuffer = newest != null ? newest.timestamp : clientTimestamp;
 			
 			if (newestTimeInBuffer < serverTime) {
-		    	buffer.add(history.get(lastHistoryIndex));
-		    	lastHistoryIndex++;
+		    	buffer.add(data.get(lastDataIndex));
+		    	lastDataIndex++;
 	    	} else {
 	    		done = true;
 	    	}
 	    }
 	}
 	
-	private void getData() {
+	private void fetchDataFromDatabase(long start, long end) {
+		data.clear();
+		
 		try {
 			// Get all entries from the simulation start time to the simulation end time
-		    String query = "select * from bitstamp_ticker WHERE `timestamp` BETWEEN " + startTime / 1000  + " AND " + endTime / 1000 + " ORDER BY timestamp ASC";
+		    String query = "select * from bitstamp_ticker WHERE `timestamp` BETWEEN " + start / 1000  + " AND " + end / 1000 + " ORDER BY timestamp ASC";
 		    ResultSet resultSet = connection.executeQueryWithRetries(query, MAXRETRIES);
 		    
 		    // Add them all to the buffer
@@ -72,7 +77,7 @@ public class BitstampSimulationTickerDbSource extends BitstampTickerSource imple
 				entry.set(SignalName.BID.ordinal(), new Sample(entryTime, resultSet.getDouble("bid")));
 				entry.set(SignalName.ASK.ordinal(), new Sample(entryTime, resultSet.getDouble("ask")));
 		    	
-		    	history.add(entry);
+		    	data.add(entry);
 		    }
 		    
 		    resultSet.close();
@@ -85,12 +90,12 @@ public class BitstampSimulationTickerDbSource extends BitstampTickerSource imple
 
 	@Override
 	public boolean open() {
-		return connection.open();
+		return true;
 	}
 
 	@Override
 	public boolean close() {
-		return connection.close();
+		return true;
 	}
 
 	@Override
@@ -100,28 +105,34 @@ public class BitstampSimulationTickerDbSource extends BitstampTickerSource imple
 
 	@Override
 	public long getStartTime() {
-		return startTime;
+		return simulationStartTime;
 	}
 
 	@Override
 	public long getEndTime() {
-		return endTime;
+		return simulationEndTime;
 	}
 
 	@Override
 	public void reset() {
 		super.reset();
-		
-		history.clear();
-		lastHistoryIndex = 0;
+		seek(simulationStartTime);
+	}
+	
+	private void seek(long simulationStartTime) {
+		for (int i = 0; i < data.size(); i++) {
+			if (data.get(i).timestamp >= simulationStartTime) {
+				lastDataIndex = i;
+				return;
+			}
+		}
 	}
 
 	@Override
-	public void initializeForTimePeriod(long startTime, long endTime) {
-		this.startTime = startTime;
-		this.endTime = endTime;
+	public void setSimulationRange(long startTime, long endTime) {
 		
+		this.simulationStartTime = startTime;
+		this.simulationEndTime = endTime;
 		reset();
-		getData();
 	}
 }

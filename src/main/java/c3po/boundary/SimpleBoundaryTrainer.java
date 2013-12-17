@@ -61,12 +61,15 @@ public class SimpleBoundaryTrainer {
 		// Create the simulation context
 		
 		DbConnection dbConnection = new DbConnection(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+		dbConnection.open();
+		
 		final BitstampSimulationTickerDbSource tickerNode = new BitstampSimulationTickerDbSource(
 				timestep,
 				interpolationTime,
-				dbConnection
+				dbConnection,
+				simulationStartTime,
+				simulationEndTime
 				);
-		tickerNode.open();
 		
 		final ITradeFloor tradeFloor =  new BitstampSimulationTradeFloor(
 				tickerNode.getOutputLast(),
@@ -89,7 +92,7 @@ public class SimpleBoundaryTrainer {
 		
 		runWinner(winningConfig, simContext);
 		
-		tickerNode.close();
+		dbConnection.close();
 	}
 
 	private static BoundaryBotConfig runTrainer(SimulationContext simContext) {
@@ -152,7 +155,7 @@ public class SimpleBoundaryTrainer {
 		
 		// Run
 		
-		simContext.initializeForTimePeriod(simulationStartTime, simulationEndTime);
+		simContext.setSimulationRange(simulationStartTime, simulationEndTime);
 		
 		ISimulationClock clock = simContext.getClock();
 		

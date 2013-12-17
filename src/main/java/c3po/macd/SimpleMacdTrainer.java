@@ -67,12 +67,15 @@ public class SimpleMacdTrainer {
 		// Create the simulation context
 		
 		DbConnection dbConnection = new DbConnection(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+		dbConnection.open();
+		
 		final BitstampSimulationTickerDbSource tickerNode = new BitstampSimulationTickerDbSource(
 				timestep,
 				interpolationTime,
-				dbConnection
+				dbConnection,
+				simulationStartTime,
+				simulationEndTime
 				);
-		tickerNode.open();
 		
 		final ITradeFloor tradeFloor =  new BitstampSimulationTradeFloor(
 				tickerNode.getOutputLast(),
@@ -95,7 +98,7 @@ public class SimpleMacdTrainer {
 		
 		runWinner(winningConfig, simContext);
 		
-		tickerNode.close();
+		dbConnection.close();
 	}
 
 	private static MacdBotConfig runTrainer(SimulationContext simContext) {
@@ -163,7 +166,7 @@ public class SimpleMacdTrainer {
 		
 		// Run
 		
-		simContext.initializeForTimePeriod(simulationStartTime, simulationEndTime);
+		simContext.setSimulationRange(simulationStartTime, simulationEndTime);
 		
 		ISimulationClock clock = simContext.getClock();
 		
