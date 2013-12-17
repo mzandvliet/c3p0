@@ -23,7 +23,7 @@ public class SimpleMacdTrainer {
 	
 	// First timestamp in database: 1384079023000l
 	private final static long simulationEndTime = 1387285485000l;
-	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 21;
+	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 28;
 	private final static long simulationLength = Time.DAYS * 3;
 	
 	// Timing
