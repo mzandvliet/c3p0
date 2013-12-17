@@ -50,7 +50,7 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 		sellAnalysisNode = new MacdAnalysisNode(config.timestep, price, volume, config.sellAnalysisConfig);
 		
 		long startDelayInTicks = Math.max(config.buyAnalysisConfig.max() / config.timestep, config.sellAnalysisConfig.max() / config.timestep);
-		traderNode = new MacdTraderNode(config.timestep, buyAnalysisNode, sellAnalysisNode,  wallet, tradeFloor, config.traderConfig, startDelayInTicks);
+		traderNode = new MacdTraderNode(config.timestep, price, buyAnalysisNode, sellAnalysisNode,  wallet, tradeFloor, config.traderConfig, startDelayInTicks);
 	}
 
 	@Override

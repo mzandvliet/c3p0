@@ -69,8 +69,13 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 				List<IBot<TBotConfig>> population = createPopulationFromConfigs(configs, botFactory);
 				HashMap<IBot<TBotConfig>, DebugTradeLogger> loggers = createLoggers(population);
 				
+				// Simulation range starts at config.simulationLength, and linearly grows towards full simulation range in successive epochs
+				// This means first we get feature training, after which we get selection on specific performance
+				//long dataRange = config.dataEndTime - config.dataStartTime;
+				long simulationTime = config.simulationLength;//SignalMath.getRandomLong(config.simulationLength, SignalMath.lerp(config.simulationLength, dataRange, i / config.numEpochs));
+				
 				// Set simulation data to some time window between the first and last available data
-				long startTime = SignalMath.getRandomLong(config.dataStartTime, config.dataEndTime - config.simulationLength);
+				long startTime = SignalMath.getRandomLong(config.dataStartTime, config.dataEndTime - simulationTime);
 				long endTime = startTime + config.simulationLength;
 				simContext.initializeForTimePeriod(startTime, endTime);
 				

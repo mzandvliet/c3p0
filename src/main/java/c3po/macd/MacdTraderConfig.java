@@ -1,25 +1,33 @@
 package c3po.macd;
 
+import c3po.utils.Time;
+
 public class MacdTraderConfig {
 	public final double minBuyDiffThreshold;
 	public final double minSellDiffThreshold;
 	public final double lossCutThreshold;
 	public final double sellThresholdRelaxationFactor;
+	public final long sellPricePeriod;
 
-	public MacdTraderConfig(double minBuyDiffThreshold,
-			double minSellDiffThreshold, double lossCutThreshold,
+	public MacdTraderConfig(
+			double minBuyDiffThreshold,
+			double minSellDiffThreshold,
+			long sellPriceAverage,
+			double lossCutThreshold,
 			double sellThresholdRelaxationFactor) {
 		super();
 		this.minBuyDiffThreshold = minBuyDiffThreshold;
+		this.sellPricePeriod = sellPriceAverage;
 		this.minSellDiffThreshold = minSellDiffThreshold;
 		this.lossCutThreshold = lossCutThreshold;
 		this.sellThresholdRelaxationFactor = sellThresholdRelaxationFactor;
 	}
 
 	public String toString() {
-		return String.format("[TraderConfig - minBuyThreshold: %,.4f, minSellThreshold: %,.4f, lossCutThreshold at %,.2f, sellThresholdRelaxationFactor at %,.2f]", 
+		return String.format("[TraderConfig - minBuyThreshold: %,.4f, minSellThreshold: %,.4f, sellPricePeriod: %s, lossCutThreshold at %,.2f, sellThresholdRelaxationFactor at %,.2f]", 
 				minBuyDiffThreshold,
 				minSellDiffThreshold,
+				sellPricePeriod / Time.MINUTES,
 				lossCutThreshold,
 				sellThresholdRelaxationFactor);
 	}
@@ -35,6 +43,8 @@ public class MacdTraderConfig {
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		temp = Double.doubleToLongBits(minSellDiffThreshold);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result
+				+ (int) (sellPricePeriod ^ (sellPricePeriod >>> 32));
 		temp = Double.doubleToLongBits(sellThresholdRelaxationFactor);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		return result;
@@ -57,6 +67,8 @@ public class MacdTraderConfig {
 			return false;
 		if (Double.doubleToLongBits(minSellDiffThreshold) != Double
 				.doubleToLongBits(other.minSellDiffThreshold))
+			return false;
+		if (sellPricePeriod != other.sellPricePeriod)
 			return false;
 		if (Double.doubleToLongBits(sellThresholdRelaxationFactor) != Double
 				.doubleToLongBits(other.sellThresholdRelaxationFactor))

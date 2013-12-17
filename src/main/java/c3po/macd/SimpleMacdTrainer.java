@@ -22,8 +22,8 @@ public class SimpleMacdTrainer {
 	private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.class);
 	
 	// First timestamp in database: 1384079023000l
-	private final static long simulationEndTime = new Date().getTime();
-	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 10;
+	private final static long simulationEndTime = 1387285485000l;
+	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 21;
 	private final static long simulationLength = Time.DAYS * 3;
 	
 	// Timing
@@ -50,7 +50,9 @@ public class SimpleMacdTrainer {
 	private final static double maxBuyDiffThreshold = 30.0d;
 	private final static double minSellDiffThreshold = -30.0d;
 	private final static double maxSellDiffThreshold = 0.0d;
-	private final static double minLossCuttingPercentage = 0.7d;
+	private final static long minSellPricePeriod = 1 * Time.MINUTES;
+	private final static long maxSellPricePeriod = 6 * Time.HOURS;
+	private final static double minLossCuttingPercentage = 0.85d;
 	private final static double maxLossCuttingPercentage = 1d;
 	private final static double minSellThresholdRelaxationFactor = 0d;
 	private final static double maxSellThresholdRelaxationFactor = 100d;
@@ -98,12 +100,14 @@ public class SimpleMacdTrainer {
 
 	private static MacdBotConfig runTrainer(SimulationContext simContext) {
 		MacdBotMutatorConfig mutatorConfig = new MacdBotMutatorConfig(
-				mutationChance,
-				minAnalysisPeriod, maxAnalysisPeriod,
-				minBuyDiffThreshold,  maxBuyDiffThreshold,
-				minSellDiffThreshold, maxSellDiffThreshold,
-				minLossCuttingPercentage, maxLossCuttingPercentage,
-				minSellThresholdRelaxationFactor, maxSellThresholdRelaxationFactor);
+				mutationChance, minAnalysisPeriod,
+				maxAnalysisPeriod, minBuyDiffThreshold,
+				maxBuyDiffThreshold, minSellDiffThreshold,
+				maxSellDiffThreshold, minLossCuttingPercentage,
+				minSellPricePeriod, maxSellPricePeriod,
+				maxLossCuttingPercentage,
+				minSellThresholdRelaxationFactor,
+				maxSellThresholdRelaxationFactor);
 		
 		MacdBotMutator mutator = new MacdBotMutator(mutatorConfig);
 		
