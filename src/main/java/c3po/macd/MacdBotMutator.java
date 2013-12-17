@@ -31,6 +31,7 @@ public class MacdBotMutator implements IBotConfigMutator<MacdBotConfig> {
 		final MacdTraderConfig traderConfig = new MacdTraderConfig(
 				SignalMath.getRandomDouble(mutatorConfig.minBuyDiffThreshold, mutatorConfig.maxBuyDiffThreshold),
 				SignalMath.getRandomDouble(mutatorConfig.minSellDiffThreshold, mutatorConfig.maxSellDiffThreshold),
+				SignalMath.getRandomLong(mutatorConfig.minSellPricePeriod, mutatorConfig.maxSellPricePeriod),
 				SignalMath.getRandomDouble(mutatorConfig.minLossCuttingPercentage, mutatorConfig.maxLossCuttingPercentage),
 				SignalMath.getRandomDouble(mutatorConfig.minSellThresholdRelaxationFactor, mutatorConfig.maxSellThresholdRelaxationFactor)
 		);
@@ -60,6 +61,7 @@ public class MacdBotMutator implements IBotConfigMutator<MacdBotConfig> {
 		final MacdTraderConfig traderConfig = new MacdTraderConfig(
 				which() ? parentA.traderConfig.minBuyDiffThreshold : parentB.traderConfig.minBuyDiffThreshold,
 				which() ? parentA.traderConfig.minSellDiffThreshold : parentB.traderConfig.minSellDiffThreshold,
+				which() ? parentA.traderConfig.sellPricePeriod : parentB.traderConfig.sellPricePeriod,
 				which() ? parentA.traderConfig.lossCutThreshold : parentB.traderConfig.lossCutThreshold,
 				which() ? parentA.traderConfig.sellThresholdRelaxationFactor : parentB.traderConfig.sellThresholdRelaxationFactor
 													
@@ -95,6 +97,7 @@ public class MacdBotMutator implements IBotConfigMutator<MacdBotConfig> {
 		final MacdTraderConfig traderConfig = new MacdTraderConfig(
 				shouldMutate(mutatorConfig.mutationChance) ? randomConfig.traderConfig.minBuyDiffThreshold : config.traderConfig.minBuyDiffThreshold,
 				shouldMutate(mutatorConfig.mutationChance) ? randomConfig.traderConfig.minSellDiffThreshold : config.traderConfig.minSellDiffThreshold,
+				shouldMutate(mutatorConfig.mutationChance) ? randomConfig.traderConfig.sellPricePeriod : config.traderConfig.sellPricePeriod,
 				shouldMutate(mutatorConfig.mutationChance) ? randomConfig.traderConfig.lossCutThreshold : config.traderConfig.lossCutThreshold,
 				shouldMutate(mutatorConfig.mutationChance) ? randomConfig.traderConfig.sellThresholdRelaxationFactor : config.traderConfig.sellThresholdRelaxationFactor
 		);

@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 
 import c3po.*;
 import c3po.TradeAction.TradeActionType;
+import c3po.node.ExpMovingAverageNode;
+import c3po.node.INode;
 import c3po.utils.SignalMath;
 import c3po.wallet.IWallet;
 
@@ -19,6 +21,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	 */
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdTraderNode.class);
+	private final INode averagePrice;
 	private final MacdAnalysisNode buyAnalysis;
 	private final MacdAnalysisNode sellAnalysis;
 	private final IWallet wallet;
@@ -34,8 +37,9 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	private double lastHighestPositionPrice = -1; // TODO: managing this state explicitly is error prone
 	private double lastBuyPrice = -1;
 
-	public MacdTraderNode(long timestep, MacdAnalysisNode buyAnalysis, MacdAnalysisNode sellAnalysis, IWallet wallet, ITradeFloor tradeFloor, MacdTraderConfig config, long startDelay) {
+	public MacdTraderNode(long timestep, ISignal price, MacdAnalysisNode buyAnalysis, MacdAnalysisNode sellAnalysis, IWallet wallet, ITradeFloor tradeFloor, MacdTraderConfig config, long startDelay) {
 		super(timestep);
+		this.averagePrice = new ExpMovingAverageNode(timestep, config.sellPricePeriod, price);
 		this.buyAnalysis = buyAnalysis;
 		this.sellAnalysis = sellAnalysis;
 		this.wallet = wallet;
@@ -88,7 +92,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		double currentPrice = 0.0d;
 		
 		try {
-			currentPrice = sellAnalysis.getOutputFast().getSample(tick).value;
+			currentPrice = averagePrice.getOutput(0).getSample(tick).value;
 			
 			if (currentPrice > this.lastHighestPositionPrice)
 				this.lastHighestPositionPrice = currentPrice;
@@ -130,7 +134,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 			// TODO: Get the buy price from the tradeFloor buy action instead
 			double currentPrice = tradeFloor.toUsd(1d);
 			this.lastBuyPrice = currentPrice;
-			this.lastHighestPositionPrice = sellAnalysis.getOutputFast().getSample(tick).value;
+			this.lastHighestPositionPrice = averagePrice.getOutput(0).getSample(tick).value;
 			
 			notify(buyAction);
 		}

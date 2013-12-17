@@ -6,6 +6,10 @@ import java.util.List;
 import c3po.Sample;
 
 public class SignalMath {
+	public static long lerp(long low, long high, double lerp) {
+		return low + (long)((low-high) * lerp);
+	}
+	
 	public static Sample lerp(Sample oldest, Sample newest, long timestamp) {
 		long timeDelta = newest.timestamp - oldest.timestamp;
 		

@@ -48,18 +48,19 @@ public class RealtimeBotRunner {
 			 * Bot Config
 			 */
 			MacdAnalysisConfig buyAnalysisConfig = new MacdAnalysisConfig(
-					Integer.valueOf(prop.getProperty("macdBuyFast")) * Time.MINUTES,
-					Integer.valueOf(prop.getProperty("macdBuySlow")) * Time.MINUTES,
-					Integer.valueOf(prop.getProperty("macdBuySignal")) * Time.MINUTES);
+					Long.valueOf(prop.getProperty("macdBuyFast")) * Time.MINUTES,
+					Long.valueOf(prop.getProperty("macdBuySlow")) * Time.MINUTES,
+					Long.valueOf(prop.getProperty("macdBuySignal")) * Time.MINUTES);
 
 			MacdAnalysisConfig sellAnalysisConfig = new MacdAnalysisConfig(
-					Integer.valueOf(prop.getProperty("macdSellFast")) * Time.MINUTES,
-					Integer.valueOf(prop.getProperty("macdSellSlow")) * Time.MINUTES,
-					Integer.valueOf(prop.getProperty("macdSellSignal")) * Time.MINUTES);
+					Long.valueOf(prop.getProperty("macdSellFast")) * Time.MINUTES,
+					Long.valueOf(prop.getProperty("macdSellSlow")) * Time.MINUTES,
+					Long.valueOf(prop.getProperty("macdSellSignal")) * Time.MINUTES);
 			
 			MacdTraderConfig traderConfig = new MacdTraderConfig(
 					Double.valueOf(prop.getProperty("macdMinBuyThreshold")),
 					Double.valueOf(prop.getProperty("macdMinSellThreshold")),
+					Long.valueOf(prop.getProperty("macdSellPricePeriod")),
 					Double.valueOf(prop.getProperty("macdLossCutThreshold")),
 					Double.valueOf(prop.getProperty("macdSellThresholdRelaxationFactor"))
 			);
