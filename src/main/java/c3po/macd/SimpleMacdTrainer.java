@@ -24,7 +24,7 @@ public class SimpleMacdTrainer {
 	// First timestamp in database: 1384079023000l
 	private final static long simulationEndTime = 1387285485000l;
 	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 28;
-	private final static long simulationLength = Time.DAYS * 3;
+	private final static long simulationLength = Time.DAYS * 4;
 	
 	// Timing
 	private final static long interpolationTime = 2 * Time.MINUTES;
@@ -33,14 +33,14 @@ public class SimpleMacdTrainer {
 	// Simulation and fitness test
 	private final static int numEpochs = 100;
 	private final static int numSimulationsPerEpoch = 10;
-	private final static int numBots = 250;
+	private final static int numBots = 500;
 	
 	// Scoring
 	private final static int tradeBias = 6;
 	
 	// Selection
-	private final static int numParents = 125;
-	private final static int numElites = 25;
+	private final static int numParents = 250;
+	private final static int numElites = 50;
 	
 	// Config mutation ranges
 	private final static double mutationChance = 0.1d;
