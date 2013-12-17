@@ -1,4 +1,4 @@
-package c3po.macd;
+package c3po.boundary;
 
 import java.net.InetSocketAddress;
 import java.util.Date;
@@ -18,12 +18,12 @@ import c3po.utils.Time;
 import c3po.wallet.IWallet;
 import c3po.wallet.Wallet;
 
-public class SimpleMacdTrainer {
-	private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.class);
+public class SimpleBoundaryTrainer {
+	private static final Logger LOGGER = LoggerFactory.getLogger(SimpleBoundaryTrainer.class);
 	
 	// First timestamp in database: 1384079023000l
 	private final static long simulationEndTime = new Date().getTime();
-	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 10;
+	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 21;
 	private final static long simulationLength = Time.DAYS * 3;
 	
 	// Timing
@@ -48,12 +48,8 @@ public class SimpleMacdTrainer {
 	private final static long maxAnalysisPeriod = 12 * Time.HOURS;
 	private final static double minBuyDiffThreshold = 0.0d;
 	private final static double maxBuyDiffThreshold = 30.0d;
-	private final static double minSellDiffThreshold = -30.0d;
-	private final static double maxSellDiffThreshold = 0.0d;
 	private final static double minLossCuttingPercentage = 0.7d;
 	private final static double maxLossCuttingPercentage = 1d;
-	private final static double minSellThresholdRelaxationFactor = 0d;
-	private final static double maxSellThresholdRelaxationFactor = 100d;
 	
 	// Market context
 	private final static double walletStartUsd = 100.0d;
@@ -87,7 +83,7 @@ public class SimpleMacdTrainer {
 		
 		// Create and run the trainer on the context
 		
-		MacdBotConfig winningConfig = runTrainer(simContext);
+		BoundaryBotConfig winningConfig = runTrainer(simContext);
 		
 		// Run the winning bot on the context again
 		
@@ -96,16 +92,14 @@ public class SimpleMacdTrainer {
 		tickerNode.close();
 	}
 
-	private static MacdBotConfig runTrainer(SimulationContext simContext) {
-		MacdBotMutatorConfig mutatorConfig = new MacdBotMutatorConfig(
+	private static BoundaryBotConfig runTrainer(SimulationContext simContext) {
+		BoundaryBotMutatorConfig mutatorConfig = new BoundaryBotMutatorConfig(
 				mutationChance,
 				minAnalysisPeriod, maxAnalysisPeriod,
 				minBuyDiffThreshold,  maxBuyDiffThreshold,
-				minSellDiffThreshold, maxSellDiffThreshold,
-				minLossCuttingPercentage, maxLossCuttingPercentage,
-				minSellThresholdRelaxationFactor, maxSellThresholdRelaxationFactor);
+				minLossCuttingPercentage, maxLossCuttingPercentage);
 		
-		MacdBotMutator mutator = new MacdBotMutator(mutatorConfig);
+		BoundaryBotMutator mutator = new BoundaryBotMutator(mutatorConfig);
 		
 		GenAlgBotTrainerConfig genAlgConfig = new GenAlgBotTrainerConfig(
 				simulationStartTime,
@@ -118,19 +112,19 @@ public class SimpleMacdTrainer {
 				numParents,
 				numElites);
 		
-		GenAlgBotTrainer<MacdBotConfig> trainer = new GenAlgBotTrainer<MacdBotConfig>(genAlgConfig, mutator);
+		GenAlgBotTrainer<BoundaryBotConfig> trainer = new GenAlgBotTrainer<BoundaryBotConfig>(genAlgConfig, mutator);
 		
-		IBotFactory<MacdBotConfig> botFactory = new MacdBotFactory(simContext);
+		IBotFactory<BoundaryBotConfig> botFactory = new BoundaryBotFactory(simContext);
 		
-		MacdBotConfig winningConfig = trainer.train(botFactory, simContext);
+		BoundaryBotConfig winningConfig = trainer.train(botFactory, simContext);
 		
 		return winningConfig;
 	}
 	
-	private static void runWinner(final MacdBotConfig winningConfig, SimulationContext simContext) {		
+	private static void runWinner(final BoundaryBotConfig winningConfig, SimulationContext simContext) {		
 		LOGGER.debug("Running winner: " + winningConfig.toString());
 		
-		MacdBot bot = new MacdBot(
+		BoundaryBot bot = new BoundaryBot(
 				Math.abs(new Random().nextInt()),
 				winningConfig,
 				simContext.getPriceSignal(),
@@ -144,7 +138,7 @@ public class SimpleMacdTrainer {
 		
 		// Create the grapher
 		
-		GraphingNode grapher = new GraphingNode(graphInterval, "MacdBot", 
+		GraphingNode grapher = new GraphingNode(graphInterval, "BoundaryBot", 
 				simContext.getPriceSignal(),
 				bot.getBuyAnalysisNode().getOutputFast(),
 				bot.getBuyAnalysisNode().getOutputSlow()
@@ -152,8 +146,7 @@ public class SimpleMacdTrainer {
 		bot.addTradeListener(grapher);
 		
 		GraphingNode diffGrapher = new GraphingNode(graphInterval, "Macd", 
-				bot.getBuyAnalysisNode().getOutputDifference(),
-				bot.getSellAnalysisNode().getOutputDifference()
+				bot.getBuyAnalysisNode().getOutputDifference()
 		);
 		bot.addTradeListener(diffGrapher);
 		
@@ -183,6 +176,6 @@ public class SimpleMacdTrainer {
 		
 		tradeLogger.writeLog();
 		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Wallet: " + simContext.getTradeFloor().getWalletValueInUsd(bot.getWallet()));
-		LOGGER.debug("Ran winner: " + winningConfig.toString());
+		LOGGER.debug("Ran winner: " + winningConfig.toString() + "\nwith JSON (NOT FOR HUMANS!!!): " + winningConfig.toJSON());
 	}
 }

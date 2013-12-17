@@ -62,7 +62,7 @@ public class GraphingNode extends ApplicationFrame implements ITickable, ITradeL
 		
 		chart = createChart(dataset);
 		ChartPanel chartPanel = (ChartPanel) createPanel(chart);
-		chartPanel.setPreferredSize(new java.awt.Dimension(1600, 540));
+		chartPanel.setPreferredSize(new java.awt.Dimension(1200, 480));
 		setContentPane(chartPanel);
 	}
 

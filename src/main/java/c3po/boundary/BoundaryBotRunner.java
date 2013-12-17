@@ -1,4 +1,4 @@
-package c3po.macd;
+package c3po.boundary;
 
 import c3po.*;
 
@@ -14,6 +14,7 @@ import c3po.bitstamp.BitstampSimulationTradeFloor;
 import c3po.bitstamp.BitstampSimulationTickerDbSource;
 import c3po.clock.ISimulationClock;
 import c3po.clock.SimulationClock;
+import c3po.macd.MacdAnalysisConfig;
 import c3po.node.GraphingNode;
 import c3po.utils.Time;
 import c3po.wallet.IWallet;
@@ -21,12 +22,12 @@ import c3po.wallet.Wallet;
 import c3po.DbConnection;
 import c3po.ITradeFloor;
 
-public class MacdBotRunner {
+public class BoundaryBotRunner {
 	//================================================================================
     // Static Properties
     //================================================================================
 	
-	private static final Logger LOGGER = LoggerFactory.getLogger(MacdBotRunner.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(BoundaryBotRunner.class);
 	
 	// Earliest time 1384079023000l
 	private final static long simulationEndTime = new Date().getTime();
@@ -38,7 +39,7 @@ public class MacdBotRunner {
 	private final static double walletStartUsd = 100.0d;
 	private final static double walletStartBtcInUsd = 0.0d;
 	
-	private final static long graphInterval = 10 * Time.MINUTES;
+	private final static long graphInterval = 1 * Time.MINUTES;
 	
 	//================================================================================
     // Main
@@ -66,24 +67,18 @@ public class MacdBotRunner {
 		double walletStartBtc = walletStartBtcInUsd / tickerNode.getOutputLast().getSample(simulationStartTime).value;
 		final IWallet wallet = new Wallet(walletStartUsd, walletStartBtc);
 		
+		
 		// Create bot config
 		MacdAnalysisConfig buyAnalysisConfig = new MacdAnalysisConfig(
-				29 * Time.MINUTES,
-				470 * Time.MINUTES,
-				323 * Time.MINUTES);
+				51 * Time.MINUTES,
+				222 * Time.MINUTES,
+				106 * Time.MINUTES);
 		
-		MacdAnalysisConfig sellAnalysisConfig = new MacdAnalysisConfig(
-				115 * Time.MINUTES,
-				240 * Time.MINUTES,
-				290 * Time.MINUTES);
+		BoundaryTraderConfig traderConfig = new BoundaryTraderConfig(
+				5,
+				0.96);
 		
-		MacdTraderConfig traderConfig = new MacdTraderConfig(
-				4.97,
-				-19.24,
-				0.97,
-				20.35);
-		
-		MacdBotConfig config = new MacdBotConfig(timestep, buyAnalysisConfig, sellAnalysisConfig, traderConfig);
+		BoundaryBotConfig config = new BoundaryBotConfig(timestep, buyAnalysisConfig, traderConfig);
 		
 //		DbConnection dbConnection = new DbConnection(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
 //		dbConnection.open();
@@ -91,7 +86,7 @@ public class MacdBotRunner {
 		// Create bot
 		
 		int botId = Math.abs(new Random().nextInt());
-		MacdBot bot = new MacdBot(botId, config, tickerNode.getOutputLast(), tickerNode.getOutputVolume(), wallet, tradeFloor);
+		BoundaryBot bot = new BoundaryBot(botId, config, tickerNode.getOutputLast(), tickerNode.getOutputVolume(), wallet, tradeFloor);
 		bot.getTraderNode().setVerbose(true);
 		
 		// Create loggers
@@ -118,8 +113,7 @@ public class MacdBotRunner {
 				);
 		
 		GraphingNode diffGrapher = new GraphingNode(graphInterval, "Macd",
-				bot.getBuyAnalysisNode().getOutputDifference(),
-				bot.getSellAnalysisNode().getOutputDifference());
+				bot.getBuyAnalysisNode().getOutputDifference());
 		bot.addTradeListener(diffGrapher);
 		
 		// Create a clock

@@ -15,7 +15,6 @@ import au.com.bytecode.opencsv.CSVReader;
  *
  */
 public class PearsonCorrelation {
-	
 	public static void main(String[] args) throws IOException {
 		
 		CSVReader reader = new CSVReader(new FileReader("resources/correlate_me.csv"));
@@ -38,7 +37,7 @@ public class PearsonCorrelation {
 		List<Integer> timeshifts = Arrays.asList(60, 300, 600, 3600);
 		for(SignalName signal1 : tickerProperties) {
 			for(SignalName signal2 : orderbookProperties) {
-				// Dont correlate with self
+				// Don't correlate with self
 				if(signal1 == signal2) continue;
 
 				for(Integer timeshift : timeshifts) {
