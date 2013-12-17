@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +50,12 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 	
 	private final GenAlgBotTrainerConfig config;
 	private final IBotConfigMutator<TBotConfig> mutator;
+	
+	/**
+	 * Tracks how many epochs a bot config occured.
+	 * Can give an indication whether a setup is weathered or new.
+	 */
+	private final Map<TBotConfig, Integer> configCounter = new HashMap<TBotConfig, Integer>();
 	
 	private TBotConfig lastWinner;
 	
@@ -97,6 +104,7 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 				PerformanceResult result = results.get(config);
 				result.averageNumTrades /= this.config.numSimulationsPerEpoch;
 				result.averageWalletValue /= this.config.numSimulationsPerEpoch;
+				countBotConfig(config);
 			}
 			
 			// Sort
@@ -118,6 +126,7 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 			}
 		}
 		
+		LOGGER.debug("Trained bot was present for " + configCounter.get(configs.get(0)) + "/" + config.numEpochs + " epochs");
 		return configs.get(0);
 	}
 
@@ -256,6 +265,14 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 	
 	private TBotConfig getRandomConfig(final List<TBotConfig> list) {
 		return list.get( (int)(Math.random() * list.size()) );
+	}
+	
+	private void countBotConfig(TBotConfig config) {
+		if(!configCounter.containsKey(config)) {
+			configCounter.put(config, 1);
+		} else {
+			configCounter.put(config, configCounter.get(config) + 1);
+		}
 	}
 	
 	private class PerformanceResult {
