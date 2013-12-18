@@ -35,7 +35,7 @@ import c3po.wallet.IWallet;
 
 public class BitstampTradeFloor extends AbstractTradeFloor {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BitstampTradeFloor.class);
-	private double tradeFee = 0.005d;
+	private double tradeFee = 0.0022d;
 	
 	// Default: Dagobert
 	private static int clientId = 821581;

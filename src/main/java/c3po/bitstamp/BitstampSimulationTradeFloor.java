@@ -20,7 +20,7 @@ import c3po.wallet.IWallet;
 public class BitstampSimulationTradeFloor extends AbstractTradeFloor {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BitstampSimulationTradeFloor.class);
 
-	private double tradeFee = 0.24d / 100;
+	private double tradeFee = 0.22d / 100;
 	
 	public BitstampSimulationTradeFloor(ISignal last, ISignal bid, ISignal ask) {
 		super(last, bid, ask, false);
