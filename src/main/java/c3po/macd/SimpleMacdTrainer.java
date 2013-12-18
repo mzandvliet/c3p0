@@ -33,14 +33,14 @@ public class SimpleMacdTrainer {
 	// Simulation and fitness test
 	private final static int numEpochs = 100;
 	private final static int numSimulationsPerEpoch = 10;
-	private final static int numBots = 500;
+	private final static int numBots = 600;
 	
 	// Scoring
 	private final static int tradeBias = 4;
 	
 	// Selection
-	private final static int numParents = 250;
-	private final static int numElites = 25;
+	private final static int numParents = 300;
+	private final static int numElites = 30;
 	
 	// Config mutation ranges
 	private final static double mutationChance = 0.1d;
@@ -51,7 +51,7 @@ public class SimpleMacdTrainer {
 	private final static double minSellDiffThreshold = -30.0d;
 	private final static double maxSellDiffThreshold = 0.0d;
 	private final static long minSellPricePeriod = 1 * Time.MINUTES;
-	private final static long maxSellPricePeriod = 30 * Time.MINUTES;
+	private final static long maxSellPricePeriod = 3 * Time.HOURS;
 	private final static double minLossCuttingPercentage = 0.8d;
 	private final static double maxLossCuttingPercentage = 1d;
 	private final static double minSellThresholdRelaxationFactor = 0d;
