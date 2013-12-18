@@ -184,12 +184,9 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	public double buyImpl(IWallet wallet, TradeAction action) {
 		double boughtBtc = 0;
 		try {
-			// We get the latest ask from the JSON
-			double buyPrice = getBuyPrice();
-					
 			// The amount of Btc we are going to get if we buy for volume USD
-			boughtBtc = action.volume / buyPrice * (1.0d-tradeFee);
-			double soldUsd = action.volume * buyPrice;
+			double buyPrice = getBuyPrice();
+			boughtBtc = calculateBtcToBuy(action.volume, buyPrice, tradeFee);
 			
 			// Place the actual buy order
 			placeBuyOrder(buyPrice, boughtBtc);
@@ -205,6 +202,33 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 		
 		return boughtBtc;
 	}
+	
+	/**
+	 * Calculated the amount of BTC that you can buy given the volume, the current price
+	 * and the tradefee percentage.
+	 * 
+	 * @param volumeUsd
+	 * @param buyPrice
+	 * @param tradeFee
+	 * @return Amount of BTC
+	 */
+	public static double calculateBtcToBuy(double volumeUsd, double buyPrice, double tradeFee) {
+		return (volumeUsd - calculateTradeFeeUsd(volumeUsd, tradeFee)) / buyPrice;
+	}
+	
+	/**
+	 * This method calculated the tradefee in USD based on the volume USD and the current tradefee
+	 * percentage. The amount is always rounded up as of Bitstamps regulations.
+	 * 
+	 * @param volumeUsd
+	 * @param tradeFee
+	 * @return Rounded up tradefee in USD
+	 */
+	public static double calculateTradeFeeUsd(double volumeUsd, double tradeFee) {
+		double expectedTradefee = Math.ceil(volumeUsd * tradeFee * 100) / 100;
+		LOGGER.debug("Expected tradeFee: " + BitstampTradeFloor.doubleToPriceString(expectedTradefee));
+		return expectedTradefee;
+	}
 
 	@Override
 	public double sellImpl(IWallet wallet, TradeAction action) {
@@ -214,7 +238,9 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 			double sellPrice = this.getSellPrice();
 			
 			// We assume the trade is fulfilled instantly, for the price of the ask
-			boughtUsd = action.volume * sellPrice * (1.0d-tradeFee);
+			double volumeUsd = action.volume * sellPrice;
+			boughtUsd = volumeUsd - calculateTradeFeeUsd(volumeUsd, tradeFee);
+			
 			double soldBtc = action.volume;
 			
 			// Place the actual sell order
