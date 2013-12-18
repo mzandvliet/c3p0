@@ -24,7 +24,7 @@ public class MacdTraderConfig {
 	}
 
 	public String toString() {
-		return String.format("[TraderConfig - minBuyThreshold: %,.4f, minSellThreshold: %,.4f, sellPricePeriod: %s, lossCutThreshold at %,.2f, sellThresholdRelaxationFactor at %,.2f]", 
+		return String.format("[TraderConfig - minBuyThreshold: %,.4f, minSellThreshold: %,.4f, sellPricePeriod: %s, lossCutThreshold at %,.6f, sellThresholdRelaxationFactor at %,.2f]", 
 				minBuyDiffThreshold,
 				minSellDiffThreshold,
 				sellPricePeriod / Time.MINUTES,
