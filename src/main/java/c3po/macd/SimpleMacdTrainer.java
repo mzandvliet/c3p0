@@ -23,8 +23,8 @@ public class SimpleMacdTrainer {
 	
 	// First timestamp in database: 1384079023000l
 	private final static long simulationEndTime = 1387285485000l;
-	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 28;
-	private final static long simulationLength = Time.DAYS * 4;
+	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 21;
+	private final static long simulationLength = Time.DAYS * 3;
 	
 	// Timing
 	private final static long interpolationTime = 2 * Time.MINUTES;
@@ -36,11 +36,11 @@ public class SimpleMacdTrainer {
 	private final static int numBots = 500;
 	
 	// Scoring
-	private final static int tradeBias = 6;
+	private final static int tradeBias = 4;
 	
 	// Selection
 	private final static int numParents = 250;
-	private final static int numElites = 50;
+	private final static int numElites = 25;
 	
 	// Config mutation ranges
 	private final static double mutationChance = 0.1d;
@@ -51,8 +51,8 @@ public class SimpleMacdTrainer {
 	private final static double minSellDiffThreshold = -30.0d;
 	private final static double maxSellDiffThreshold = 0.0d;
 	private final static long minSellPricePeriod = 1 * Time.MINUTES;
-	private final static long maxSellPricePeriod = 6 * Time.HOURS;
-	private final static double minLossCuttingPercentage = 0.85d;
+	private final static long maxSellPricePeriod = 30 * Time.MINUTES;
+	private final static double minLossCuttingPercentage = 0.8d;
 	private final static double maxLossCuttingPercentage = 1d;
 	private final static double minSellThresholdRelaxationFactor = 0d;
 	private final static double maxSellThresholdRelaxationFactor = 100d;
@@ -191,5 +191,6 @@ public class SimpleMacdTrainer {
 		tradeLogger.writeLog();
 		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Wallet: " + simContext.getTradeFloor().getWalletValueInUsd(bot.getWallet()));
 		LOGGER.debug("Ran winner: " + winningConfig.toString());
+		LOGGER.debug(winningConfig.toJSON());
 	}
 }
