@@ -61,10 +61,14 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	private final static double minDollars = 1.0d;
 	
 	public void decide(long tick) {
-		Sample buyCurrentDiff = buyAnalysis.getOutputDifference().getSample(tick);
-		Sample sellCurrentDiff = sellAnalysis.getOutputDifference().getSample(tick);
+		buyAnalysis.tick(tick);
+		sellAnalysis.tick(tick);
+		averagePrice.tick(tick);
 		
 		if (numSkippedTicks > startDelay) {
+			Sample buyCurrentDiff = buyAnalysis.getOutputDifference().getSample(tick);
+			Sample sellCurrentDiff = sellAnalysis.getOutputDifference().getSample(tick);
+			
 			boolean hasEnoughUsd = wallet.getWalletUsd() > minDollars;
 			boolean hasEnoughBtc = wallet.getWalletBtc() > tradeFloor.toBtc(minDollars);	
 			
@@ -89,22 +93,22 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	private void tryLossSafeguard(long tick) {
 
 		boolean shouldSell = false;
-		double currentPrice = 0.0d;
+		double currentAveragePrice = 0.0d;
 		
 		try {
-			currentPrice = averagePrice.getOutput(0).getSample(tick).value;
+			currentAveragePrice = averagePrice.getOutput(0).getSample(tick).value;
 			
-			if (currentPrice > this.lastHighestPositionPrice)
-				this.lastHighestPositionPrice = currentPrice;
+			if (currentAveragePrice > this.lastHighestPositionPrice)
+				this.lastHighestPositionPrice = currentAveragePrice;
 			
-			shouldSell = (currentPrice < lastHighestPositionPrice * config.lossCutThreshold);
+			shouldSell = (currentAveragePrice < lastHighestPositionPrice * config.lossCutThreshold);
 		} catch (Exception e) {
 			LOGGER.error("Could not check for loss cutting safeguard", e);
 		}
 		
 		if(shouldSell) {
 			if (verbose)
-				LOGGER.debug(String.format("Cutting at %s. Last buy: %s, because the current price %,.2f is less than %,.2f of %,.2f", new Date(tick), String.valueOf(lastBuyPrice), currentPrice, config.lossCutThreshold, lastHighestPositionPrice));
+				LOGGER.debug(String.format("Cutting at %s. Last buy: %s, because the current price %,.2f is less than %,.2f of %,.2f", new Date(tick), String.valueOf(lastBuyPrice), currentAveragePrice, config.lossCutThreshold, lastHighestPositionPrice));
 			
 			double btcToSell = wallet.getWalletBtc(); // All-in
 			TradeAction sellAction = new TradeAction(TradeActionType.SELL, tick, btcToSell);
@@ -132,9 +136,9 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 			double btcReceived = tradeFloor.buy(wallet, buyAction);
 
 			// TODO: Get the buy price from the tradeFloor buy action instead
-			double currentPrice = tradeFloor.toUsd(1d);
-			this.lastBuyPrice = currentPrice;
-			this.lastHighestPositionPrice = averagePrice.getOutput(0).getSample(tick).value;
+			double currentAveragePrice = averagePrice.getOutput(0).getSample(tick).value;
+			this.lastBuyPrice = currentAveragePrice;
+			this.lastHighestPositionPrice = currentAveragePrice;
 			
 			notify(buyAction);
 		}
@@ -157,6 +161,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 			if (verbose)
 				LOGGER.debug("Closing at " + new Date(tick) + ". Last Buy: " + String.valueOf(lastBuyPrice) + ", Current Price: " + String.valueOf(currentPrice) + ", Current Diff: " + String.valueOf(currentDiff.value) + ", New Treshold: " + String.valueOf(currentSellThreshold));
 			
+			this.lastBuyPrice = -1;
 			this.lastHighestPositionPrice = -1;
 
 			notify(sellAction);
