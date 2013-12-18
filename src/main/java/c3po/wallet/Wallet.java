@@ -1,6 +1,7 @@
 package c3po.wallet;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -63,6 +64,7 @@ public class Wallet implements IWallet {
 	public void update(double dollars, double btc) {
 		if(dollars != walletUsd  || btc != walletBtc) {
 			LOGGER.info("Received update for the wallet. Difference " + (dollars - walletUsd) + " USD, " + (btc - walletBtc) + " BTC");
+			notify(new WalletTransactionResult(new Date().getTime(), walletUsd, walletBtc)); // TODO: This is a hack in case we do manual trading
 			walletUsd = dollars;
 			walletBtc = btc;
 		}
