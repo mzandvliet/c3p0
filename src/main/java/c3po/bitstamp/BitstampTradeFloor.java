@@ -291,10 +291,8 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 						LOGGER.info("Adjusting "+ openOrder + " to match price " + buyPrice);
 						cancelOrder(openOrder);
 						
-						// We need to place a new order for the same value
-						double orderValue = openOrder.getPrice() * openOrder.getAmount();
-						
-						placeSellOrder(buyPrice, orderValue / buyPrice);
+						// We need to place a new order for the same amount of Btc
+						placeSellOrder(buyPrice, openOrder.getAmount());
 					}
 					
 					// Adjust buy order if needed
@@ -302,7 +300,7 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 						LOGGER.info("Adjusting "+ openOrder + " to match price " + sellPrice);
 						cancelOrder(openOrder);
 						
-						// We need to place a new order for the same value
+						// Modify the amount of Btc's to buy with the current price, so we spend the same amount of dollars
 						double orderValue = openOrder.getPrice() * openOrder.getAmount();
 						
 						placeBuyOrder(sellPrice, orderValue / sellPrice);
@@ -344,21 +342,21 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	 * Does the actual buy order in the Bitstamp API.
 	 * 
 	 * @param price
-	 * @param amount
+	 * @param btcToBuy
 	 * @return OpenOrder If the order succeeded, the resulting order
 	 * @throws Exception 
 	 * @throws JSONException 
 	 */
-	public OpenOrder placeBuyOrder(double price, double amount) throws JSONException, Exception {
+	public OpenOrder placeBuyOrder(double price, double btcToBuy) throws JSONException, Exception {
 		List<NameValuePair> params = new LinkedList<NameValuePair>();
 		params.add(new BasicNameValuePair("price", String.valueOf(doubleToPriceString(price))));
-		params.add(new BasicNameValuePair("amount", String.valueOf(doubleToAmountString(amount))));
+		params.add(new BasicNameValuePair("amount", String.valueOf(doubleToAmountString(btcToBuy))));
 		JSONObject result = new JSONObject(doAuthenticatedCall("https://www.bitstamp.net/api/buy/", params));
 		
 		if(result.has("error"))
 			throw new Exception(result.get("error").toString());
 		
-		LOGGER.info("Placed buy order: Buy " + doubleToAmountString(amount) + " BTC for " + doubleToPriceString(price) + " USD. Result: " + result);
+		LOGGER.info("Placed buy order: Buy " + doubleToAmountString(btcToBuy) + " BTC for " + doubleToPriceString(price) + " USD. Result: " + result);
 		
 		return new OpenOrder(result.getLong("id"), dateStringToSec(result.getString("datetime")), result.getInt("type"), result.getDouble("price"), result.getDouble("amount"));
 	}
