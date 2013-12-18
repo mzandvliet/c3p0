@@ -62,26 +62,15 @@ public class BitstampTradefloorTest {
 	}
 	
 	@Test
-	public void testPlaceBuyOrder() throws Exception {
-		/*
-		final BitstampTradeFloor mock = new BitstampTradeFloorMock(new JSONCallback() {		
-			@Override
-			public String getData(String url, List<NameValuePair> params) {
-				if(url == "https://www.bitstamp.net/api/buy/" && params.size() == 2) {
-					return "TRUE";
-				} else {
-					return "FALSE";
-				}
-			}
-		});
-		
-	    double price = 308.55;
-		double amount = 0.0001;
-		
-		mock.placeBuyOrder(price, amount);
-*/
-		
-		
+	public void testCalculateTradeFee() throws Exception {
+		double tradefeeUsd = BitstampTradeFloor.calculateTradeFeeUsd(1222.37, 0.0022);
+		assertEquals(2.69, tradefeeUsd, 0.00000001);
+	}
+	
+	@Test
+	public void testCalculateBtcToBuy() throws Exception {
+		double calculateBtcToBuy = BitstampTradeFloor.calculateBtcToBuy(37.06, 578.97, 0.0044);
+		assertEquals("0.0637166", BitstampTradeFloor.doubleToAmountString(calculateBtcToBuy));
 	}
 	
 	@Test @Ignore
