@@ -37,6 +37,12 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BitstampTradeFloor.class);
 	private double tradeFee = 0.0022d;
 	
+	/**
+	 * Because of tradelag and such its handy to undercut a bit, to avoid missing the boat
+	 * and not having your orders filled.
+	 */
+	private static double priceUndercut = 0.05d;
+	
 	// Default: Dagobert
 	private static int clientId = 821581;
 	private static String apiKey = "rOlWvTyTL0ZZL7OztIH9nCbS66WOEc4h";
@@ -155,9 +161,9 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	 */
 	protected double getBuyPrice() throws JSONException, IOException {
 		if(doLimitOrder) {
-			return this.getCurrentBid() + 0.01d;
+			return this.getCurrentBid() + priceUndercut;
 		} else {
-			return this.getCurrentAsk();
+			return this.getCurrentAsk() + priceUndercut;
 		}
 	}
 	
@@ -174,9 +180,9 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	 */
 	protected double getSellPrice() throws JSONException, IOException {
 		if(doLimitOrder) {
-			return this.getCurrentAsk() - 0.01d;
+			return this.getCurrentAsk() - priceUndercut;
 		} else {
-			return this.getCurrentBid();
+			return this.getCurrentBid() - priceUndercut;
 		}
 	}
 
@@ -301,12 +307,14 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 					return;
 				
 				// Decide which would be the ideal price to buy or sell for
+				// TODO: Also use the priceUndercut here. But what way? Naming might be bad here
+				//        since we use buy to sell, etc. Need to look at it carefully.
 				double buyPrice, sellPrice;
 				if(doLimitOrder) {
 					buyPrice = this.getCurrentBid();
 					sellPrice = this.getCurrentAsk();
 				} else {
-					buyPrice = this.getCurrentAsk();
+					buyPrice = this.getCurrentAsk() ;
 					sellPrice = this.getCurrentBid();
 				}
 				
