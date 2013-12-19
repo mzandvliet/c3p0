@@ -5,16 +5,18 @@ import com.google.gson.Gson;
 import c3po.IBotConfig;
 
 public class MacdBotConfig implements IBotConfig {
-	public final long timestep; // Does not warrant its own class yet
+	public final long timestep;
 	
 	public final MacdAnalysisConfig buyAnalysisConfig;
 	public final MacdAnalysisConfig sellAnalysisConfig;
+	public final MacdAnalysisConfig volumeAnalysisConfig;
 	public final MacdTraderConfig traderConfig;
 	
-	public MacdBotConfig(long timeStep, MacdAnalysisConfig buyAnalysisConfig, MacdAnalysisConfig sellAnalysisConfig, MacdTraderConfig traderConfig) {
+	public MacdBotConfig(long timeStep, MacdAnalysisConfig buyAnalysisConfig, MacdAnalysisConfig sellAnalysisConfig, MacdAnalysisConfig volumeAnalysisConfig, MacdTraderConfig traderConfig) {
 		this.timestep = timeStep;
 		this.buyAnalysisConfig = buyAnalysisConfig;
 		this.sellAnalysisConfig = sellAnalysisConfig;
+		this.volumeAnalysisConfig = volumeAnalysisConfig;
 		this.traderConfig = traderConfig;
 	}
 	
@@ -41,10 +43,8 @@ public class MacdBotConfig implements IBotConfig {
 
 	@Override
 	public String toString() {
-		//return toJSON();
-		return "Buy: " + buyAnalysisConfig.toString() + ", " + "Sell: " + sellAnalysisConfig.toString() + ", " + traderConfig.toString();
+		return "Buy: " + buyAnalysisConfig.toString() + ", Sell: " + sellAnalysisConfig.toString() + ", Volume" + volumeAnalysisConfig.toString() + ", " + traderConfig.toString();
 	}
-
 
 	@Override
 	public int hashCode() {
@@ -61,6 +61,10 @@ public class MacdBotConfig implements IBotConfig {
 		result = prime * result + (int) (timestep ^ (timestep >>> 32));
 		result = prime * result
 				+ ((traderConfig == null) ? 0 : traderConfig.hashCode());
+		result = prime
+				* result
+				+ ((volumeAnalysisConfig == null) ? 0 : volumeAnalysisConfig
+						.hashCode());
 		return result;
 	}
 
@@ -89,6 +93,11 @@ public class MacdBotConfig implements IBotConfig {
 			if (other.traderConfig != null)
 				return false;
 		} else if (!traderConfig.equals(other.traderConfig))
+			return false;
+		if (volumeAnalysisConfig == null) {
+			if (other.volumeAnalysisConfig != null)
+				return false;
+		} else if (!volumeAnalysisConfig.equals(other.volumeAnalysisConfig))
 			return false;
 		return true;
 	}

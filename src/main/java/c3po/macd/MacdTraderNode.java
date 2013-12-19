@@ -24,6 +24,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	private final INode averagePrice;
 	private final MacdAnalysisNode buyAnalysis;
 	private final MacdAnalysisNode sellAnalysis;
+	private final MacdAnalysisNode volumeAnalysis;
 	private final IWallet wallet;
 	private final ITradeFloor tradeFloor;
 	private final MacdTraderConfig config;
@@ -37,11 +38,12 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	private double lastHighestPositionPrice = -1; // TODO: managing this state explicitly is error prone
 	private double lastBuyPrice = -1;
 
-	public MacdTraderNode(long timestep, ISignal price, MacdAnalysisNode buyAnalysis, MacdAnalysisNode sellAnalysis, IWallet wallet, ITradeFloor tradeFloor, MacdTraderConfig config, long startDelay) {
+	public MacdTraderNode(long timestep, ISignal price, MacdAnalysisNode buyAnalysis, MacdAnalysisNode sellAnalysis, MacdAnalysisNode volumeAnalysis, IWallet wallet, ITradeFloor tradeFloor, MacdTraderConfig config, long startDelay) {
 		super(timestep);
 		this.averagePrice = new ExpMovingAverageNode(timestep, config.sellPricePeriod, price);
 		this.buyAnalysis = buyAnalysis;
 		this.sellAnalysis = sellAnalysis;
+		this.volumeAnalysis = volumeAnalysis;
 		this.wallet = wallet;
 		this.tradeFloor = tradeFloor;
 		this.config = config;
@@ -63,6 +65,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	public void decide(long tick) {
 		buyAnalysis.tick(tick);
 		sellAnalysis.tick(tick);
+		volumeAnalysis.tick(tick);
 		averagePrice.tick(tick);
 		
 		if (numSkippedTicks > startDelay) {
@@ -82,7 +85,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 			
 			if(hasEnoughBtc) {
 				tryToClosePosition(tick, sellCurrentDiff);
-				tryLossSafeguard(tick);
+				tryToCutPosition(tick);
 			}			
 		}
 		else {
@@ -90,7 +93,50 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		}
 	}
 	
-	private void tryLossSafeguard(long tick) {
+	private void tryToOpenPosition(long tick, Sample currentDiff) {
+		boolean buyThresholdReached = currentDiff.value > config.minBuyDiffThreshold;
+		boolean volumeThresholdReached = volumeAnalysis.getOutputDifference().getSample(tick).value > config.buyVolumeThreshold;
+
+		if (buyThresholdReached && volumeThresholdReached) {
+			if(verbose)
+				LOGGER.debug(String.format("%,.4f > %,.4f = %b", currentDiff.value, config.minBuyDiffThreshold, buyThresholdReached));
+			
+			double usdToSell = wallet.getWalletUsd();
+			TradeAction buyAction = new TradeAction(TradeActionType.BUY, tick, usdToSell);
+			double btcReceived = tradeFloor.buy(wallet, buyAction);
+
+			double currentAveragePrice = averagePrice.getOutput(0).getSample(tick).value;
+			this.lastBuyPrice = currentAveragePrice;
+			this.lastHighestPositionPrice = currentAveragePrice;
+			
+			notify(buyAction);
+		}
+	}
+
+	private void tryToClosePosition(long tick, Sample currentDiff) {
+		double currentPrice = tradeFloor.toUsd(1d);
+		double currentSellThreshold = calculateCurrentSellThreshold(config.minSellDiffThreshold, lastBuyPrice, currentPrice, config.sellThresholdRelaxationFactor);
+		boolean sellThresholdReached = currentDiff.value < currentSellThreshold;
+
+		if (sellThresholdReached) {
+			if(verbose)
+				LOGGER.debug(String.format("%,.4f < %,.4f = %b", currentDiff.value, config.minSellDiffThreshold, sellThresholdReached));
+			
+			double btcToSell = wallet.getWalletBtc(); 
+			TradeAction sellAction = new TradeAction(TradeActionType.SELL, tick, btcToSell);
+			double usdReceived = tradeFloor.sell(wallet, sellAction);
+			
+			if (verbose)
+				LOGGER.debug("Closing at " + new Date(tick) + ". Last Buy: " + String.valueOf(lastBuyPrice) + ", Current Price: " + String.valueOf(currentPrice) + ", Current Diff: " + String.valueOf(currentDiff.value) + ", New Treshold: " + String.valueOf(currentSellThreshold));
+			
+			this.lastBuyPrice = -1;
+			this.lastHighestPositionPrice = -1;
+
+			notify(sellAction);
+		}
+	}
+	
+	private void tryToCutPosition(long tick) {
 
 		boolean shouldSell = false;
 		double currentAveragePrice = 0.0d;
@@ -122,50 +168,6 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 
 	public void setVerbose(boolean verbose) {
 		this.verbose = verbose;
-	}
-
-	private void tryToOpenPosition(long tick, Sample currentDiff) {
-		boolean buyThresholdReached = currentDiff.value > config.minBuyDiffThreshold;
-		
-//		if(verbose)
-//			LOGGER.debug(String.format("%,.4f > %,.4f = %b", currentDiff.value, config.minBuyDiffThreshold, buyThresholdReached));
-
-		if (buyThresholdReached) {
-			double usdToSell = wallet.getWalletUsd();
-			TradeAction buyAction = new TradeAction(TradeActionType.BUY, tick, usdToSell);
-			double btcReceived = tradeFloor.buy(wallet, buyAction);
-
-			// TODO: Get the buy price from the tradeFloor buy action instead
-			double currentAveragePrice = averagePrice.getOutput(0).getSample(tick).value;
-			this.lastBuyPrice = currentAveragePrice;
-			this.lastHighestPositionPrice = currentAveragePrice;
-			
-			notify(buyAction);
-		}
-	}
-
-	private void tryToClosePosition(long tick, Sample currentDiff) {
-		
-		double currentPrice = tradeFloor.toUsd(1d);
-		double currentSellThreshold = calculateCurrentSellThreshold(config.minSellDiffThreshold, lastBuyPrice, currentPrice, config.sellThresholdRelaxationFactor);
-		boolean sellThresholdReached = currentDiff.value < currentSellThreshold;
-		
-//		if(verbose)
-//			LOGGER.debug(String.format("%,.4f < %,.4f = %b", currentDiff.value, config.minSellDiffThreshold, sellThresholdReached));
-		
-		if (sellThresholdReached) {
-			double btcToSell = wallet.getWalletBtc(); 
-			TradeAction sellAction = new TradeAction(TradeActionType.SELL, tick, btcToSell);
-			double usdReceived = tradeFloor.sell(wallet, sellAction);
-			
-			if (verbose)
-				LOGGER.debug("Closing at " + new Date(tick) + ". Last Buy: " + String.valueOf(lastBuyPrice) + ", Current Price: " + String.valueOf(currentPrice) + ", Current Diff: " + String.valueOf(currentDiff.value) + ", New Treshold: " + String.valueOf(currentSellThreshold));
-			
-			this.lastBuyPrice = -1;
-			this.lastHighestPositionPrice = -1;
-
-			notify(sellAction);
-		}
 	}
 	
 	/**
