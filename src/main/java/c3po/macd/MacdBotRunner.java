@@ -29,8 +29,8 @@ public class MacdBotRunner {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdBotRunner.class);
 	
 	// Earliest time 1384079023000l
-	private final static long simulationEndTime = new Date().getTime() - (Time.DAYS * 17);
-	private final static long simulationStartTime = simulationEndTime - (Time.DAYS * 7);
+	private final static long simulationEndTime = new Date().getTime() - (Time.DAYS * 0);
+	private final static long simulationStartTime = simulationEndTime - (Time.DAYS * 28);
 	
 	private final static long interpolationTime = 2 * Time.MINUTES;
 	private final static long timestep = 1 * Time.MINUTES;
@@ -66,28 +66,28 @@ public class MacdBotRunner {
 		
 		double walletStartBtc = walletStartBtcInUsd / tickerNode.getOutputLast().getSample(simulationStartTime).value;
 		final IWallet wallet = new Wallet(walletStartUsd, walletStartBtc);
-		
+
 		// Create bot config
-//		MacdAnalysisConfig buyAnalysisConfig = new MacdAnalysisConfig(
-//				25 * Time.MINUTES,
-//				224 * Time.MINUTES,
-//				282 * Time.MINUTES);
-//		
-//		MacdAnalysisConfig sellAnalysisConfig = new MacdAnalysisConfig(
-//				30 * Time.MINUTES,
-//				248 * Time.MINUTES,
-//				213 * Time.MINUTES);
-//		
-//		MacdTraderConfig traderConfig = new MacdTraderConfig(
-//				6.7859,
-//				-23.7962,
-//				15 * Time.MINUTES,
-//				0.958352,
-//				19.74);
-//		
-//		MacdBotConfig config = new MacdBotConfig(timestep, buyAnalysisConfig, sellAnalysisConfig, traderConfig);
-//		
-		MacdBotConfig config = MacdBotConfig.fromJSON("{\"timestep\":60000,\"buyAnalysisConfig\":{\"fastPeriod\":1765335,\"slowPeriod\":22905724,\"signalPeriod\":10092577},\"sellAnalysisConfig\":{\"fastPeriod\":3356666,\"slowPeriod\":11997787,\"signalPeriod\":12456795},\"traderConfig\":{\"minBuyDiffThreshold\":7.195941689862062,\"minSellDiffThreshold\":-25.446908907510984,\"lossCutThreshold\":0.989083882136938,\"sellThresholdRelaxationFactor\":19.354084982618435,\"sellPricePeriod\":5057311}}");
+		MacdAnalysisConfig buyAnalysisConfig = new MacdAnalysisConfig(
+				44 * Time.MINUTES,
+				298 * Time.MINUTES,
+				317 * Time.MINUTES);
+		
+		MacdAnalysisConfig sellAnalysisConfig = new MacdAnalysisConfig(
+				129 * Time.MINUTES,
+				178 * Time.MINUTES,
+				268 * Time.MINUTES);
+		
+		MacdTraderConfig traderConfig = new MacdTraderConfig(
+				13.1946,
+				-15.6044,
+				117 * Time.MINUTES,
+				0.991070,
+				4.80);
+		
+		MacdBotConfig config = new MacdBotConfig(timestep, buyAnalysisConfig, sellAnalysisConfig, traderConfig);
+		
+//		MacdBotConfig config = MacdBotConfig.fromJSON("{\"timestep\":60000,\"buyAnalysisConfig\":{\"fastPeriod\":2477601,\"slowPeriod\":23330393,\"signalPeriod\":16324136},\"sellAnalysisConfig\":{\"fastPeriod\":9620180,\"slowPeriod\":11977965,\"signalPeriod\":11944022},\"traderConfig\":{\"minBuyDiffThreshold\":17.210540909606326,\"minSellDiffThreshold\":-7.55726726638008,\"lossCutThreshold\":0.9331220937626041,\"sellThresholdRelaxationFactor\":33.56888487241436,\"sellPricePeriod\":347074}}");
 
 //		DbConnection dbConnection = new DbConnection(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
 //		dbConnection.open();
@@ -104,8 +104,8 @@ public class MacdBotRunner {
 		DebugTradeLogger tradeLogger = new DebugTradeLogger();
 		bot.addTradeListener(tradeLogger);
 		
-		DbTradeLogger dbLogger = new DbTradeLogger(bot, dbConnection);
-		dbLogger.startSession(simulationStartTime);
+//		DbTradeLogger dbLogger = new DbTradeLogger(bot, dbConnection);
+//		dbLogger.startSession(simulationStartTime);
 		
 //		EmailTradeLogger mailLogger = new EmailTradeLogger("martijn@ramjetanvil.com", "jopast@gmail.com");
 //		bot.addTradeListener(mailLogger);
