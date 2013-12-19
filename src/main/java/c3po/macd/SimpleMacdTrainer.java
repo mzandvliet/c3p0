@@ -23,7 +23,7 @@ public class SimpleMacdTrainer {
 	
 	// First timestamp in database: 1384079023000l
 	private final static long simulationEndTime = new Date().getTime();
-	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 14;
+	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 21;
 	private final static long simulationLength = Time.DAYS * 3;
 	
 	// Timing
@@ -50,6 +50,8 @@ public class SimpleMacdTrainer {
 	private final static double maxBuyDiffThreshold = 30.0d;
 	private final static double minSellDiffThreshold = -30.0d;
 	private final static double maxSellDiffThreshold = 0.0d;
+	private final static double minVolumeThreshold = 0.0d;
+	private final static double maxVolumeThreshold = 30.0d;
 	private final static long minSellPricePeriod = 1 * Time.MINUTES;
 	private final static long maxSellPricePeriod = 2 * Time.HOURS;
 	private final static double minLossCuttingPercentage = 0.8d;
@@ -60,7 +62,7 @@ public class SimpleMacdTrainer {
 	// Market context
 	private final static double walletStartUsd = 100.0d;
 	
-	private final static long graphInterval = 2 * Time.MINUTES;
+	private final static long graphInterval = 5 * Time.MINUTES;
 
 	public static void main(String[] args) {
 		
@@ -107,6 +109,7 @@ public class SimpleMacdTrainer {
 				maxAnalysisPeriod, minBuyDiffThreshold,
 				maxBuyDiffThreshold, minSellDiffThreshold,
 				maxSellDiffThreshold, minLossCuttingPercentage,
+				minVolumeThreshold, maxVolumeThreshold,
 				minSellPricePeriod, maxSellPricePeriod,
 				maxLossCuttingPercentage,
 				minSellThresholdRelaxationFactor,
