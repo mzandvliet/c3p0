@@ -46,26 +46,8 @@ public class RealtimeBotRunner {
 	    	
 			/**
 			 * Bot Config
-			 */
-			MacdAnalysisConfig buyAnalysisConfig = new MacdAnalysisConfig(
-					Long.valueOf(prop.getProperty("macdBuyFast")) * Time.MINUTES,
-					Long.valueOf(prop.getProperty("macdBuySlow")) * Time.MINUTES,
-					Long.valueOf(prop.getProperty("macdBuySignal")) * Time.MINUTES);
-
-			MacdAnalysisConfig sellAnalysisConfig = new MacdAnalysisConfig(
-					Long.valueOf(prop.getProperty("macdSellFast")) * Time.MINUTES,
-					Long.valueOf(prop.getProperty("macdSellSlow")) * Time.MINUTES,
-					Long.valueOf(prop.getProperty("macdSellSignal")) * Time.MINUTES);
-			
-			MacdTraderConfig traderConfig = new MacdTraderConfig(
-					Double.valueOf(prop.getProperty("macdMinBuyThreshold")),
-					Double.valueOf(prop.getProperty("macdMinSellThreshold")),
-					Long.valueOf(prop.getProperty("macdSellPricePeriod")),
-					Double.valueOf(prop.getProperty("macdLossCutThreshold")),
-					Double.valueOf(prop.getProperty("macdSellThresholdRelaxationFactor"))
-			);
-			
-			MacdBotConfig config = new MacdBotConfig(timestep, buyAnalysisConfig, sellAnalysisConfig, traderConfig);
+			 */			
+			MacdBotConfig config = MacdBotConfig.fromJSON(prop.getProperty("config"));
 			
 			// Set up global signal tree
 			final BitstampTickerSource tickerNode = new BitstampTickerDbSource(timestep, interpolationTime, dbConnection);
@@ -83,6 +65,7 @@ public class RealtimeBotRunner {
 					clientId, apiKey, apiSecret
 			);
 			
+			
 			// Update the wallet with the real values
 			tradeFloor.updateWallet(wallet);
 			
@@ -94,14 +77,14 @@ public class RealtimeBotRunner {
 			LOGGER.info("Starting bot: " + bot);
 			
 			// Log the trades by DB and email
-			DbTradeLogger dbTradeLogger = new DbTradeLogger(bot, dbConnection);
+			new DbTradeLogger(bot, dbConnection);
 			
 			//dbTradeLogger.startSession(new Date().getTime());
 			EmailTradeLogger mailLogger = new EmailTradeLogger(bot.getId(), "martijn@ramjetanvil.com", "jopast@gmail.com");
 			bot.addTradeListener(mailLogger);
 			
 			// Create a clock
-			IRealtimeClock botClock = new RealtimeClock(timestep, Math.max(buyAnalysisConfig.slowPeriod, buyAnalysisConfig.signalPeriod), interpolationTime);
+			IRealtimeClock botClock = new RealtimeClock(timestep, Math.max(config.buyAnalysisConfig.slowPeriod, config.buyAnalysisConfig.signalPeriod), interpolationTime);
 			botClock.addListener(bot);
 			
 			// Run the program
