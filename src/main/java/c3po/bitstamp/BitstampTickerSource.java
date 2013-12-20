@@ -11,12 +11,12 @@ import c3po.utils.SignalMath;
  * 		- Polling should return a ServerSampleEntry
  */
 
-public abstract class BitstampTickerSource extends AbstractTickable implements INode {
+public abstract class BitstampTickerSource extends AbstractTickable implements IBitstampTickerSource {
 	protected final int numSignals = 6;
-	protected OutputSignal[] signals;
-	protected boolean isEmpty = false;
+	protected final OutputSignal[] signals;
 	protected final long interpolationTime;
 	protected final CircularArrayList<ServerSampleEntry> buffer;
+	protected boolean isEmpty = false;
 	
 	public BitstampTickerSource(long timestep, long interpolationTime) {
 		super(timestep);
@@ -110,27 +110,33 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 		}
 	}
 
-	public OutputSignal getOutputBid() {
+	@Override
+	public ISignal getOutputBid() {
 		return signals[SignalName.BID.ordinal()];
 	}
 	
-	public OutputSignal getOutputAsk() {
+	@Override
+	public ISignal getOutputAsk() {
 		return signals[SignalName.ASK.ordinal()];
 	}
 	
-	public OutputSignal getOutputVolume() {
+	@Override
+	public ISignal getOutputVolume() {
 		return signals[SignalName.VOLUME.ordinal()];
 	}
 	
-	public OutputSignal getOutputLast() {
+	@Override
+	public ISignal getOutputLast() {
 		return signals[SignalName.LAST.ordinal()];
 	}
 	
-	public OutputSignal getOutputHigh() {
+	@Override
+	public ISignal getOutputHigh() {
 		return signals[SignalName.HIGH.ordinal()];
 	}
 	
-	public OutputSignal getOutputLow() {
+	@Override
+	public ISignal getOutputLow() {
 		return signals[SignalName.LOW.ordinal()];
 	}
 

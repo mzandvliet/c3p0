@@ -28,6 +28,8 @@ public class BitstampSimulationTickerDbSource extends BitstampTickerSource imple
 		  this.connection = connection;
 		  data = new ArrayList<ServerSampleEntry>();
 		  fetchDataFromDatabase(dataStartTime, dataEndTime);
+		  
+		  setSimulationRange(dataStartTime, dataEndTime); // Default the simulation to the full range of data
 	}
 	
 	@Override
