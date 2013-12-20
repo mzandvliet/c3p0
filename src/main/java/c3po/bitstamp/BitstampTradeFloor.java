@@ -307,37 +307,29 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 					return;
 				
 				// Decide which would be the ideal price to buy or sell for
-				// TODO: Also use the priceUndercut here. But what way? Naming might be bad here
-				//        since we use buy to sell, etc. Need to look at it carefully.
-				double buyPrice, sellPrice;
-				if(doLimitOrder) {
-					buyPrice = this.getCurrentBid();
-					sellPrice = this.getCurrentAsk();
-				} else {
-					buyPrice = this.getCurrentAsk() ;
-					sellPrice = this.getCurrentBid();
-				}
-				
+				double buyPrice = getBuyPrice();
+				double sellPrice = getSellPrice();
+			
 				// Loop over all the open orders
 				for(OpenOrder openOrder : openOrders) {
 					// Adjust sell order if needed
-					if(openOrder.getType() == OpenOrder.SELL && openOrder.getPrice() != buyPrice) {
-						LOGGER.info("Adjusting "+ openOrder + " to match price " + buyPrice);
+					if(openOrder.getType() == OpenOrder.SELL && openOrder.getPrice() != sellPrice) {
+						LOGGER.info("Adjusting "+ openOrder + " to match price " + sellPrice);
 						cancelOrder(openOrder);
 						
 						// We need to place a new order for the same amount of Btc
-						placeSellOrder(buyPrice, openOrder.getAmount());
+						placeSellOrder(sellPrice, openOrder.getAmount());
 					}
 					
 					// Adjust buy order if needed
-					if(openOrder.getType() == OpenOrder.BUY && openOrder.getPrice() != sellPrice) {
-						LOGGER.info("Adjusting "+ openOrder + " to match price " + sellPrice);
+					if(openOrder.getType() == OpenOrder.BUY && openOrder.getPrice() != buyPrice) {
+						LOGGER.info("Adjusting "+ openOrder + " to match price " + buyPrice);
 						cancelOrder(openOrder);
 						
 						// Modify the amount of Btc's to buy with the current price, so we spend the same amount of dollars
 						double orderValue = openOrder.getPrice() * openOrder.getAmount();
 						
-						placeBuyOrder(sellPrice, orderValue / sellPrice);
+						placeBuyOrder(buyPrice, orderValue / buyPrice);
 					}
 				}
 				
