@@ -61,8 +61,12 @@ public class BitstampTickerJsonSource extends BitstampTickerSource implements IN
 			if (!entry.equals(lastEntry))
 				buffer.add(entry);
     		
-		} catch (Exception e) { // No biggie, just try again next tick (TODO: catch json, io and connection exceptions specifically)
-			LOGGER.debug("Failed to fetch json, reason: " + e);
+		} catch (Exception e) {
+			/* TODO
+			 * - catch json, io and connection exceptions specifically
+			 * - retry a number of times!
+			 */
+			LOGGER.warn("Failed to fetch json, reason: " + e);
 		}
 	}
 }

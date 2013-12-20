@@ -29,8 +29,8 @@ public class MacdBotRunner {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdBotRunner.class);
 	
 	// Earliest time 1384079023000l
-	private final static long simulationEndTime = 1387473256000l;//new Date().getTime() - (Time.DAYS * 0);
-	private final static long simulationStartTime = simulationEndTime - (Time.DAYS * 14);
+	private final static long simulationEndTime = new Date().getTime() - (Time.DAYS * 0);
+	private final static long simulationStartTime = simulationEndTime - (Time.DAYS * 5);
 	
 	private final static long interpolationTime = 2 * Time.MINUTES;
 	private final static long timestep = 1 * Time.MINUTES;
@@ -38,7 +38,7 @@ public class MacdBotRunner {
 	private final static double walletStartUsd = 100.0d;
 	private final static double walletStartBtcInUsd = 0.0d;
 	
-	private final static long graphInterval = 10 * Time.MINUTES;
+	private final static long graphInterval = 1 * Time.MINUTES;
 	
 	//================================================================================
     // Main
