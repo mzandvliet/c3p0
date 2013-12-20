@@ -23,12 +23,12 @@ public class SimpleMacdTrainer {
 	
 	// First timestamp in database: 1384079023000l
 	private final static long simulationEndTime = new Date().getTime();
-	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 21;
+	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 7;
 	private final static long simulationLength = Time.DAYS * 3;
 	
 	// Timing
-	private final static long interpolationTime = 2 * Time.MINUTES;
-	private final static long timestep = 1 * Time.MINUTES;
+	private final static long interpolationTime = 60 * Time.SECONDS;
+	private final static long timestep = 20 * Time.SECONDS;
 
 	// Simulation and fitness test
 	private final static int numEpochs = 150;
