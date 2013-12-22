@@ -1,11 +1,12 @@
 package c3po.wallet;
 
-public class WalletTransactionResult {
+public class WalletUpdateResult {
 	public final double timestamp;
 	public final double usdTotal;
 	public final double btcTotal;
 	
-	public WalletTransactionResult(double timestamp, double usdTotal, double btcTotal) {
+	
+	public WalletUpdateResult(double timestamp, double usdTotal, double btcTotal) {
 		this.timestamp = timestamp;
 		this.usdTotal = usdTotal;
 		this.btcTotal = btcTotal;
@@ -33,7 +34,7 @@ public class WalletTransactionResult {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		WalletTransactionResult other = (WalletTransactionResult) obj;
+		WalletUpdateResult other = (WalletUpdateResult) obj;
 		if (Double.doubleToLongBits(btcTotal) != Double
 				.doubleToLongBits(other.btcTotal))
 			return false;

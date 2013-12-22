@@ -10,9 +10,9 @@ public class OpenOrder {
 	public final static int BUY = 0;
 	public final static int SELL = 1;
 
-	public OpenOrder(long id, long datetime, int type, double price, double amount) {
+	public OpenOrder(long id, long timestamp, int type, double price, double amount) {
 		this.id = id;
-		this.datetime = datetime;
+		this.datetime = timestamp;
 		this.type = type;
 		this.price = price;
 		this.amount = amount;
