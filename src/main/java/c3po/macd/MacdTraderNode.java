@@ -119,8 +119,8 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		boolean sellThresholdReached = currentDiff.value < currentSellThreshold;
 
 		if (sellThresholdReached) {
-			if(verbose)
-				LOGGER.debug(String.format("%,.4f < %,.4f = %b", currentDiff.value, config.minSellDiffThreshold, sellThresholdReached));
+//			if(verbose)
+//				LOGGER.debug(String.format("%,.4f < %,.4f = %b", currentDiff.value, config.minSellDiffThreshold, sellThresholdReached));
 			
 			double btcToSell = wallet.getBtcAvailable(); 
 			TradeAction sellAction = new TradeAction(TradeActionType.SELL, tick, btcToSell);
