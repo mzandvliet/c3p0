@@ -68,7 +68,7 @@ public class RealtimeBotRunner {
 					clientId, apiKey, apiSecret
 			);
 			
-			final IWallet wallet = new Wallet(0d, 0d);
+			final IWallet wallet = new Wallet(0d, 0d, 0d, 0d);
 			
 			final DebugTradeLogger tradeLogger = new DebugTradeLogger();
 			tradeFloor.addTradeListener(tradeLogger);

@@ -3,9 +3,7 @@ package c3po;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import c3po.structs.OpenOrder;
 import c3po.wallet.IWallet;
 
 /**
@@ -15,7 +13,6 @@ import c3po.wallet.IWallet;
  * - Hides the concept of TradeListeners and their notifies
  */
 public abstract class AbstractTradeFloor implements ITradeFloor {
-	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTradeFloor.class);
 	
 	private List<ITradeListener> tradeListeners;
 
@@ -44,19 +41,19 @@ public abstract class AbstractTradeFloor implements ITradeFloor {
 
 	@Override
 	public double getWalletValueInUsd(IWallet wallet) {
-		return wallet.getWalletUsd() + toUsd(wallet.getWalletBtc());
+		return wallet.getUsdTotal() + toUsd(wallet.getBtcTotal());
 	}
 
 	@Override
-	public double buy(IWallet wallet, TradeAction action) {
+	public OpenOrder buy(IWallet wallet, TradeAction action) {
 		// First call buyImpl, where the concrete class can store its buy logic
-		double boughtBtc = buyImpl(wallet, action);
+		OpenOrder order = buyImpl(wallet, action);
 		
 		// Notify what has happened
 		notify(action);
 		
 		// Return the amount of Btc bought
-		return boughtBtc;
+		return order;
 	}
 	
 	/**
@@ -64,20 +61,20 @@ public abstract class AbstractTradeFloor implements ITradeFloor {
 	 * 
 	 * @param wallet
 	 * @param action
-	 * @return Amount of BTC bought
+	 * @return Resulting Order
 	 */
-	public abstract double buyImpl(IWallet wallet, TradeAction action);
+	public abstract OpenOrder buyImpl(IWallet wallet, TradeAction action);
 
 	@Override
-	public double sell(IWallet wallet, TradeAction action) {
+	public OpenOrder sell(IWallet wallet, TradeAction action) {
 		// First call sellImpl, where the concrete class can store its sell logic
-		double boughtUsd = sellImpl(wallet, action);
+		OpenOrder order = sellImpl(wallet, action);
 		
 		// Notify what has happened
 		notify(action);
 				
 		// Return the amount of USD bought
-		return boughtUsd;
+		return order;
 	}
 	
 	/**
@@ -85,9 +82,9 @@ public abstract class AbstractTradeFloor implements ITradeFloor {
 	 * 
 	 * @param wallet
 	 * @param action
-	 * @return Amount of USD bought
+	 * @return Resulting Order
 	 */
-	public abstract double sellImpl(IWallet wallet, TradeAction action);
+	public abstract OpenOrder sellImpl(IWallet wallet, TradeAction action);
 
 	private void notify(TradeAction action) {
 		for (ITradeListener listener : tradeListeners) {

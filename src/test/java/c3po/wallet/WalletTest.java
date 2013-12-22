@@ -1,6 +1,3 @@
-/**
- * 
- */
 package c3po.wallet;
 
 import static org.junit.Assert.*;
@@ -12,10 +9,6 @@ import org.junit.Test;
 
 import c3po.wallet.Wallet;
 
-/**
- * @author Joost
- *
- */
 public class WalletTest {
 
 	/**

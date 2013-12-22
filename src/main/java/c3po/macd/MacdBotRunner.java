@@ -30,7 +30,7 @@ public class MacdBotRunner {
 	
 	// Earliest time 1384079023000l
 	private final static long simulationEndTime = new Date().getTime() - (Time.DAYS * 0);
-	private final static long simulationStartTime = simulationEndTime - (Time.DAYS * 5);
+	private final static long simulationStartTime = simulationEndTime - (Time.DAYS * 2);
 	
 	private final static long interpolationTime = 2 * Time.MINUTES;
 	private final static long timestep = 1 * Time.MINUTES;
@@ -38,7 +38,7 @@ public class MacdBotRunner {
 	private final static double walletStartUsd = 100.0d;
 	private final static double walletStartBtcInUsd = 0.0d;
 	
-	private final static long graphInterval = 1 * Time.MINUTES;
+	private final static long graphInterval = 5 * Time.MINUTES;
 	
 	//================================================================================
     // Main
@@ -65,7 +65,7 @@ public class MacdBotRunner {
 		);
 		
 		double walletStartBtc = walletStartBtcInUsd / tickerNode.getOutputLast().getSample(simulationStartTime).value;
-		final IWallet wallet = new Wallet(walletStartUsd, walletStartBtc);
+		final IWallet wallet = new Wallet(walletStartUsd, walletStartBtc, 0, 0);
 		
 		// Create bot config
 		MacdAnalysisConfig buyAnalysisConfig = new MacdAnalysisConfig(

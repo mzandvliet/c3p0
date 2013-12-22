@@ -87,7 +87,7 @@ public class SimpleMacdTrainer {
 		
 		ISimulationClock botClock = new SimulationClock(timestep, interpolationTime);
 		
-		final IWallet wallet = new Wallet(walletStartUsd, 0d);
+		final IWallet wallet = new Wallet(walletStartUsd, 0d, 0d, 0d);
 		
 		SimulationContext simContext = new SimulationContext(tickerNode, botClock, tickerNode.getOutputLast(), tickerNode.getOutputVolume(), tradeFloor, wallet);
 		

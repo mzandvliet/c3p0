@@ -3,13 +3,13 @@ package c3po;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import c3po.wallet.IWalletTransactionListener;
-import c3po.wallet.WalletTransactionResult;
+import c3po.wallet.IWalletUpdateListener;
+import c3po.wallet.WalletUpdateResult;
 
 /**
  * Work in progress in using the database as source
  */
-public class DbTradeLogger implements ITradeListener, IWalletTransactionListener {
+public class DbTradeLogger implements ITradeListener, IWalletUpdateListener {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(DbTradeLogger.class);
 	private static final int MAXRETRIES = 3;
@@ -30,9 +30,6 @@ public class DbTradeLogger implements ITradeListener, IWalletTransactionListener
 		final String sqlTemplate = "INSERT INTO  `c3po`.`bots` (`bot_id` ,`bot_type` ,`tradefloor_type` ,`start`) VALUES ('%s',  '%s',  '%s',  '%s')";
 		String sql = String.format(sqlTemplate, bot.getId(), "MacdBot", "BitstampSimulationTradeFloor", startTime / 1000);
 		connection.executeStatementWithRetries(sql, MAXRETRIES);
-		
-		// Initialize wallet log for this session
-		onWalletTransaction(new WalletTransactionResult(startTime, bot.getWallet().getWalletUsd(), bot.getWallet().getWalletBtc()));
 	}
 	
 	@Override
@@ -43,7 +40,7 @@ public class DbTradeLogger implements ITradeListener, IWalletTransactionListener
 	}
 	
 	@Override
-	public void onWalletTransaction(WalletTransactionResult transaction) {
+	public void onWalletUpdate(WalletUpdateResult transaction) {
 		final String sqlTemplate = "INSERT INTO  `c3po`.`bot_wallet` (`bot_id` ,`timestamp` ,`walletUsd` ,`walletBtc`) VALUES ('%s',  '%s',  '%s',  '%s')";
 		String sql = String.format(sqlTemplate, bot.getId(), transaction.timestamp / 1000, transaction.usdTotal, transaction.btcTotal);
 		connection.executeStatementWithRetries(sql, MAXRETRIES);

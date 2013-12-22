@@ -5,7 +5,6 @@ public class WalletUpdateResult {
 	public final double usdTotal;
 	public final double btcTotal;
 	
-	
 	public WalletUpdateResult(double timestamp, double usdTotal, double btcTotal) {
 		this.timestamp = timestamp;
 		this.usdTotal = usdTotal;

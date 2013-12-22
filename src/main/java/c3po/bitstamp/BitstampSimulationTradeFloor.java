@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import c3po.*;
+import c3po.structs.OpenOrder;
 import c3po.wallet.IWallet;
 
 /* Todo:
@@ -27,7 +28,7 @@ public class BitstampSimulationTradeFloor extends AbstractTradeFloor {
 	}
 	
 	@Override
-	public double buyImpl(IWallet wallet, TradeAction action) {
+	public OpenOrder buyImpl(IWallet wallet, TradeAction action) {
 		// NOTE: This assumes action.volume is in USD		
 		
 		// We get the latest ask, assuming the ticker is updated by some other part of the app
@@ -37,13 +38,13 @@ public class BitstampSimulationTradeFloor extends AbstractTradeFloor {
 		double boughtBtc = action.volume / currentAsk.value * (1.0d-tradeFee);
 		
 		// We assume the trade is fulfilled instantly, for the price of the ask
-		wallet.transact(action.timestamp, -action.volume, boughtBtc);
+		wallet.modify(action.timestamp, -action.volume, boughtBtc);
 
-		return boughtBtc;
+		return new OpenOrder(0, action.timestamp, OpenOrder.BUY, currentAsk.value, boughtBtc);
 	}
 
 	@Override
-	public double sellImpl(IWallet wallet, TradeAction action) {
+	public OpenOrder sellImpl(IWallet wallet, TradeAction action) {
 		// NOTE: This assumes action.volume is in BTC	
 		
 		// We get the latest ask, assuming the ticker is updated by some other part of the app
@@ -53,14 +54,13 @@ public class BitstampSimulationTradeFloor extends AbstractTradeFloor {
 		double boughtUsd = action.volume * currentBid.value * (1.0d-tradeFee);
 		
 		// We assume the trade is fulfilled instantly, for the price of the bid
-		wallet.transact(action.timestamp, boughtUsd, -action.volume);
+		wallet.modify(action.timestamp, boughtUsd, -action.volume);
 
-		return boughtUsd;
+		return new OpenOrder(0, action.timestamp, OpenOrder.SELL, currentBid.value, boughtUsd);
 	}
 
 	@Override
 	public void updateWallet(IWallet wallet) {
-		// TODO Auto-generated method stub
 	}
 
 	@Override

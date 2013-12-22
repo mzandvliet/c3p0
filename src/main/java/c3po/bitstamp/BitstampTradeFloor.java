@@ -1,17 +1,12 @@
 package c3po.bitstamp;
 
 import java.io.IOException;
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
-
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -187,26 +182,24 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	}
 
 	@Override
-	public double buyImpl(IWallet wallet, TradeAction action) {
-		double boughtBtc = 0;
+	public OpenOrder buyImpl(IWallet wallet, TradeAction action) {
+		OpenOrder order = null;
 		try {
 			// The amount of Btc we are going to get if we buy for volume USD
 			double buyPrice = getBuyPrice();
-			boughtBtc = calculateBtcToBuy(action.volume, buyPrice, tradeFee);
+			double boughtBtc = calculateBtcToBuy(action.volume, buyPrice, tradeFee);
 			
 			// Place the actual buy order
-			placeBuyOrder(buyPrice, boughtBtc);
+			order = placeBuyOrder(buyPrice, boughtBtc);
 			
-			// We assume the trade is fulfilled instantly, for the price of the ask
-			wallet.transact(action.timestamp, -action.volume, boughtBtc);
-
-			return boughtBtc;
+			// We reserve the dollars that we need for this transaction
+			wallet.reserve(action.volume, 0);
 		}
 		catch(Exception e) {
 			LOGGER.error("Could not buy BTC", e);
 		}
 		
-		return boughtBtc;
+		return order;
 	}
 	
 	/**
@@ -237,28 +230,25 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	}
 
 	@Override
-	public double sellImpl(IWallet wallet, TradeAction action) {
-		double boughtUsd = 0;
+	public OpenOrder sellImpl(IWallet wallet, TradeAction action) {
+		OpenOrder order = null;
 		try {
 			// We get the latest ask, assuming the ticker is updated by some other part of the app
 			double sellPrice = this.getSellPrice();
-			
-			// We assume the trade is fulfilled instantly, for the price of the ask
-			double volumeUsd = action.volume * sellPrice;
-			boughtUsd = volumeUsd - calculateTradeFeeUsd(volumeUsd, tradeFee);
-			
+
 			double soldBtc = action.volume;
 			
 			// Place the actual sell order
-			placeSellOrder(sellPrice, soldBtc);
+			order = placeSellOrder(sellPrice, soldBtc);
 			
-			wallet.transact(action.timestamp, boughtUsd, -action.volume);
+			// Reserving the btc's so they dont get spend twice
+			wallet.reserve(0, action.volume);
 		}
 		catch(Exception e) {
 			LOGGER.error("Could not sell BTC", e);
 		}
 		
-		return boughtUsd;
+		return order;
 	}
 	
 	@Override
@@ -269,7 +259,7 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 			
 			try {
 				JSONObject result = new JSONObject(doAuthenticatedCall("https://www.bitstamp.net/api/balance/"));
-				wallet.update(result.getDouble("usd_available"), result.getDouble("btc_available"));
+				wallet.update(lastWalletUpdate, result.getDouble("usd_available"), result.getDouble("btc_available"), result.getDouble("usd_reserved"), result.getDouble("btc_reserved"));
 				
 				// Update tradeFee if needed
 				double newFee = result.getDouble("fee");
