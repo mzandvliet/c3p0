@@ -83,8 +83,8 @@ public class WalletTest {
 		// Update it with new values
 		wallet.modify(timestamp, usdModify, btcModify);
 		
-		assertEquals(usdAvailable - usdModify, wallet.getUsdAvailable(), 0.0001);
-		assertEquals(btcAvailable - btcModify, wallet.getBtcAvailable(), 0.0001);
+		assertEquals(usdAvailable + usdModify, wallet.getUsdAvailable(), 0.0001);
+		assertEquals(btcAvailable + btcModify, wallet.getBtcAvailable(), 0.0001);
 
 		
 		// Make sure the listener was called with an update

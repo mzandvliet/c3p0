@@ -69,7 +69,7 @@ public class Wallet implements IWallet {
 
 	@Override
 	public void modify(long timestamp, double usdAvailable, double btcAvailable) {
-		update(timestamp, this.usdAvailable - usdAvailable, this.btcAvailable - btcAvailable, this.usdReserved, this.btcReserved);
+		update(timestamp, this.usdAvailable + usdAvailable, this.btcAvailable + btcAvailable, this.usdReserved, this.btcReserved);
 	}
 	
 	protected void notify(WalletUpdateResult result) {
