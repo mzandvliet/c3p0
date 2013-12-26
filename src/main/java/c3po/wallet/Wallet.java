@@ -60,8 +60,7 @@ public class Wallet implements IWallet {
 			this.btcAvailable = btcAvailable;
 			this.usdReserved = usdReserved;
 			this.btcReserved = btcReserved;
-			
-			LOGGER.info("Received update for the wallet: "+ toString());
+
 			notify(new WalletUpdateResult(timestamp, this.usdAvailable +this.usdReserved, this.btcAvailable - this.btcReserved));
 		}
 	}
