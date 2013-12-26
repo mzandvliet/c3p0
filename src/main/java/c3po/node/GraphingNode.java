@@ -1,6 +1,7 @@
 package c3po.node;
 
 import java.awt.Color;
+
 import javax.swing.JPanel;
 
 import org.jfree.chart.*;
@@ -76,7 +77,8 @@ public class GraphingNode extends ApplicationFrame implements ITickable, ITradeL
 		if (tick >= lastTick + timestep) {
 			for (int i = 0; i < inputs.length; i++) {
 				Sample newest = inputs[i].getSample(tick);
-				signalTimeSeries[i].addOrUpdate(new Second(newest.getDate()), newest.value);
+				// FixedMillisecond is supposedly faster: http://flamefew.wordpress.com/2004/12/11/jfreechart_tip_use_fixedmillisecond/
+				signalTimeSeries[i].addOrUpdate(new FixedMillisecond(newest.getDate()), newest.value);
 			}
 			
 			lastTick = tick;
