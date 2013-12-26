@@ -57,18 +57,17 @@ public class DbTimeseriesSource {
 		}
 		
 		// All the querying is done ... now look in the buffer what we want to return 
-		int index = this.lastDataIndex;
 		while(true) {
 			// No more data elements
-			if(data.size() <= index)
+			if(data.size() <= lastDataIndex)
 				break;
 			
-			ServerSampleEntry sample = data.get(index);
+			ServerSampleEntry sample = data.get(lastDataIndex);
 			
 			// This sample is OK, add it to the return list and move the marker
 			if(sample.timestamp < maxTimestamp) {
 				results.add(sample);
-				index++;
+				lastDataIndex++;
 			} 
 			// Current result is too new for the request, stop the call
 			else {
@@ -109,7 +108,6 @@ public class DbTimeseriesSource {
 		    	}
 		    	
 		    	data.add(entry);
-				LOGGER.debug("Query Result: " + entry);
 		    }
 	    
 	    	resultSet.close();
@@ -129,7 +127,6 @@ public class DbTimeseriesSource {
 	}
 	
 	public void reset() {
-		data.clear();
 		lastDataIndex = 0;
 	}
 
