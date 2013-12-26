@@ -116,6 +116,16 @@ public class DbTimeseriesSource {
 	    }
 	}
 	
+	/**
+	 * Manual setting of latestSampleTimestamp. Can be useful
+	 * when there is no preloading.
+	 * 
+	 * @param latestSampleTimestamp
+	 */
+	public void setLatestSampleTimestamp(long latestSampleTimestamp) {
+		this.latestSampleTimestamp = latestSampleTimestamp;
+	}
+	
 	private int getSignalIndexByName(String name) {
 		for(int i = 0; i < columns.size(); i++) {
 			if(columns.get(i).equals(name)) {
