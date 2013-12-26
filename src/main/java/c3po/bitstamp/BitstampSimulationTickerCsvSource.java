@@ -4,6 +4,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import c3po.Sample;
+import c3po.ServerSampleEntry;
 import au.com.bytecode.opencsv.CSVReader;
 
 public class BitstampSimulationTickerCsvSource extends BitstampTickerSource {

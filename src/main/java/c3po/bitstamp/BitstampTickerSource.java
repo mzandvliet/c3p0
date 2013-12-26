@@ -1,7 +1,6 @@
 package c3po.bitstamp;
 
 import c3po.*;
-import c3po.node.INode;
 import c3po.utils.SignalMath;
 
 /* Todo:
@@ -165,62 +164,5 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 	    VOLUME,
 	    BID,
 	    ASK
-	}
-	
-	public class ServerSampleEntry {
-		public final long timestamp;
-		public final Sample[] samples;
-		
-		public ServerSampleEntry(long timestamp, int length) {
-			this.timestamp = timestamp;
-			this.samples = new Sample[length];
-		}
-		
-		public int size() {
-			return samples.length;
-		}
-		
-		public Sample get(int i) {
-			return samples[i];
-		}
-		
-		public void set(int i, Sample sample) {
-			samples[i] = sample;
-		}
-
-		
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + getOuterType().hashCode();
-			result = prime * result + (int) (timestamp ^ (timestamp >>> 32));
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			ServerSampleEntry other = (ServerSampleEntry) obj;
-			if (!getOuterType().equals(other.getOuterType()))
-				return false;
-			if (timestamp != other.timestamp)
-				return false;
-			return true;
-		}
-
-		private BitstampTickerSource getOuterType() {
-			return BitstampTickerSource.this;
-		}
-
-		@Override
-		public String toString() {
-			return "ServerSampleEntry [timestamp=" + timestamp + "]";
-		}
 	}
 }
