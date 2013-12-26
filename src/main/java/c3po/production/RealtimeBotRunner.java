@@ -46,7 +46,7 @@ public class RealtimeBotRunner {
 	    	String apiKey = prop.getProperty("apiKey");
 	    	String apiSecret = prop.getProperty("apiSecret");
 	    	
-	    	DbConnection dbConnection = new DbConnection(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+	    	DbConnection dbConnection = new DbConnection(new InetSocketAddress("c3po.ramjetanvil.com", 3306), "c3po", "D7xpJwzGJEWf5qWB");
 	    	dbConnection.open();	
 	    	
 			/**
@@ -75,6 +75,10 @@ public class RealtimeBotRunner {
 			
 			// Create bot
 			MacdBot bot = new MacdBot(botId, config, wrappedSource.getOutputLast(), wrappedSource.getOutputVolume(), wallet, tradeFloor);
+			
+			// Should not get any trades, but here for the wallet update
+			new DbTradeLogger(bot, dbConnection);
+			
 			LOGGER.info("Starting bot: " + bot);
 			
 			preload(wrappedSource, dbConnection, bot);
@@ -118,9 +122,6 @@ public class RealtimeBotRunner {
 		
 		// Update the wallet with the real values
 		tradeFloor.updateWallet(wallet);
-		
-		// Log the trades by DB and email
-		new DbTradeLogger(bot, dbConnection);
 		
 		//dbTradeLogger.startSession(new Date().getTime());
 		EmailTradeLogger mailLogger = new EmailTradeLogger(bot.getId(), "martijn@ramjetanvil.com", "jopast@gmail.com");

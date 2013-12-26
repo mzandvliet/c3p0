@@ -47,7 +47,7 @@ public class MacdBotRunner {
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		// Set up global signal tree
 		
-		DbConnection dbConnection = new DbConnection(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
+		DbConnection dbConnection = new DbConnection(new InetSocketAddress("c3po.ramjetanvil.com", 3306), "c3po", "D7xpJwzGJEWf5qWB");
 		dbConnection.open();
 		
 		final BitstampSimulationTickerDbSource tickerNode = new BitstampSimulationTickerDbSource(
