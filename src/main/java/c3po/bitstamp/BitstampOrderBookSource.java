@@ -21,7 +21,7 @@ public abstract class BitstampOrderBookSource extends AbstractTickable implement
 		
 		this.signals = new OutputSignal[numSignals];
 		for (int i = 0; i < numSignals; i++) {
-			this.signals[i] = new OutputSignal(this, TickerSignal.values()[i].toString());
+			this.signals[i] = new OutputSignal(this, OrderBookSignal.values()[i].toString());
 		}
 		
 		int bufferLength = (int)Math.round(interpolationTime / timestep) + 1;

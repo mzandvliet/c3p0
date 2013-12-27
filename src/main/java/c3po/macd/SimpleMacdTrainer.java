@@ -23,8 +23,8 @@ public class SimpleMacdTrainer {
 	
 	// First timestamp in database: 1384079023000l
 	private final static long simulationEndTime = new Date().getTime();
-	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 7;
-	private final static long simulationLength = Time.DAYS * 3;
+	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 5;
+	private final static long simulationLength = Time.DAYS * 2;
 	
 	// Timing
 	private final static long interpolationTime = 60 * Time.SECONDS;
@@ -79,6 +79,14 @@ public class SimpleMacdTrainer {
 				simulationEndTime
 				);
 		
+		final BitstampSimulationOrderBookDbSource orderbookNode = new BitstampSimulationOrderBookDbSource(
+				timestep,
+				interpolationTime,
+				dbConnection,
+				simulationStartTime,
+				simulationEndTime
+				);
+		
 		final ITradeFloor tradeFloor =  new BitstampSimulationTradeFloor(
 				tickerNode.getOutputLast(),
 				tickerNode.getOutputBid(),
@@ -89,7 +97,7 @@ public class SimpleMacdTrainer {
 		
 		final IWallet wallet = new Wallet(walletStartUsd, 0d, 0d, 0d);
 		
-		SimulationContext simContext = new SimulationContext(tickerNode, botClock, tickerNode.getOutputLast(), tickerNode.getOutputVolume(), tradeFloor, wallet);
+		SimulationContext simContext = new SimulationContext(tickerNode, botClock, orderbookNode.getOutputP99Bid(), tickerNode.getOutputVolume(), tradeFloor, wallet);
 		
 		
 		// Create and run the trainer on the context
