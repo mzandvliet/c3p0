@@ -1,7 +1,10 @@
 package c3po.macd;
 
 import java.net.InetSocketAddress;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 
 import org.slf4j.Logger;
@@ -23,15 +26,15 @@ public class SimpleMacdTrainer {
 	
 	// First timestamp in database: 1384079023000l
 	private final static long simulationEndTime = new Date().getTime();
-	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 5;
-	private final static long simulationLength = Time.DAYS * 2;
+	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 10;
+	private final static long simulationLength = Time.DAYS * 3;
 	
 	// Timing
 	private final static long interpolationTime = 60 * Time.SECONDS;
 	private final static long timestep = 20 * Time.SECONDS;
 
 	// Simulation and fitness test
-	private final static int numEpochs = 150;
+	private final static int numEpochs = 3;
 	private final static int numSimulationsPerEpoch = 10;
 	private final static int numBots = 600;
 	
@@ -97,7 +100,10 @@ public class SimpleMacdTrainer {
 		
 		final IWallet wallet = new Wallet(walletStartUsd, 0d, 0d, 0d);
 		
-		SimulationContext simContext = new SimulationContext(tickerNode, botClock, orderbookNode.getOutputP99Bid(), tickerNode.getOutputVolume(), tradeFloor, wallet);
+	    List<INonRealtimeSource> sources = new LinkedList<INonRealtimeSource>();
+	    sources.add(tickerNode);
+	    sources.add(orderbookNode);
+		SimulationContext simContext = new SimulationContext(sources, botClock, orderbookNode.getOutputP99Bid(), tickerNode.getOutputVolume(), tradeFloor, wallet);
 		
 		
 		// Create and run the trainer on the context
@@ -185,7 +191,7 @@ public class SimpleMacdTrainer {
 		clock.addListener(grapher);
 		clock.addListener(diffGrapher);
 		
-		clock.run(simulationStartTime, simulationEndTime);
+		clock.run(simulationStartTime + interpolationTime, simulationEndTime);
 		
 		clock.removeListener(bot);
 		clock.removeListener(grapher);

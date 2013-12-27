@@ -78,8 +78,7 @@ public class BitstampSimulationTickerDbSource extends BitstampTickerSource imple
 
 	@Override
 	public void setSimulationRange(long startTime, long endTime) {
-		
-		this.simulationStartTime = startTime;
+		this.simulationStartTime = startTime - interpolationTime;
 		this.simulationEndTime = endTime;
 		reset();
 	}

@@ -1,11 +1,13 @@
 package c3po.simulation;
 
+import java.util.List;
+
 import c3po.*;
 import c3po.clock.ISimulationClock;
 import c3po.wallet.IWallet;
 
 public class SimulationContext {
-	private final INonRealtimeSource source;
+	private final List<INonRealtimeSource> sources;
 	private final ISimulationClock clock;
 	private final ISignal priceSignal;
 	private final ISignal volumeSignal;
@@ -16,15 +18,14 @@ public class SimulationContext {
 	private long endTime;
 	
 	public SimulationContext(
-			INonRealtimeSource source,
+			List<INonRealtimeSource> sources,
 			ISimulationClock clock,
 			ISignal price,
 			ISignal volume,
 			ITradeFloor tradeFloor,
 			IWallet wallet
 			) {
-		super();
-		this.source = source;
+		this.sources = sources;
 		this.clock = clock;
 		this.priceSignal = price;
 		this.volumeSignal = volume;
@@ -32,8 +33,8 @@ public class SimulationContext {
 		this.wallet = wallet;
 	}
 
-	public INonRealtimeSource getSource() {
-		return source;
+	public List<INonRealtimeSource> getSources() {
+		return sources;
 	}
 
 	public ISignal getPriceSignal() {
@@ -59,7 +60,10 @@ public class SimulationContext {
 	public void setSimulationRange(long startTime, long endTime) {
 		this.startTime = startTime;
 		this.endTime = endTime;
-		source.setSimulationRange(startTime, endTime);
+		
+		for(INonRealtimeSource source : sources) {
+			source.setSimulationRange(startTime, endTime);
+		}
 	}
 	
 	public void run() {
@@ -67,6 +71,8 @@ public class SimulationContext {
 	}
 	
 	public void reset() {
-		source.reset();
+		for(INonRealtimeSource source : sources) {
+			source.reset();
+		}
 	}
 }

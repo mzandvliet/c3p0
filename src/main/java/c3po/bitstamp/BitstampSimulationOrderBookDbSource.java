@@ -82,8 +82,7 @@ public class BitstampSimulationOrderBookDbSource extends BitstampOrderBookSource
 
 	@Override
 	public void setSimulationRange(long startTime, long endTime) {
-		
-		this.simulationStartTime = startTime;
+		this.simulationStartTime = startTime - interpolationTime;
 		this.simulationEndTime = endTime;
 		reset();
 	}
