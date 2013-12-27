@@ -24,7 +24,7 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 		
 		this.signals = new OutputSignal[numSignals];
 		for (int i = 0; i < numSignals; i++) {
-			this.signals[i] = new OutputSignal(this, SignalName.values()[i].toString());
+			this.signals[i] = new OutputSignal(this, TickerSignal.values()[i].toString());
 		}
 		
 		int bufferLength = (int)Math.round(interpolationTime / timestep) + 1;
@@ -111,32 +111,32 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 
 	@Override
 	public ISignal getOutputBid() {
-		return signals[SignalName.BID.ordinal()];
+		return signals[TickerSignal.BID.ordinal()];
 	}
 	
 	@Override
 	public ISignal getOutputAsk() {
-		return signals[SignalName.ASK.ordinal()];
+		return signals[TickerSignal.ASK.ordinal()];
 	}
 	
 	@Override
 	public ISignal getOutputVolume() {
-		return signals[SignalName.VOLUME.ordinal()];
+		return signals[TickerSignal.VOLUME.ordinal()];
 	}
 	
 	@Override
 	public ISignal getOutputLast() {
-		return signals[SignalName.LAST.ordinal()];
+		return signals[TickerSignal.LAST.ordinal()];
 	}
 	
 	@Override
 	public ISignal getOutputHigh() {
-		return signals[SignalName.HIGH.ordinal()];
+		return signals[TickerSignal.HIGH.ordinal()];
 	}
 	
 	@Override
 	public ISignal getOutputLow() {
-		return signals[SignalName.LOW.ordinal()];
+		return signals[TickerSignal.LOW.ordinal()];
 	}
 
 	/**
@@ -156,13 +156,4 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 	 * @return Whether or not the source is empty
 	 */
 	public abstract boolean isEmpty();
-	
-	public enum SignalName {
-		LAST,
-	    HIGH,
-	    LOW,
-	    VOLUME,
-	    BID,
-	    ASK
-	}
 }

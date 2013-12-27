@@ -2,7 +2,7 @@ package c3po.bitstamp;
 
 import c3po.ISignal;
 import c3po.SignalWrapper;
-import c3po.bitstamp.BitstampTickerSource.SignalName;
+import c3po.TickerSignal;
 
 public class BitstampTickerSourceWrapper implements IBitstampTickerSource {
 	private static final int numSignals = 6;
@@ -54,31 +54,31 @@ public class BitstampTickerSourceWrapper implements IBitstampTickerSource {
 
 	@Override
 	public ISignal getOutputBid() {
-		return signals[SignalName.BID.ordinal()];
+		return signals[TickerSignal.BID.ordinal()];
 	}
 	
 	@Override
 	public ISignal getOutputAsk() {
-		return signals[SignalName.ASK.ordinal()];
+		return signals[TickerSignal.ASK.ordinal()];
 	}
 	
 	@Override
 	public ISignal getOutputVolume() {
-		return signals[SignalName.VOLUME.ordinal()];
+		return signals[TickerSignal.VOLUME.ordinal()];
 	}
 	
 	@Override
 	public ISignal getOutputLast() {
-		return signals[SignalName.LAST.ordinal()];
+		return signals[TickerSignal.LAST.ordinal()];
 	}
 	
 	@Override
 	public ISignal getOutputHigh() {
-		return signals[SignalName.HIGH.ordinal()];
+		return signals[TickerSignal.HIGH.ordinal()];
 	}
 	
 	@Override
 	public ISignal getOutputLow() {
-		return signals[SignalName.LOW.ordinal()];
+		return signals[TickerSignal.LOW.ordinal()];
 	}
 }

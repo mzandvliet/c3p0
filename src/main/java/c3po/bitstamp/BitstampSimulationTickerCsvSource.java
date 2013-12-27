@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import c3po.Sample;
 import c3po.ServerSampleEntry;
+import c3po.TickerSignal;
 import au.com.bytecode.opencsv.CSVReader;
 
 public class BitstampSimulationTickerCsvSource extends BitstampTickerSource {
@@ -90,12 +91,12 @@ public class BitstampSimulationTickerCsvSource extends BitstampTickerSource {
 		
 		// Todo: REMOVE THE CLAMPSSSS, FIX THE CSVSSSSSSSSS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		
-		entry.set(SignalName.LAST.ordinal(), new Sample(serverTimestamp, Math.max(Double.parseDouble(data[2]),100d)));
-		entry.set(SignalName.HIGH.ordinal(), new Sample(serverTimestamp, Math.max(Double.parseDouble(data[1]),100d)));
-		entry.set(SignalName.LOW.ordinal(), new Sample(serverTimestamp, Math.max(Double.parseDouble(data[5]),100d)));
-		entry.set(SignalName.VOLUME.ordinal(), new Sample(serverTimestamp, Math.max(Double.parseDouble(data[4]),100d)));
-		entry.set(SignalName.BID.ordinal(), new Sample(serverTimestamp, Math.max(Double.parseDouble(data[3]),100d)));
-		entry.set(SignalName.ASK.ordinal(), new Sample(serverTimestamp, Math.max(Double.parseDouble(data[6]),100d)));
+		entry.set(TickerSignal.LAST.ordinal(), new Sample(serverTimestamp, Math.max(Double.parseDouble(data[2]),100d)));
+		entry.set(TickerSignal.HIGH.ordinal(), new Sample(serverTimestamp, Math.max(Double.parseDouble(data[1]),100d)));
+		entry.set(TickerSignal.LOW.ordinal(), new Sample(serverTimestamp, Math.max(Double.parseDouble(data[5]),100d)));
+		entry.set(TickerSignal.VOLUME.ordinal(), new Sample(serverTimestamp, Math.max(Double.parseDouble(data[4]),100d)));
+		entry.set(TickerSignal.BID.ordinal(), new Sample(serverTimestamp, Math.max(Double.parseDouble(data[3]),100d)));
+		entry.set(TickerSignal.ASK.ordinal(), new Sample(serverTimestamp, Math.max(Double.parseDouble(data[6]),100d)));
 		
 		return entry;
 	}

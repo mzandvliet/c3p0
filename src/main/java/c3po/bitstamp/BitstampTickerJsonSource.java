@@ -50,12 +50,12 @@ public class BitstampTickerJsonSource extends BitstampTickerSource implements IN
 			long serverTimestamp = json.getLong("timestamp") * 1000;
 			
 			ServerSampleEntry entry = new ServerSampleEntry(serverTimestamp, 6);
-    		entry.set(SignalName.LAST.ordinal(), new Sample(serverTimestamp, json.getDouble("last")));
-    		entry.set(SignalName.HIGH.ordinal(), new Sample(serverTimestamp, json.getDouble("high")));
-    		entry.set(SignalName.LOW.ordinal(), new Sample(serverTimestamp, json.getDouble("low")));
-    		entry.set(SignalName.VOLUME.ordinal(), new Sample(serverTimestamp, json.getDouble("volume")));
-    		entry.set(SignalName.BID.ordinal(), new Sample(serverTimestamp, json.getDouble("bid")));
-    		entry.set(SignalName.ASK.ordinal(), new Sample(serverTimestamp, json.getDouble("ask")));
+    		entry.set(TickerSignal.LAST.ordinal(), new Sample(serverTimestamp, json.getDouble("last")));
+    		entry.set(TickerSignal.HIGH.ordinal(), new Sample(serverTimestamp, json.getDouble("high")));
+    		entry.set(TickerSignal.LOW.ordinal(), new Sample(serverTimestamp, json.getDouble("low")));
+    		entry.set(TickerSignal.VOLUME.ordinal(), new Sample(serverTimestamp, json.getDouble("volume")));
+    		entry.set(TickerSignal.BID.ordinal(), new Sample(serverTimestamp, json.getDouble("bid")));
+    		entry.set(TickerSignal.ASK.ordinal(), new Sample(serverTimestamp, json.getDouble("ask")));
     		
     		ServerSampleEntry lastEntry = buffer.size() > 0 ? buffer.get(buffer.size()-1) : null; 
 			if (!entry.equals(lastEntry))
