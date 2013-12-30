@@ -47,7 +47,8 @@ public class JsonReader {
 		try {
 			BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
 			String jsonText = readAll(rd);
-			LOGGER.debug("Response: " + jsonText);
+			if (debug)
+				LOGGER.debug("Response: " + jsonText);
 
 			JSONObject json = new JSONObject(jsonText);
 			return json;
@@ -85,7 +86,8 @@ public class JsonReader {
 		try {
 			BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
 			result = readAll(rd);
-			LOGGER.debug("Response: " + result);
+			if (debug)
+				LOGGER.debug("Response: " + result);
 		} finally {
 			is.close();
 			EntityUtils.consume(entity);

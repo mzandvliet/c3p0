@@ -1,9 +1,11 @@
 package c3po.bitstamp;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,9 +48,6 @@ public class BitstampOrderBookJsonSource extends BitstampOrderBookSource impleme
 		parseJson();
 	}
 
-	private static final int HIGHEST_PERCENTILE = 99;
-	private static final int LOWEST_PERCENTILE = 95;
-	
 	private void parseJson() {		
 		try {
 			JSONObject json = JsonReader.readJsonFromUrl(url);
@@ -73,7 +72,7 @@ public class BitstampOrderBookJsonSource extends BitstampOrderBookSource impleme
 			HashMap<Integer, Double> bidPercentiles = calculatePercentiles(bids, totalBidVolume);
 			HashMap<Integer, Double> askPercentiles = calculatePercentiles(asks, totalAskVolume);
 			
-			ServerSnapshot entry = new ServerSnapshot(serverTimestamp, 12);
+			ServerSnapshot entry = new ServerSnapshot(serverTimestamp, 2 + 2 * 9);
 			
 			entry.set(OrderBookSignal.VOLUME_BID.ordinal(), new Sample(serverTimestamp, totalBidVolume));
 			entry.set(OrderBookSignal.VOLUME_ASK.ordinal(), new Sample(serverTimestamp, totalAskVolume));
@@ -82,46 +81,47 @@ public class BitstampOrderBookJsonSource extends BitstampOrderBookSource impleme
 			setServerEntryValues(entry, askPercentiles, "ASK");
 			
 			buffer.add(entry);
-		} catch (Exception e) {
+		} catch (JSONException e) {
 			/* TODO
 			 * - catch json, io and connection exceptions specifically
 			 * - retry a number of times!
 			 */
-			LOGGER.warn("Failed to fetch or parse json, reason: " + e);
+			LOGGER.warn("Failed to parse json, reason: " + e);
+		} catch (IOException e) {
+			LOGGER.warn("Failed to fetch json, reason: " + e);
 		}
 	}
+	
+	private static final int[] percentiles = { 99, 98, 97, 96, 95, 90, 85, 80, 75 };
+	private static final int numPercentiles = percentiles.length;
 
 	private static HashMap<Integer, Double> calculatePercentiles(final JSONArray orders, final double totalVolume) {
-		final HashMap<Integer, Double> percentiles = new HashMap<Integer, Double>(); // TODO: this is inefficient. Cache it?
+		final HashMap<Integer, Double> percentileValues = new HashMap<Integer, Double>(); // TODO: this is inefficient. Cache it?
 		
-		int currentPercentile = HIGHEST_PERCENTILE;
+		int percentileIndex = 0;
 		double volumeParsed = 0d;
-		double lastPrice = 0d;
 		
 		for (int i = 0; i < orders.length(); i++) {
 			final JSONArray order = orders.getJSONArray(i);
 			final double price = order.getDouble(0);
 			final double volume = order.getDouble(1);
 			
+			int currentPercentile = percentiles[percentileIndex];
 			double percentileVolumeThreshold = totalVolume * ((100 - currentPercentile) / 100d);
 			
-			if (volumeParsed + volume > percentileVolumeThreshold) {				
-//				final double lerp = (percentileVolumeThreshold - volumeParsed) / volume;
-//				final double lerp = SignalMath.interpolateInverse(volumeParsed, volumeParsed + volume, percentileVolumeThreshold);
-//				final double percentilePrice = SignalMath.interpolate(lastPrice, price, lerp);
-				final double percentilePrice = price;
-				percentiles.put(new Integer(currentPercentile), new Double(percentilePrice));
-				currentPercentile -= 1;
+			if (volumeParsed + volume > percentileVolumeThreshold) {								
+				percentileValues.put(new Integer(currentPercentile), new Double(price));
+				LOGGER.debug(currentPercentile + ", " + price);
+				percentileIndex++;
 			}
 			
 			volumeParsed += volume;
-			lastPrice = price;
 			
-			if (currentPercentile < LOWEST_PERCENTILE)
+			if (percentileIndex >= numPercentiles)
 				break;
 		}
 		
-		return percentiles;
+		return percentileValues;
 	}
 	
 	private static void setServerEntryValues(ServerSnapshot entry, HashMap<Integer, Double> percentiles, String orderType) {
@@ -130,9 +130,13 @@ public class BitstampOrderBookJsonSource extends BitstampOrderBookSource impleme
 			entry.set(signalIndex, new Sample(entry.timestamp, percentile.getValue().doubleValue()));
 		}
 	}
+	
+	private static String getOrderBookSignalName(String orderType, int percentile) {
+		return String.format("P%s_%s", percentile, orderType);
+	}
 
 	private static int getOrderBookSignalIndex(String orderType, Entry<Integer, Double> percentile) {
-		return OrderBookSignal.valueOf(String.format("P%s_%s", percentile.getKey().intValue(), orderType)).ordinal(); // TODO: Jezus...
+		return OrderBookSignal.valueOf(getOrderBookSignalName(orderType, percentile.getKey().intValue())).ordinal();
 	}
 	
 	private double calculateTotalVolume(JSONArray orders) {

@@ -17,7 +17,7 @@ public class RealtimeTickerChart {
 	private final static long interpolationTime = 8 * Time.SECONDS;
 	private final static long timestep = 4 * Time.SECONDS;
 	
-	private static final int NUM_PERCENTILES = 6;
+	private static final int NUM_PERCENTILES = 10;
 
 	public static void main(String[] args) {
 		 
@@ -37,12 +37,20 @@ public class RealtimeTickerChart {
 					orderBook.getOutputP97Bid(),
 					orderBook.getOutputP96Bid(),
 					orderBook.getOutputP95Bid(),
+					orderBook.getOutputP90Bid(),
+					orderBook.getOutputP85Bid(),
+					orderBook.getOutputP80Bid(),
+					orderBook.getOutputP75Bid(),
 					ticker.getOutputAsk(),
 					orderBook.getOutputP99Ask(),
 					orderBook.getOutputP98Ask(),
 					orderBook.getOutputP97Ask(),
 					orderBook.getOutputP96Ask(),
-					orderBook.getOutputP95Ask()
+					orderBook.getOutputP95Ask(),
+					orderBook.getOutputP90Ask(),
+					orderBook.getOutputP85Ask(),
+					orderBook.getOutputP80Ask(),
+					orderBook.getOutputP75Ask()
 					);
 			
 			tickerGraph.setLineColor(0, 0.66f, 1f, 1f);

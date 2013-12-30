@@ -133,6 +133,22 @@ public abstract class BitstampOrderBookSource extends AbstractTickable implement
 	public ISignal getOutputP95Bid() {
 		return signals[OrderBookSignal.P95_BID.ordinal()];
 	}
+	
+	public ISignal getOutputP90Bid() {
+		return signals[OrderBookSignal.P90_BID.ordinal()];
+	}
+	
+	public ISignal getOutputP85Bid() {
+		return signals[OrderBookSignal.P85_BID.ordinal()];
+	}
+	
+	public ISignal getOutputP80Bid() {
+		return signals[OrderBookSignal.P80_BID.ordinal()];
+	}
+	
+	public ISignal getOutputP75Bid() {
+		return signals[OrderBookSignal.P75_BID.ordinal()];
+	}
 
 	public ISignal getOutputP99Ask() {
 		return signals[OrderBookSignal.P99_ASK.ordinal()];
@@ -153,7 +169,22 @@ public abstract class BitstampOrderBookSource extends AbstractTickable implement
 	public ISignal getOutputP95Ask() {
 		return signals[OrderBookSignal.P95_ASK.ordinal()];
 	}
-
+	
+	public ISignal getOutputP90Ask() {
+		return signals[OrderBookSignal.P90_ASK.ordinal()];
+	}
+	
+	public ISignal getOutputP85Ask() {
+		return signals[OrderBookSignal.P85_ASK.ordinal()];
+	}
+	
+	public ISignal getOutputP80Ask() {
+		return signals[OrderBookSignal.P80_ASK.ordinal()];
+	}
+	
+	public ISignal getOutputP75Ask() {
+		return signals[OrderBookSignal.P75_ASK.ordinal()];
+	}
 
 	/**
 	 * Prepare the source for handling ticks
