@@ -116,7 +116,7 @@ public class RealtimeBotRunner {
 	private static void run(BitstampTickerSourceWrapper wrapper, DbConnection dbConnection, MacdBot bot, ITradeFloor tradeFloor, IWallet wallet) {
 		LOGGER.debug("Starting realtime execution...");
 		
-		BitstampTickerJsonSource realtimeTicker = new BitstampTickerJsonSource(timestep, interpolationTime, "http://www.bitstamp.net/api/ticker/");
+		BitstampTickerJsonSource realtimeTicker = new BitstampTickerJsonSource(timestep, interpolationTime, "https://www.bitstamp.net:443/api/ticker/");
 		
 		wrapper.setActualSource(realtimeTicker); // Switch the data source of the signal tree to a real-time source
 		

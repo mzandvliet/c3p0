@@ -14,7 +14,7 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 	protected final int numSignals = 6;
 	protected final OutputSignal[] signals;
 	protected final long interpolationTime;
-	protected final CircularArrayList<ServerSampleEntry> buffer;
+	protected final CircularArrayList<ServerSnapshot> buffer;
 	protected boolean isEmpty = false;
 	
 	public BitstampTickerSource(long timestep, long interpolationTime) {
@@ -28,7 +28,7 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 		}
 		
 		int bufferLength = (int)Math.round(interpolationTime / timestep) + 1;
-		buffer = new CircularArrayList<ServerSampleEntry>(bufferLength);
+		buffer = new CircularArrayList<ServerSnapshot>(bufferLength);
 	}
 	
 	@Override
@@ -45,7 +45,7 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 		 *   startup), just return the oldest possible value. This results in a
 		 *   constant signal until server start time is reached.
 		 */
-		ServerSampleEntry oldestEntry = buffer.get(0);
+		ServerSnapshot oldestEntry = buffer.get(0);
 		if (clientTimestamp <= oldestEntry.timestamp) {
 			for (int j = 0; j < signals.length; j++) {
 				Sample sample = oldestEntry.get(j);
@@ -58,10 +58,10 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 		 *  If client time falls within the buffered entries, interpolate the result
 		 */
  		for (int i = 0; i < buffer.size()-1; i++) {
-			ServerSampleEntry oldEntry = buffer.get(i);
+ 			ServerSnapshot oldEntry = buffer.get(i);
 			
 			if (clientTimestamp < oldEntry.timestamp) {
-				ServerSampleEntry newEntry = buffer.get(i+1);
+				ServerSnapshot newEntry = buffer.get(i+1);
 				
 				for (int j = 0; j < signals.length; j++) {
 					Sample sample = SignalMath.lerp(oldEntry.get(j), newEntry.get(j), clientTimestamp);
@@ -80,7 +80,7 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 		 *  into crisis mode. For now, just poop out the last available value...
 		 */
  		
-		ServerSampleEntry newestEntry = buffer.get(buffer.size()-1);
+ 		ServerSnapshot newestEntry = buffer.get(buffer.size()-1);
 		
 		for (int j = 0; j < signals.length; j++) {
 			Sample sample = newestEntry.get(j);

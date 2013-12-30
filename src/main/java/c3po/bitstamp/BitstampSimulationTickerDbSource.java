@@ -38,8 +38,8 @@ public class BitstampSimulationTickerDbSource extends BitstampTickerSource imple
 	private void tryGetNewEntry(long clientTimestamp) {
 		long serverTime = clientTimestamp + interpolationTime;
 		
-		List<ServerSampleEntry> newSamples = this.source.getNewSamples(serverTime);
-		for(ServerSampleEntry sample : newSamples) {
+		List<ServerSnapshot> newSamples = this.source.getNewSamples(serverTime);
+		for(ServerSnapshot sample : newSamples) {
 			buffer.add(sample);
 		}
 	}

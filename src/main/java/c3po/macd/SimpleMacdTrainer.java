@@ -34,7 +34,7 @@ public class SimpleMacdTrainer {
 	private final static long timestep = 20 * Time.SECONDS;
 
 	// Simulation and fitness test
-	private final static int numEpochs = 3;
+	private final static int numEpochs = 10;
 	private final static int numSimulationsPerEpoch = 10;
 	private final static int numBots = 600;
 	
@@ -103,7 +103,7 @@ public class SimpleMacdTrainer {
 	    List<INonRealtimeSource> sources = new LinkedList<INonRealtimeSource>();
 	    sources.add(tickerNode);
 	    sources.add(orderbookNode);
-		SimulationContext simContext = new SimulationContext(sources, botClock, orderbookNode.getOutputP99Bid(), tickerNode.getOutputVolume(), tradeFloor, wallet);
+		SimulationContext simContext = new SimulationContext(sources, botClock, tickerNode.getOutputLast(), tickerNode.getOutputVolume(), tradeFloor, wallet);
 		
 		
 		// Create and run the trainer on the context

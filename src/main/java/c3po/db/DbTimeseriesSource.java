@@ -27,7 +27,7 @@ public class DbTimeseriesSource {
 	private String tableName;
 	private List<String> columns;
 	
-	private LinkedList<ServerSampleEntry> data = new LinkedList<ServerSampleEntry>();
+	private LinkedList<ServerSnapshot> data = new LinkedList<ServerSnapshot>();
 	private int lastDataIndex = 0;
 	
 	/**
@@ -48,8 +48,8 @@ public class DbTimeseriesSource {
 	 * @param maxTimestamp
 	 * @return
 	 */
-	public List<ServerSampleEntry> getNewSamples(long maxTimestamp) {
-		List<ServerSampleEntry> results = new LinkedList<ServerSampleEntry>();
+	public List<ServerSnapshot> getNewSamples(long maxTimestamp) {
+		List<ServerSnapshot> results = new LinkedList<ServerSnapshot>();
 		// If we would like data newer then the newest sample that returned from a query
 		if(maxTimestamp > latestSampleTimestamp) {
 			// Query for possible new data
@@ -62,7 +62,7 @@ public class DbTimeseriesSource {
 			if(data.size() <= lastDataIndex)
 				break;
 			
-			ServerSampleEntry sample = data.get(lastDataIndex);
+			ServerSnapshot sample = data.get(lastDataIndex);
 			
 			// This sample is OK, add it to the return list and move the marker
 			if(sample.timestamp < maxTimestamp) {
@@ -86,8 +86,6 @@ public class DbTimeseriesSource {
 	 * @param end
 	 */
 	public void fetchDataFromDatabase(long start, long end) {
-
-	    // Get all entries between the newest value in the buffer and the end of the interpolation timeframe
 	    long firstTimestamp = start / 1000 + 1; // +1, otherwise results include sample we already have
 	    long lastTimestamp = end / 1000;
 	    String query = "select * from "+ tableName + " WHERE `timestamp` BETWEEN " + firstTimestamp + " AND " + lastTimestamp + " ORDER BY timestamp ASC";
@@ -97,7 +95,7 @@ public class DbTimeseriesSource {
 		    // Add them all to the buffer
 		    while(resultSet.next()) {
 		    	long sampleTimestamp = resultSet.getLong("timestamp") * 1000;
-		    	ServerSampleEntry entry = new ServerSampleEntry(sampleTimestamp, columns.size());
+		    	ServerSnapshot entry = new ServerSnapshot(sampleTimestamp, columns.size());
 		    	
 		    	for(String column : columns) {
 		    		entry.set(getSignalIndexByName(column), new Sample(sampleTimestamp, resultSet.getDouble(column)));

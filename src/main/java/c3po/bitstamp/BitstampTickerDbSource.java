@@ -35,7 +35,7 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 		long serverTimestamp = clientTimestamp + interpolationTime;
 
 		// Fetch the lastest time in buffer
-		ServerSampleEntry newest = buffer.peek();
+		ServerSnapshot newest = buffer.peek();
 		long newestTimeInBuffer = newest != null ? newest.timestamp : clientTimestamp;
 		source.setLatestSampleTimestamp(newestTimeInBuffer);
 		

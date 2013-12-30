@@ -106,9 +106,9 @@ public class GraphingNode extends ApplicationFrame implements ITickable, ITradeL
 		plot.addAnnotation(annotation);
 	}
 	
-	public void setMaximumItemAge(long seconds) {
+	public void setMaximumItemAge(long miliseconds) {
 		for (int i = 0; i < inputs.length; i++) {
-			signalTimeSeries[i].setMaximumItemAge(seconds); // Because new data is added as Second
+			signalTimeSeries[i].setMaximumItemAge(miliseconds); // Because new data is added as Second
 		}
 	}
 

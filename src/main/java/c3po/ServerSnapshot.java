@@ -4,11 +4,11 @@ import java.util.Arrays;
 
 import c3po.bitstamp.BitstampTickerSource;
 
-public class ServerSampleEntry {
+public class ServerSnapshot {
 	public final long timestamp;
 	public final Sample[] samples;
 	
-	public ServerSampleEntry(long timestamp, int length) {
+	public ServerSnapshot(long timestamp, int length) {
 		this.timestamp = timestamp;
 		this.samples = new Sample[length];
 	}
@@ -43,7 +43,7 @@ public class ServerSampleEntry {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		ServerSampleEntry other = (ServerSampleEntry) obj;
+		ServerSnapshot other = (ServerSnapshot) obj;
 		if (!Arrays.equals(samples, other.samples))
 			return false;
 		if (timestamp != other.timestamp)

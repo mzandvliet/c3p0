@@ -33,7 +33,7 @@ public class SimulationClock implements ISimulationClock {
 
 	@Override
 	public void run(long startTime, long endTime) {
-		long delayedStartTime = startTime - interpolationTime;
+		long delayedStartTime = startTime + interpolationTime;
 		long delayedEndTime = endTime - interpolationTime;
 		
 		for (long currentTick = delayedStartTime; currentTick < delayedEndTime; currentTick += clockTimestep) {

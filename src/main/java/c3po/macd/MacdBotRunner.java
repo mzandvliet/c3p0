@@ -10,6 +10,7 @@ import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import c3po.bitstamp.BitstampSimulationOrderBookDbSource;
 import c3po.bitstamp.BitstampSimulationTradeFloor;
 import c3po.bitstamp.BitstampSimulationTickerDbSource;
 import c3po.clock.ISimulationClock;
@@ -29,8 +30,9 @@ public class MacdBotRunner {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdBotRunner.class);
 	
 	// Earliest time 1384079023000l
-	private final static long simulationEndTime = new Date().getTime() - (Time.DAYS * 11);
-	private final static long simulationStartTime = simulationEndTime - (Time.DAYS * 14);
+	private final static long simulationEndTime = new Date().getTime();
+	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 10;
+
 	
 	private final static long interpolationTime = 60 * Time.SECONDS;
 	private final static long timestep = 20 * Time.SECONDS;
@@ -58,6 +60,14 @@ public class MacdBotRunner {
 				simulationEndTime
 				);
 		
+		final BitstampSimulationOrderBookDbSource orderbookNode = new BitstampSimulationOrderBookDbSource(
+				timestep,
+				interpolationTime,
+				dbConnection,
+				simulationStartTime,
+				simulationEndTime
+				);
+		
 		final ITradeFloor tradeFloor =  new BitstampSimulationTradeFloor(
 				tickerNode.getOutputLast(),
 				tickerNode.getOutputBid(),
@@ -67,7 +77,7 @@ public class MacdBotRunner {
 		double walletStartBtc = walletStartBtcInUsd / tickerNode.getOutputLast().getSample(simulationStartTime).value;
 		final IWallet wallet = new Wallet(walletStartUsd, walletStartBtc, 0d, 0d);
 		
-		MacdBotConfig config = MacdBotConfig.fromJSON("{\"timestep\":60000,\"buyAnalysisConfig\":{\"fastPeriod\":1817739,\"slowPeriod\":24392209,\"signalPeriod\":15095783},\"sellAnalysisConfig\":{\"fastPeriod\":4155728,\"slowPeriod\":11868447,\"signalPeriod\":23520350},\"volumeAnalysisConfig\":{\"fastPeriod\":328280,\"slowPeriod\":739594,\"signalPeriod\":10506379},\"traderConfig\":{\"minBuyDiffThreshold\":6.563577371206275,\"minSellDiffThreshold\":-28.9950292233447,\"buyVolumeThreshold\":6.186013706384239,\"lossCutThreshold\":0.9917438050616942,\"sellThresholdRelaxationFactor\":27.19466277950374,\"sellPricePeriod\":5599742}}");
+		MacdBotConfig config = MacdBotConfig.fromJSON("{\"timestep\":60000,\"buyAnalysisConfig\":{\"fastPeriod\":2220000,\"slowPeriod\":27720000,\"signalPeriod\":16680000},\"sellAnalysisConfig\":{\"fastPeriod\":8160000,\"slowPeriod\":8880000,\"signalPeriod\":17400000},\"volumeAnalysisConfig\":{\"fastPeriod\":1800000,\"slowPeriod\":3780000,\"signalPeriod\":22800000},\"traderConfig\":{\"minBuyDiffThreshold\":6.223,\"minSellDiffThreshold\":-17.1638,\"buyVolumeThreshold\":0.3376,\"lossCutThreshold\":0.988042,\"sellThresholdRelaxationFactor\":13.83,\"sellPricePeriod\":5280000}}");
 
 //		DbConnection dbConnection = new DbConnection(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
 //		dbConnection.open();

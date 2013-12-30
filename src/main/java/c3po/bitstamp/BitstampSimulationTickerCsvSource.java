@@ -4,7 +4,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import c3po.Sample;
-import c3po.ServerSampleEntry;
+import c3po.ServerSnapshot;
 import c3po.TickerSignal;
 import au.com.bytecode.opencsv.CSVReader;
 
@@ -56,7 +56,7 @@ public class BitstampSimulationTickerCsvSource extends BitstampTickerSource {
 		
 		boolean upToDate = false;
     	while(!upToDate) {
-    		ServerSampleEntry newest = buffer.peek();
+    		ServerSnapshot newest = buffer.peek();
     		
     		if (newest == null || newest.timestamp < serverTimestamp) {
 	    		newest = tryGetNewEntry();
@@ -72,7 +72,7 @@ public class BitstampSimulationTickerCsvSource extends BitstampTickerSource {
     	}
 	}
 	
-	private ServerSampleEntry tryGetNewEntry() {
+	private ServerSnapshot tryGetNewEntry() {
 		String[] newestData = null;
 		
 		try {
@@ -84,10 +84,10 @@ public class BitstampSimulationTickerCsvSource extends BitstampTickerSource {
 		return newestData != null ? parseCsv(newestData) : null;
 	}
 	
-	private ServerSampleEntry parseCsv(String[] data) {
+	private ServerSnapshot parseCsv(String[] data) {
 		long serverTimestamp = Long.parseLong(data[0]) * 1000;
 		
-		ServerSampleEntry entry = new ServerSampleEntry(serverTimestamp, data.length-1);
+		ServerSnapshot entry = new ServerSnapshot(serverTimestamp, data.length-1);
 		
 		// Todo: REMOVE THE CLAMPSSSS, FIX THE CSVSSSSSSSSS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		

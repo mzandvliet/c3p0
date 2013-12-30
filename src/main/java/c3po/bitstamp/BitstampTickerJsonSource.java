@@ -1,8 +1,5 @@
 package c3po.bitstamp;
 
-import java.io.IOException;
-import org.json.JSONException;
-
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,19 +20,16 @@ public class BitstampTickerJsonSource extends BitstampTickerSource implements IN
 	
 	@Override
 	public boolean open() {
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override
 	public boolean close() {
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override
 	public boolean isEmpty() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -49,7 +43,7 @@ public class BitstampTickerJsonSource extends BitstampTickerSource implements IN
 			JSONObject json = JsonReader.readJsonFromUrl(url);
 			long serverTimestamp = json.getLong("timestamp") * 1000;
 			
-			ServerSampleEntry entry = new ServerSampleEntry(serverTimestamp, 6);
+			ServerSnapshot entry = new ServerSnapshot(serverTimestamp, 6);
     		entry.set(TickerSignal.LAST.ordinal(), new Sample(serverTimestamp, json.getDouble("last")));
     		entry.set(TickerSignal.HIGH.ordinal(), new Sample(serverTimestamp, json.getDouble("high")));
     		entry.set(TickerSignal.LOW.ordinal(), new Sample(serverTimestamp, json.getDouble("low")));
@@ -57,7 +51,7 @@ public class BitstampTickerJsonSource extends BitstampTickerSource implements IN
     		entry.set(TickerSignal.BID.ordinal(), new Sample(serverTimestamp, json.getDouble("bid")));
     		entry.set(TickerSignal.ASK.ordinal(), new Sample(serverTimestamp, json.getDouble("ask")));
     		
-    		ServerSampleEntry lastEntry = buffer.size() > 0 ? buffer.get(buffer.size()-1) : null; 
+    		ServerSnapshot lastEntry = buffer.size() > 0 ? buffer.get(buffer.size()-1) : null; 
 			if (!entry.equals(lastEntry))
 				buffer.add(entry);
     		
@@ -66,7 +60,7 @@ public class BitstampTickerJsonSource extends BitstampTickerSource implements IN
 			 * - catch json, io and connection exceptions specifically
 			 * - retry a number of times!
 			 */
-			LOGGER.warn("Failed to fetch json, reason: " + e);
+			LOGGER.warn("Failed to fetch or parse json, reason: " + e);
 		}
 	}
 }
