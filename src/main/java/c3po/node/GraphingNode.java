@@ -111,6 +111,11 @@ public class GraphingNode extends ApplicationFrame implements ITickable, ITradeL
 			signalTimeSeries[i].setMaximumItemAge(miliseconds); // Because new data is added as Second
 		}
 	}
+	
+	public void setLineColor(int index, float h, float s, float b) {
+		XYPlot plot = (XYPlot) chart.getPlot();
+		plot.getRenderer().setSeriesPaint(index, Color.getHSBColor(h, s, b));
+	}
 
 	/**
      * Creates a panel
@@ -163,7 +168,6 @@ public class GraphingNode extends ApplicationFrame implements ITickable, ITradeL
         }
 
         return chart;
-
     }
 
     /**

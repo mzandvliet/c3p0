@@ -18,33 +18,56 @@ public class RealtimeTickerChart {
 
 	private final static long interpolationTime = 4 * Time.SECONDS;
 	private final static long timestep = 2 * Time.SECONDS;
+	
+	private static final int NUM_PERCENTILES = 6;
 
 	public static void main(String[] args) {
 		 
 		try {
 			// Set up global signal tree
-			final BitstampTickerSource tickerNode = new BitstampTickerJsonSource(timestep, interpolationTime, "https://www.bitstamp.net:443/api/ticker/");
-			final BitstampOrderBookSource orderBookNode = new BitstampOrderBookJsonSource(timestep, interpolationTime, "https://www.bitstamp.net:443/api/order_book/");
+			final BitstampTickerSource ticker = new BitstampTickerJsonSource(timestep, interpolationTime, "https://www.bitstamp.net:443/api/ticker/");
+			final BitstampOrderBookSource orderBook = new BitstampOrderBookJsonSource(timestep, interpolationTime, "https://www.bitstamp.net:443/api/order_book/");
 
 			// Create a clock
 			IRealtimeClock botClock = new RealtimeClock(timestep, 0, interpolationTime);
 			
 			GraphingNode tickerGraph = new GraphingNode(timestep, "Ticker",
-					tickerNode.getOutputLast(),
-					orderBookNode.getOutputP99Bid(),
-					orderBookNode.getOutputP98Bid(),
-					orderBookNode.getOutputP96Bid(),
-					orderBookNode.getOutputP99Ask(),
-					orderBookNode.getOutputP98Ask(),
-					orderBookNode.getOutputP96Ask()
-					);			
+					ticker.getOutputLast(),
+					ticker.getOutputBid(),
+					orderBook.getOutputP99Bid(),
+					orderBook.getOutputP98Bid(),
+					orderBook.getOutputP97Bid(),
+					orderBook.getOutputP96Bid(),
+					orderBook.getOutputP95Bid(),
+					ticker.getOutputAsk(),
+					orderBook.getOutputP99Ask(),
+					orderBook.getOutputP98Ask(),
+					orderBook.getOutputP97Ask(),
+					orderBook.getOutputP96Ask(),
+					orderBook.getOutputP95Ask()
+					);
+			
+			tickerGraph.setLineColor(0, 0.66f, 1f, 1f);
+			
+			for (int i = 0; i < NUM_PERCENTILES; i++) {
+				int index = 1 + i;
+				float brightness = 1f  - (i / (float)NUM_PERCENTILES) * 0.5f;
+				tickerGraph.setLineColor(index, 0.00f, 1f, brightness);
+			}
+			
+			for (int i = 0; i < NUM_PERCENTILES; i++) {
+				int index = 1 + NUM_PERCENTILES + i;
+				float brightness = 1f  - (i / (float)NUM_PERCENTILES) * 0.5f;
+				tickerGraph.setLineColor(index, 0.33f, 1f, brightness);
+			}
+			
 			tickerGraph.setMaximumItemAge(2 * Time.HOURS);
 			tickerGraph.pack();
 			tickerGraph.setVisible(true);
 			botClock.addListener(tickerGraph);
 			
 			GraphingNode volumeGraph = new GraphingNode(timestep, "Volume",
-					tickerNode.getOutputVolume()
+					ticker.getOutputVolume()
 					);			
 			volumeGraph.setMaximumItemAge(2 * Time.HOURS);
 			volumeGraph.pack();
