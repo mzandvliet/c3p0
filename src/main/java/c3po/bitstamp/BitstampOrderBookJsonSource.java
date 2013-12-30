@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import c3po.*;
 import c3po.node.INode;
 import c3po.utils.JsonReader;
+import c3po.utils.SignalMath;
 
 public class BitstampOrderBookJsonSource extends BitstampOrderBookSource implements INode {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BitstampOrderBookJsonSource.class);
@@ -61,7 +62,7 @@ public class BitstampOrderBookJsonSource extends BitstampOrderBookSource impleme
 				return;
 			}
 			
-			LOGGER.debug("\nParsing Orderbook at " + serverTimestamp + "...\n");
+			LOGGER.debug("Parsing Orderbook at " + serverTimestamp + "...");
 			
 			JSONArray bids = json.getJSONArray("bids");
 			JSONArray asks = json.getJSONArray("asks");
@@ -93,23 +94,31 @@ public class BitstampOrderBookJsonSource extends BitstampOrderBookSource impleme
 	private static HashMap<Integer, Double> calculatePercentiles(final JSONArray orders, final double totalVolume) {
 		final HashMap<Integer, Double> percentiles = new HashMap<Integer, Double>(); // TODO: this is inefficient. Cache it?
 		
-		double volumeBidLeft = totalVolume;
 		int currentPercentile = HIGHEST_PERCENTILE;
+		double volumeParsed = 0d;
+		double lastPrice = 0d;
 		
 		for (int i = 0; i < orders.length(); i++) {
 			final JSONArray order = orders.getJSONArray(i);
 			final double price = order.getDouble(0);
 			final double volume = order.getDouble(1);
 			
-			if (volumeBidLeft <= totalVolume * (currentPercentile / 100d)) {
-				percentiles.put(new Integer(currentPercentile), new Double(price));
+			double percentileVolumeThreshold = totalVolume * ((100 - currentPercentile) / 100d);
+			
+			if (volumeParsed + volume > percentileVolumeThreshold) {				
+//				final double lerp = (percentileVolumeThreshold - volumeParsed) / volume;
+//				final double lerp = SignalMath.interpolateInverse(volumeParsed, volumeParsed + volume, percentileVolumeThreshold);
+//				final double percentilePrice = SignalMath.interpolate(lastPrice, price, lerp);
+				final double percentilePrice = price;
+				percentiles.put(new Integer(currentPercentile), new Double(percentilePrice));
 				currentPercentile -= 1;
-				
-				if (currentPercentile < LOWEST_PERCENTILE)
-					break;
 			}
 			
-			volumeBidLeft -= volume;
+			volumeParsed += volume;
+			lastPrice = price;
+			
+			if (currentPercentile < LOWEST_PERCENTILE)
+				break;
 		}
 		
 		return percentiles;

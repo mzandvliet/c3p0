@@ -11,13 +11,11 @@ import c3po.clock.IRealtimeClock;
 import c3po.node.GraphingNode;
 import c3po.utils.Time;
 
-/* TODO: Set a fixed data range, so it grow until a memory crash, obviously. */
-
 public class RealtimeTickerChart {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RealtimeBotRunner.class);
 
-	private final static long interpolationTime = 4 * Time.SECONDS;
-	private final static long timestep = 2 * Time.SECONDS;
+	private final static long interpolationTime = 8 * Time.SECONDS;
+	private final static long timestep = 4 * Time.SECONDS;
 	
 	private static final int NUM_PERCENTILES = 6;
 
@@ -29,7 +27,7 @@ public class RealtimeTickerChart {
 			final BitstampOrderBookSource orderBook = new BitstampOrderBookJsonSource(timestep, interpolationTime, "https://www.bitstamp.net:443/api/order_book/");
 
 			// Create a clock
-			IRealtimeClock botClock = new RealtimeClock(timestep, 0, interpolationTime);
+			IRealtimeClock clock = new RealtimeClock(timestep, 0, interpolationTime);
 			
 			GraphingNode tickerGraph = new GraphingNode(timestep, "Ticker",
 					ticker.getOutputLast(),
@@ -64,7 +62,6 @@ public class RealtimeTickerChart {
 			tickerGraph.setMaximumItemAge(2 * Time.HOURS);
 			tickerGraph.pack();
 			tickerGraph.setVisible(true);
-			botClock.addListener(tickerGraph);
 			
 			GraphingNode volumeGraph = new GraphingNode(timestep, "Volume",
 					ticker.getOutputVolume()
@@ -72,10 +69,12 @@ public class RealtimeTickerChart {
 			volumeGraph.setMaximumItemAge(2 * Time.HOURS);
 			volumeGraph.pack();
 			volumeGraph.setVisible(true);
-			botClock.addListener(volumeGraph);
 			
 			// Run the program
-			botClock.run();
+			
+			clock.addListener(volumeGraph);
+			clock.addListener(tickerGraph);
+			clock.run();
 			
 		} catch (Exception e) {
 			LOGGER.error("Critical error in main", e);

@@ -6,11 +6,15 @@ import java.util.List;
 import c3po.Sample;
 
 public class SignalMath {
-	public static long lerp(long low, long high, double lerp) {
+	public static double interpolate(double low, double high, double lerp) {
+		return low + (low-high) * lerp;
+	}
+	
+	public static long interpolate(long low, long high, double lerp) {
 		return low + (long)((low-high) * lerp);
 	}
 	
-	public static Sample lerp(Sample oldest, Sample newest, long timestamp) {
+	public static Sample interpolate(Sample oldest, Sample newest, long timestamp) {
 		long timeDelta = newest.timestamp - oldest.timestamp;
 		
 		if (timeDelta == 0)
@@ -21,6 +25,10 @@ public class SignalMath {
 		double valueDelta = newest.value - oldest.value;
 		double value = oldest.value + valueDelta * lerp;
 		return new Sample(timestamp, value);
+	}
+	
+	public static double interpolateInverse(double low, double high, double value) {
+		return (value - low) / (high - low);
 	}
 	
 	public static Sample basicMovingAverage(final List<Sample> kernelBuffer) {

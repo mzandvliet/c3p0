@@ -68,7 +68,7 @@ public class SignalBuffer extends AbstractList<Sample> implements ISignalBuffer,
 		for (int i = 0; i < signals.size(); i++) {
 			Sample current = signals.get(i);
 			if (current.timestamp >= timestamp) {
-				return SignalMath.lerp(current, signals.get(i-1), timestamp);
+				return SignalMath.interpolate(current, signals.get(i-1), timestamp);
 			}
 		}
 		
