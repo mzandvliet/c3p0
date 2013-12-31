@@ -17,18 +17,19 @@ public class RealtimeTickerChart {
 	private final static long interpolationTime = 10 * Time.SECONDS;
 	private final static long timestep = 5 * Time.SECONDS;
 	private final static long timespan = 4 * Time.HOURS;
-	private static final int NUM_PERCENTILES = 10;
+	
+	private static final int[] percentiles = { 99, 98, 97, 96, 95, 94, 93, 92, 91, 90 };
 
 	public static void main(String[] args) {
 		 
 		try {
 			// Set up global signal tree
 			final BitstampTickerSource ticker = new BitstampTickerJsonSource(timestep, interpolationTime, "https://www.bitstamp.net:443/api/ticker/");
-			final BitstampOrderBookSource orderBook = new BitstampOrderBookJsonSource(timestep, interpolationTime, "https://www.bitstamp.net:443/api/order_book/");
+			final BitstampOrderBookSource orderBook = new BitstampOrderBookJsonSource(timestep, interpolationTime, percentiles, "https://www.bitstamp.net:443/api/order_book/");
 
 			// Create a clock
 			IRealtimeClock clock = new RealtimeClock(timestep, 0, interpolationTime);
-			
+
 			GraphingNode tickerGraph = new GraphingNode(timestep, "Ticker",
 					ticker.getOutputLast(),
 					ticker.getOutputBid(),
@@ -41,6 +42,7 @@ public class RealtimeTickerChart {
 					orderBook.getOutputBidPercentile(6),
 					orderBook.getOutputBidPercentile(7),
 					orderBook.getOutputBidPercentile(8),
+					orderBook.getOutputBidPercentile(9),
 					ticker.getOutputAsk(),
 					orderBook.getOutputAskPercentile(0),
 					orderBook.getOutputAskPercentile(1),
@@ -50,23 +52,26 @@ public class RealtimeTickerChart {
 					orderBook.getOutputAskPercentile(5),
 					orderBook.getOutputAskPercentile(6),
 					orderBook.getOutputAskPercentile(7),
-					orderBook.getOutputAskPercentile(8)
+					orderBook.getOutputAskPercentile(8),
+					orderBook.getOutputAskPercentile(9)
 					);
 			
 			// Set Last signal to blue
 			tickerGraph.setLineColor(0, 0.66f, 1f, 1f);
 			
+			int numPercentiles = 1 + percentiles.length; // Include P100, which isn't in the list right now
+			
 			// Set Ask percentiles to shades of red
-			for (int i = 0; i < NUM_PERCENTILES; i++) {
+			for (int i = 0; i < numPercentiles; i++) {
 				int index = 1 + i;
-				float brightness = 1f  - (i / (float)NUM_PERCENTILES) * 0.5f;
+				float brightness = 1f  - (i / (float)numPercentiles) * 0.75f;
 				tickerGraph.setLineColor(index, 0.00f, 1f, brightness);
 			}
 			
 			// Set Bid percentiles to shades of green
-			for (int i = 0; i < NUM_PERCENTILES; i++) {
-				int index = 1 + NUM_PERCENTILES + i;
-				float brightness = 1f  - (i / (float)NUM_PERCENTILES) * 0.5f;
+			for (int i = 0; i < numPercentiles; i++) {
+				int index = 1 + numPercentiles + i;
+				float brightness = 1f  - (i / (float)numPercentiles) * 0.75f;
 				tickerGraph.setLineColor(index, 0.33f, 1f, brightness);
 			}
 			

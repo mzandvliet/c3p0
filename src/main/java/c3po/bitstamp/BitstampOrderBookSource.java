@@ -19,23 +19,23 @@ public abstract class BitstampOrderBookSource extends AbstractTickable implement
 	protected final CircularArrayList<ServerSnapshot> buffer;
 	protected boolean isEmpty = false;
 	
-	protected static final int[] percentiles = { 99, 98, 97, 96, 95, 90, 85, 80, 75 };
-	protected static final int numPercentiles = percentiles.length;
+	protected final int[] percentiles;
 	
 	private final List<OutputSignal> signals;
 	
-	public BitstampOrderBookSource(long timestep, long interpolationTime) {
+	public BitstampOrderBookSource(long timestep, long interpolationTime, int[] percentiles) {
 		super(timestep);
 		
 		this.interpolationTime = interpolationTime;
+		this.percentiles = percentiles;
 		
 		this.bidVolumeSignal = new OutputSignal(this, "bid_volume");
 		this.askVolumeSignal = new OutputSignal(this, "ask_volume");
 		
-		this.bidPercentileSignals = new ArrayList<OutputSignal>(numPercentiles);
-		this.askPercentileSignals = new ArrayList<OutputSignal>(numPercentiles);
+		this.bidPercentileSignals = new ArrayList<OutputSignal>(percentiles.length);
+		this.askPercentileSignals = new ArrayList<OutputSignal>(percentiles.length);
 		
-		for (int i = 0; i < numPercentiles; i++) {
+		for (int i = 0; i < percentiles.length; i++) {
 			this.bidPercentileSignals.add(new OutputSignal(this, String.format("p%s_bid", percentiles[i])));
 			this.askPercentileSignals.add(new OutputSignal(this, String.format("p%s_ask", percentiles[i])));
 		}

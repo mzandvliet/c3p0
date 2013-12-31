@@ -17,8 +17,10 @@ public class BitstampSimulationOrderBookDbSource extends BitstampOrderBookSource
 	
 	private DbTimeseriesSource source;
 	
+	private static final int[] percentiles = { 99, 98, 97, 96, 95, 90, 85, 80, 75 }; // Hardcoded here, since it depends on database structure
+	
 	public BitstampSimulationOrderBookDbSource(long timestep, long interpolationTime, DbConnection connection, long dataStartTime, long dataEndTime) {
-		  super(timestep, interpolationTime);
+		  super(timestep, interpolationTime, percentiles);
 		  
 		  this.source = new DbTimeseriesSource(timestep, connection, "bitstamp_order_book", Arrays.asList(
 				  "volume_ask", "volume_bid", 

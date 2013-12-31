@@ -20,8 +20,8 @@ public class BitstampOrderBookJsonSource extends BitstampOrderBookSource impleme
 	
 	private final String url;
 	
-	public BitstampOrderBookJsonSource(long timestep, long interpolationTime, String url) {
-		super(timestep, interpolationTime);
+	public BitstampOrderBookJsonSource(long timestep, long interpolationTime, int[] percentiles, String url) {
+		super(timestep, interpolationTime, percentiles);
 		this.url = url;
 	}
 	
@@ -88,16 +88,16 @@ public class BitstampOrderBookJsonSource extends BitstampOrderBookSource impleme
 			
 			// Calculate percentiles and format them to signals
 			
-			HashMap<Integer, Double> bidPercentiles = calculatePercentiles(bids, totalBidVolume);
-			HashMap<Integer, Double> askPercentiles = calculatePercentiles(asks, totalAskVolume);
+			HashMap<Integer, Double> bidPercentiles = calculatePercentiles(bids, totalBidVolume, percentiles);
+			HashMap<Integer, Double> askPercentiles = calculatePercentiles(asks, totalAskVolume, percentiles);
 			
-			ServerSnapshot entry = new ServerSnapshot(serverTimestamp, 2 + 2 * numPercentiles);
+			ServerSnapshot entry = new ServerSnapshot(serverTimestamp, 2 + 2 * percentiles.length);
 			
 			entry.set(0, new Sample(serverTimestamp, totalBidVolume));
 			entry.set(1, new Sample(serverTimestamp, totalAskVolume));
 			
 			setServerEntryValues(entry, bidPercentiles, "BID", 2);
-			setServerEntryValues(entry, askPercentiles, "ASK", 2 + numPercentiles);
+			setServerEntryValues(entry, askPercentiles, "ASK", 2 + percentiles.length);
 			
 			buffer.add(entry);
 		} catch (JSONException e) {
@@ -108,7 +108,7 @@ public class BitstampOrderBookJsonSource extends BitstampOrderBookSource impleme
 		// TODO: Catch connection errors, attempt retries
 	}
 
-	private static HashMap<Integer, Double> calculatePercentiles(final JSONArray orders, final double totalVolume) {
+	private static HashMap<Integer, Double> calculatePercentiles(final JSONArray orders, final double totalVolume, int[] percentiles) {
 		final HashMap<Integer, Double> percentileValues = new HashMap<Integer, Double>(); // TODO: this is inefficient. Cache it?
 		
 		int percentileIndex = 0;
@@ -136,7 +136,7 @@ public class BitstampOrderBookJsonSource extends BitstampOrderBookSource impleme
 			volumeParsed += volume;
 			lastPrice = price;
 			
-			if (percentileIndex >= numPercentiles)
+			if (percentileIndex >= percentiles.length)
 				break;
 		}
 		
