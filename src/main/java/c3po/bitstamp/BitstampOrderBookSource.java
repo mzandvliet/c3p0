@@ -1,5 +1,8 @@
 package c3po.bitstamp;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import c3po.*;
 import c3po.utils.SignalMath;
 
@@ -8,21 +11,40 @@ import c3po.utils.SignalMath;
  * TODO Avoid duplication between the two. High prio.
  */
 public abstract class BitstampOrderBookSource extends AbstractTickable implements IBitstampOrderBookSource {
-	protected final int numSignals = OrderBookSignal.values().length;
-	protected final OutputSignal[] signals;
+	protected final OutputSignal bidVolumeSignal;
+	protected final OutputSignal askVolumeSignal;
+	protected final List<OutputSignal> bidPercentileSignals;
+	protected final List<OutputSignal> askPercentileSignals;
 	protected final long interpolationTime;
 	protected final CircularArrayList<ServerSnapshot> buffer;
 	protected boolean isEmpty = false;
+	
+	protected static final int[] percentiles = { 99, 98, 97, 96, 95, 90, 85, 80, 75 };
+	protected static final int numPercentiles = percentiles.length;
+	
+	private final List<OutputSignal> signals;
 	
 	public BitstampOrderBookSource(long timestep, long interpolationTime) {
 		super(timestep);
 		
 		this.interpolationTime = interpolationTime;
 		
-		this.signals = new OutputSignal[numSignals];
-		for (int i = 0; i < numSignals; i++) {
-			this.signals[i] = new OutputSignal(this, OrderBookSignal.values()[i].toString());
+		this.bidVolumeSignal = new OutputSignal(this, "bid_volume");
+		this.askVolumeSignal = new OutputSignal(this, "ask_volume");
+		
+		this.bidPercentileSignals = new ArrayList<OutputSignal>(numPercentiles);
+		this.askPercentileSignals = new ArrayList<OutputSignal>(numPercentiles);
+		
+		for (int i = 0; i < numPercentiles; i++) {
+			this.bidPercentileSignals.add(new OutputSignal(this, String.format("p%s_bid", percentiles[i])));
+			this.askPercentileSignals.add(new OutputSignal(this, String.format("p%s_ask", percentiles[i])));
 		}
+		
+		signals = new ArrayList<OutputSignal>();
+		signals.add(bidVolumeSignal);
+		signals.add(askVolumeSignal);
+		signals.addAll(bidPercentileSignals);
+		signals.addAll(askPercentileSignals);
 		
 		int bufferLength = (int)Math.round(interpolationTime / timestep) + 1;
 		buffer = new CircularArrayList<ServerSnapshot>(bufferLength);
@@ -44,9 +66,9 @@ public abstract class BitstampOrderBookSource extends AbstractTickable implement
 		 */
 		ServerSnapshot oldestEntry = buffer.get(0);
 		if (clientTimestamp <= oldestEntry.timestamp) {
-			for (int j = 0; j < signals.length; j++) {
+			for (int j = 0; j < signals.size(); j++) {
 				Sample sample = oldestEntry.get(j);
-				signals[j].setSample(sample);
+				signals.get(j).setSample(sample);
 			}
 			return;
 		}
@@ -60,9 +82,9 @@ public abstract class BitstampOrderBookSource extends AbstractTickable implement
 			if (clientTimestamp < oldEntry.timestamp) {
 				ServerSnapshot newEntry = buffer.get(i+1);
 				
-				for (int j = 0; j < signals.length; j++) {
+				for (int j = 0; j < signals.size(); j++) {
 					Sample sample = SignalMath.interpolate(oldEntry.get(j), newEntry.get(j), clientTimestamp);
-					signals[j].setSample(sample);
+					signals.get(j).setSample(sample);
 				}
 				
 				return;
@@ -79,20 +101,20 @@ public abstract class BitstampOrderBookSource extends AbstractTickable implement
  		
  		ServerSnapshot newestEntry = buffer.get(buffer.size()-1);
 		
-		for (int j = 0; j < signals.length; j++) {
+		for (int j = 0; j < signals.size(); j++) {
 			Sample sample = newestEntry.get(j);
-			signals[j].setSample(sample);
+			signals.get(j).setSample(sample);
 		}
 	}
 
 	@Override
 	public int getNumOutputs() {
-		return signals.length;
+		return signals.size();
 	}
 	
 	@Override
 	public ISignal getOutput(int i) {
-		return signals[i];
+		return signals.get(i);
 	}
 	
 	@Override
@@ -107,83 +129,19 @@ public abstract class BitstampOrderBookSource extends AbstractTickable implement
 	}
 	
 	public ISignal getOutputVolumeBid() {
-		return signals[OrderBookSignal.VOLUME_BID.ordinal()];
+		return bidVolumeSignal;
 	}
 
 	public ISignal getOutputVolumeAsk() {
-		return signals[OrderBookSignal.VOLUME_ASK.ordinal()];
+		return askVolumeSignal;
 	}
 
-	public ISignal getOutputP99Bid() {
-		return signals[OrderBookSignal.P99_BID.ordinal()];
-	}
-
-	public ISignal getOutputP98Bid() {
-		return signals[OrderBookSignal.P98_BID.ordinal()];
-	}
-
-	public ISignal getOutputP97Bid() {
-		return signals[OrderBookSignal.P97_BID.ordinal()];
-	}
-
-	public ISignal getOutputP96Bid() {
-		return signals[OrderBookSignal.P96_BID.ordinal()];
-	}
-
-	public ISignal getOutputP95Bid() {
-		return signals[OrderBookSignal.P95_BID.ordinal()];
+	public ISignal getOutputBidPercentile(int percentileIndex) {
+		return bidPercentileSignals.get(percentileIndex);
 	}
 	
-	public ISignal getOutputP90Bid() {
-		return signals[OrderBookSignal.P90_BID.ordinal()];
-	}
-	
-	public ISignal getOutputP85Bid() {
-		return signals[OrderBookSignal.P85_BID.ordinal()];
-	}
-	
-	public ISignal getOutputP80Bid() {
-		return signals[OrderBookSignal.P80_BID.ordinal()];
-	}
-	
-	public ISignal getOutputP75Bid() {
-		return signals[OrderBookSignal.P75_BID.ordinal()];
-	}
-
-	public ISignal getOutputP99Ask() {
-		return signals[OrderBookSignal.P99_ASK.ordinal()];
-	}
-
-	public ISignal getOutputP98Ask() {
-		return signals[OrderBookSignal.P98_ASK.ordinal()];
-	}
-
-	public ISignal getOutputP97Ask() {
-		return signals[OrderBookSignal.P97_ASK.ordinal()];
-	}
-
-	public ISignal getOutputP96Ask() {
-		return signals[OrderBookSignal.P96_ASK.ordinal()];
-	}
-
-	public ISignal getOutputP95Ask() {
-		return signals[OrderBookSignal.P95_ASK.ordinal()];
-	}
-	
-	public ISignal getOutputP90Ask() {
-		return signals[OrderBookSignal.P90_ASK.ordinal()];
-	}
-	
-	public ISignal getOutputP85Ask() {
-		return signals[OrderBookSignal.P85_ASK.ordinal()];
-	}
-	
-	public ISignal getOutputP80Ask() {
-		return signals[OrderBookSignal.P80_ASK.ordinal()];
-	}
-	
-	public ISignal getOutputP75Ask() {
-		return signals[OrderBookSignal.P75_ASK.ordinal()];
+	public ISignal getOutputAskPercentile(int percentileIndex) {
+		return askPercentileSignals.get(percentileIndex);
 	}
 
 	/**

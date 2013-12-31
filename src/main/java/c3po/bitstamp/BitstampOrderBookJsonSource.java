@@ -50,11 +50,13 @@ public class BitstampOrderBookJsonSource extends BitstampOrderBookSource impleme
 
 	private void parseJson() {		
 		try {
-			JSONObject json = JsonReader.readJsonFromUrl(url);
+			// Get latest orderbook through json
 			
+			JSONObject json = JsonReader.readJsonFromUrl(url);
 			long serverTimestamp = json.getLong("timestamp") * 1000;
 			
 			// Early out if we already have the latest snapshot from the server
+			
 			long lastServerTimestamp = buffer.size() != 0 ? buffer.get(buffer.size()-1).timestamp : 0;
 			if (serverTimestamp == lastServerTimestamp) {
 				LOGGER.debug("Skipping duplicate server entry for timestamp " + serverTimestamp);
@@ -66,40 +68,52 @@ public class BitstampOrderBookJsonSource extends BitstampOrderBookSource impleme
 			JSONArray bids = json.getJSONArray("bids");
 			JSONArray asks = json.getJSONArray("asks");
 			
-			double totalBidVolume = calculateTotalVolume(bids);
-			double totalAskVolume = calculateTotalVolume(asks);
+			double totalBidVolume = calculateTotalOrderVolume(bids);
+			double totalAskVolume = calculateTotalOrderVolume(asks);
+			
+			// Print some general market stats, because hey they're cool! (TODO: totally do this somewhere else)
+			
+			double avgBidVolume = totalBidVolume / (double)bids.length();
+			double avgAskVolume = totalAskVolume / (double)asks.length();
+			LOGGER.debug(String.format("Market Stats:\nbids: [num %s, sum $%,.2f, average $%,.2f]\nasks: [num %s, sum $%,.2f, average $%,.2f]\ntotal bid/ask: %,.2f, average bid/ask: %,.2f",
+					bids.length(),
+					totalBidVolume,
+					avgBidVolume,
+					asks.length(),
+					totalAskVolume,
+					avgAskVolume,
+					totalBidVolume / totalAskVolume,
+					avgBidVolume / avgAskVolume
+			));
+			
+			// Calculate percentiles and format them to signals
 			
 			HashMap<Integer, Double> bidPercentiles = calculatePercentiles(bids, totalBidVolume);
 			HashMap<Integer, Double> askPercentiles = calculatePercentiles(asks, totalAskVolume);
 			
-			ServerSnapshot entry = new ServerSnapshot(serverTimestamp, 2 + 2 * 9);
+			ServerSnapshot entry = new ServerSnapshot(serverTimestamp, 2 + 2 * numPercentiles);
 			
-			entry.set(OrderBookSignal.VOLUME_BID.ordinal(), new Sample(serverTimestamp, totalBidVolume));
-			entry.set(OrderBookSignal.VOLUME_ASK.ordinal(), new Sample(serverTimestamp, totalAskVolume));
+			entry.set(0, new Sample(serverTimestamp, totalBidVolume));
+			entry.set(1, new Sample(serverTimestamp, totalAskVolume));
 			
-			setServerEntryValues(entry, bidPercentiles, "BID");
-			setServerEntryValues(entry, askPercentiles, "ASK");
+			setServerEntryValues(entry, bidPercentiles, "BID", 2);
+			setServerEntryValues(entry, askPercentiles, "ASK", 2 + numPercentiles);
 			
 			buffer.add(entry);
 		} catch (JSONException e) {
-			/* TODO
-			 * - catch json, io and connection exceptions specifically
-			 * - retry a number of times!
-			 */
 			LOGGER.warn("Failed to parse json, reason: " + e);
 		} catch (IOException e) {
 			LOGGER.warn("Failed to fetch json, reason: " + e);
 		}
+		// TODO: Catch connection errors, attempt retries
 	}
-	
-	private static final int[] percentiles = { 99, 98, 97, 96, 95, 90, 85, 80, 75 };
-	private static final int numPercentiles = percentiles.length;
 
 	private static HashMap<Integer, Double> calculatePercentiles(final JSONArray orders, final double totalVolume) {
 		final HashMap<Integer, Double> percentileValues = new HashMap<Integer, Double>(); // TODO: this is inefficient. Cache it?
 		
 		int percentileIndex = 0;
 		double volumeParsed = 0d;
+		double lastPrice = 0d;
 		
 		for (int i = 0; i < orders.length(); i++) {
 			final JSONArray order = orders.getJSONArray(i);
@@ -109,13 +123,18 @@ public class BitstampOrderBookJsonSource extends BitstampOrderBookSource impleme
 			int currentPercentile = percentiles[percentileIndex];
 			double percentileVolumeThreshold = totalVolume * ((100 - currentPercentile) / 100d);
 			
-			if (volumeParsed + volume > percentileVolumeThreshold) {								
-				percentileValues.put(new Integer(currentPercentile), new Double(price));
-				LOGGER.debug(currentPercentile + ", " + price);
+			if (volumeParsed + volume > percentileVolumeThreshold) {
+//				double lerp = SignalMath.interpolateInverse(volumeParsed, volumeParsed + volume, percentileVolumeThreshold);
+//				double percentilePrice = SignalMath.interpolate(lastPrice, price, lerp);
+				double percentilePrice = price;
+				
+				percentileValues.put(new Integer(currentPercentile), new Double(percentilePrice));
+				LOGGER.debug(currentPercentile + ", " + percentilePrice);
 				percentileIndex++;
 			}
 			
 			volumeParsed += volume;
+			lastPrice = price;
 			
 			if (percentileIndex >= numPercentiles)
 				break;
@@ -124,22 +143,19 @@ public class BitstampOrderBookJsonSource extends BitstampOrderBookSource impleme
 		return percentileValues;
 	}
 	
-	private static void setServerEntryValues(ServerSnapshot entry, HashMap<Integer, Double> percentiles, String orderType) {
+	private static void setServerEntryValues(ServerSnapshot entry, HashMap<Integer, Double> percentiles, String orderType, int startIndex) {
+		int index = startIndex;
 		for (Entry<Integer, Double> percentile : percentiles.entrySet()) {
-			final int signalIndex = getOrderBookSignalIndex(orderType, percentile);
-			entry.set(signalIndex, new Sample(entry.timestamp, percentile.getValue().doubleValue()));
+			entry.set(index, new Sample(entry.timestamp, percentile.getValue().doubleValue()));
+			index++;
 		}
 	}
 	
 	private static String getOrderBookSignalName(String orderType, int percentile) {
 		return String.format("P%s_%s", percentile, orderType);
 	}
-
-	private static int getOrderBookSignalIndex(String orderType, Entry<Integer, Double> percentile) {
-		return OrderBookSignal.valueOf(getOrderBookSignalName(orderType, percentile.getKey().intValue())).ordinal();
-	}
 	
-	private double calculateTotalVolume(JSONArray orders) {
+	private double calculateTotalOrderVolume(JSONArray orders) {
 		double totalVolume = 0;
 		for (int i = 0; i < orders.length(); i++) {
 			final JSONArray order = orders.getJSONArray(i);

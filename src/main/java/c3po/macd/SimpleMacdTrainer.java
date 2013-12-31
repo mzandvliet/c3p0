@@ -26,7 +26,7 @@ public class SimpleMacdTrainer {
 	
 	// First timestamp in database: 1384079023000l
 	private final static long simulationEndTime = new Date().getTime();
-	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 10;
+	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 21;
 	private final static long simulationLength = Time.DAYS * 3;
 	
 	// Timing
