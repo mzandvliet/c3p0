@@ -19,11 +19,11 @@ public abstract class BitstampOrderBookSource extends AbstractTickable implement
 	protected final CircularArrayList<ServerSnapshot> buffer;
 	protected boolean isEmpty = false;
 	
-	protected final int[] percentiles;
+	protected final double[] percentiles;
 	
 	private final List<OutputSignal> signals;
 	
-	public BitstampOrderBookSource(long timestep, long interpolationTime, int[] percentiles) {
+	public BitstampOrderBookSource(long timestep, long interpolationTime, double[] percentiles) {
 		super(timestep);
 		
 		this.interpolationTime = interpolationTime;

@@ -20,7 +20,7 @@ public class BitstampOrderBookJsonSource extends BitstampOrderBookSource impleme
 	
 	private final String url;
 	
-	public BitstampOrderBookJsonSource(long timestep, long interpolationTime, int[] percentiles, String url) {
+	public BitstampOrderBookJsonSource(long timestep, long interpolationTime, double[] percentiles, String url) {
 		super(timestep, interpolationTime, percentiles);
 		this.url = url;
 	}
@@ -70,6 +70,7 @@ public class BitstampOrderBookJsonSource extends BitstampOrderBookSource impleme
 			
 			double totalBidVolume = calculateTotalOrderVolume(bids);
 			double totalAskVolume = calculateTotalOrderVolume(asks);
+			double totalVolume = totalBidVolume + totalAskVolume;
 			
 			// Print some general market stats, because hey they're cool! (TODO: totally do this somewhere else)
 			
@@ -88,8 +89,8 @@ public class BitstampOrderBookJsonSource extends BitstampOrderBookSource impleme
 			
 			// Calculate percentiles and format them to signals
 			
-			HashMap<Integer, Double> bidPercentiles = calculatePercentiles(bids, totalBidVolume, percentiles);
-			HashMap<Integer, Double> askPercentiles = calculatePercentiles(asks, totalAskVolume, percentiles);
+			HashMap<Double, Double> bidPercentiles = calculatePercentiles(bids, totalVolume, percentiles); //totalBidVolume
+			HashMap<Double, Double> askPercentiles = calculatePercentiles(asks, totalVolume, percentiles); //totalAskVolume
 			
 			ServerSnapshot entry = new ServerSnapshot(serverTimestamp, 2 + 2 * percentiles.length);
 			
@@ -108,8 +109,8 @@ public class BitstampOrderBookJsonSource extends BitstampOrderBookSource impleme
 		// TODO: Catch connection errors, attempt retries
 	}
 
-	private static HashMap<Integer, Double> calculatePercentiles(final JSONArray orders, final double totalVolume, int[] percentiles) {
-		final HashMap<Integer, Double> percentileValues = new HashMap<Integer, Double>(); // TODO: this is inefficient. Cache it?
+	private static HashMap<Double, Double> calculatePercentiles(final JSONArray orders, final double totalVolume, double[] percentiles) {
+		final HashMap<Double, Double> percentileValues = new HashMap<Double, Double>(); // TODO: this is inefficient. Cache it?
 		
 		int percentileIndex = 0;
 		double volumeParsed = 0d;
@@ -120,7 +121,7 @@ public class BitstampOrderBookJsonSource extends BitstampOrderBookSource impleme
 			final double price = order.getDouble(0);
 			final double volume = order.getDouble(1);
 			
-			int currentPercentile = percentiles[percentileIndex];
+			double currentPercentile = percentiles[percentileIndex];
 			double percentileVolumeThreshold = totalVolume * ((100 - currentPercentile) / 100d);
 			
 			if (volumeParsed + volume > percentileVolumeThreshold) {
@@ -128,7 +129,7 @@ public class BitstampOrderBookJsonSource extends BitstampOrderBookSource impleme
 //				double percentilePrice = SignalMath.interpolate(lastPrice, price, lerp);
 				double percentilePrice = price;
 				
-				percentileValues.put(new Integer(currentPercentile), new Double(percentilePrice));
+				percentileValues.put(new Double(currentPercentile), new Double(percentilePrice));
 				LOGGER.debug(currentPercentile + ", " + percentilePrice);
 				percentileIndex++;
 			}
@@ -143,9 +144,9 @@ public class BitstampOrderBookJsonSource extends BitstampOrderBookSource impleme
 		return percentileValues;
 	}
 	
-	private static void setServerEntryValues(ServerSnapshot entry, HashMap<Integer, Double> percentiles, String orderType, int startIndex) {
+	private static void setServerEntryValues(ServerSnapshot entry, HashMap<Double, Double> percentiles, String orderType, int startIndex) {
 		int index = startIndex;
-		for (Entry<Integer, Double> percentile : percentiles.entrySet()) {
+		for (Entry<Double, Double> percentile : percentiles.entrySet()) {
 			entry.set(index, new Sample(entry.timestamp, percentile.getValue().doubleValue()));
 			index++;
 		}

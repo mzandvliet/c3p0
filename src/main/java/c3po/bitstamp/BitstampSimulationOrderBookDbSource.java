@@ -17,7 +17,7 @@ public class BitstampSimulationOrderBookDbSource extends BitstampOrderBookSource
 	
 	private DbTimeseriesSource source;
 	
-	private static final int[] percentiles = { 99, 98, 97, 96, 95, 90, 85, 80, 75 }; // Hardcoded here, since it depends on database structure
+	private static final double[] percentiles = { 99, 98, 97, 96, 95, 90, 85, 80, 75 }; // Hardcoded here, since it depends on database structure
 	
 	public BitstampSimulationOrderBookDbSource(long timestep, long interpolationTime, DbConnection connection, long dataStartTime, long dataEndTime) {
 		  super(timestep, interpolationTime, percentiles);

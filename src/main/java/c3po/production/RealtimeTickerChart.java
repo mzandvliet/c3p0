@@ -18,7 +18,7 @@ public class RealtimeTickerChart {
 	private final static long timestep = 5 * Time.SECONDS;
 	private final static long timespan = 4 * Time.HOURS;
 	
-	private static final int[] percentiles = { 99, 98, 97, 96, 95, 94, 93, 92, 91, 90 };
+	private static final double[] percentiles = { 99.5, 99.0, 98.5, 98.0, 97.5 , 97.0, 96.5, 96, 95.5, 95 };
 
 	public static void main(String[] args) {
 		 

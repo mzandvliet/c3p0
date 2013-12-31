@@ -1,8 +1,8 @@
 package c3po;
 
-//public enum OrderBookSignal {
-//	VOLUME_ASK,
-//	VOLUME_BID,
+public enum OrderBookSignal {
+	VOLUME_ASK,
+	VOLUME_BID,
 //    P99_BID,
 //    P98_BID,
 //    P97_BID,
@@ -21,4 +21,4 @@ package c3po;
 //    P85_ASK,
 //    P80_ASK,
 //    P75_ASK
-//}
+}
