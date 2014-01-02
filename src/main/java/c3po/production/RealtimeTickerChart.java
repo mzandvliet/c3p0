@@ -4,11 +4,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import c3po.bitstamp.BitstampOrderBookJsonSource;
-import c3po.bitstamp.BitstampOrderBookSource;
 import c3po.bitstamp.BitstampTickerJsonSource;
 import c3po.bitstamp.BitstampTickerSource;
 import c3po.clock.IRealtimeClock;
 import c3po.node.GraphingNode;
+import c3po.orderbook.IOrderBookSource;
+import c3po.orderbook.OrderBookPercentileTransformer;
+import c3po.orderbook.OrderBookVolumePercentileTransformer;
 import c3po.utils.Time;
 
 public class RealtimeTickerChart {
@@ -25,7 +27,8 @@ public class RealtimeTickerChart {
 		try {
 			// Set up global signal tree
 			final BitstampTickerSource ticker = new BitstampTickerJsonSource(timestep, interpolationTime, "https://www.bitstamp.net:443/api/ticker/");
-			final BitstampOrderBookSource orderBook = new BitstampOrderBookJsonSource(timestep, interpolationTime, percentiles, "https://www.bitstamp.net:443/api/order_book/");
+			final IOrderBookSource orderBook = new BitstampOrderBookJsonSource(timestep, "https://www.bitstamp.net:443/api/order_book/");
+			final OrderBookPercentileTransformer percentileTransformer = new OrderBookVolumePercentileTransformer(timestep, interpolationTime, percentiles, orderBook);
 
 			// Create a clock
 			IRealtimeClock clock = new RealtimeClock(timestep, 0, interpolationTime);
@@ -33,27 +36,27 @@ public class RealtimeTickerChart {
 			GraphingNode tickerGraph = new GraphingNode(timestep, "Ticker",
 					ticker.getOutputLast(),
 					ticker.getOutputBid(),
-					orderBook.getOutputBidPercentile(0),
-					orderBook.getOutputBidPercentile(1),
-					orderBook.getOutputBidPercentile(2),
-					orderBook.getOutputBidPercentile(3),
-					orderBook.getOutputBidPercentile(4),
-					orderBook.getOutputBidPercentile(5),
-					orderBook.getOutputBidPercentile(6),
-					orderBook.getOutputBidPercentile(7),
-					orderBook.getOutputBidPercentile(8),
-					orderBook.getOutputBidPercentile(9),
+					percentileTransformer.getOutputBidPercentile(0),
+					percentileTransformer.getOutputBidPercentile(1),
+					percentileTransformer.getOutputBidPercentile(2),
+					percentileTransformer.getOutputBidPercentile(3),
+					percentileTransformer.getOutputBidPercentile(4),
+					percentileTransformer.getOutputBidPercentile(5),
+					percentileTransformer.getOutputBidPercentile(6),
+					percentileTransformer.getOutputBidPercentile(7),
+					percentileTransformer.getOutputBidPercentile(8),
+					percentileTransformer.getOutputBidPercentile(9),
 					ticker.getOutputAsk(),
-					orderBook.getOutputAskPercentile(0),
-					orderBook.getOutputAskPercentile(1),
-					orderBook.getOutputAskPercentile(2),
-					orderBook.getOutputAskPercentile(3),
-					orderBook.getOutputAskPercentile(4),
-					orderBook.getOutputAskPercentile(5),
-					orderBook.getOutputAskPercentile(6),
-					orderBook.getOutputAskPercentile(7),
-					orderBook.getOutputAskPercentile(8),
-					orderBook.getOutputAskPercentile(9)
+					percentileTransformer.getOutputAskPercentile(0),
+					percentileTransformer.getOutputAskPercentile(1),
+					percentileTransformer.getOutputAskPercentile(2),
+					percentileTransformer.getOutputAskPercentile(3),
+					percentileTransformer.getOutputAskPercentile(4),
+					percentileTransformer.getOutputAskPercentile(5),
+					percentileTransformer.getOutputAskPercentile(6),
+					percentileTransformer.getOutputAskPercentile(7),
+					percentileTransformer.getOutputAskPercentile(8),
+					percentileTransformer.getOutputAskPercentile(9)
 					);
 			
 			// Set Last signal to blue

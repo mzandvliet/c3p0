@@ -8,8 +8,9 @@ import org.slf4j.LoggerFactory;
 
 import c3po.*;
 import c3po.db.DbTimeseriesSource;
+import c3po.orderbook.OrderBookPercentileTransformer;
 
-public class BitstampSimulationOrderBookDbSource extends BitstampOrderBookSource implements INonRealtimeSource {
+public class BitstampSimulationOrderBookDbSource extends OrderBookPercentileTransformer implements INonRealtimeSource {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BitstampSimulationOrderBookDbSource.class);
 
 	private long simulationStartTime;
@@ -48,21 +49,6 @@ public class BitstampSimulationOrderBookDbSource extends BitstampOrderBookSource
 		for(ServerSnapshot sample : newSamples) {
 			buffer.add(sample);
 		}
-	}
-
-	@Override
-	public boolean open() {
-		return true;
-	}
-
-	@Override
-	public boolean close() {
-		return true;
-	}
-
-	@Override
-	public boolean isEmpty() {
-		return false;
 	}
 
 	@Override
