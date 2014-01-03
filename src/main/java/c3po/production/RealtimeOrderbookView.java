@@ -182,25 +182,28 @@ public class RealtimeOrderbookView extends PApplet {
 		}
 		
 		public void update() {
-			long time = new Date().getTime() - interpolationTime;
+			long tick = new Date().getTime() - interpolationTime;
 			
 			// Get latest percentiles, store in buffer.
-			// TODO: To achieve that currently you need to iterate over all the fucking outputs and group them together in a new datatype. That's a fucked up interface.
+			// TODO: To achieve that currently you need to iterate over all the outputs and group them together in a new datatype. That's a fucked up interface.
+
+			long serverTimestamp = percentileTransformer.getOutputBidPercentile(0).getSample(tick).timestamp;
+			long lastTimestamp = buffer.size() != 0 ? buffer.get(buffer.size()-1).timestamp : 0;
 			
-			// ERROROROROROR: You are writing to the buffer each frame, instead of when a new sample is actually available.
-			
-			OrderPercentile[] bids = new OrderPercentile[percentiles.length];
-			OrderPercentile[] asks = new OrderPercentile[percentiles.length];
-			
-			for (int i = 0; i < percentiles.length; i++) {
-				double bidPercentileVolume = percentileTransformer.getOutputBidPercentile(i).getSample(time).value;
-				//double askPercentileVolume = percentileTransformer.getOutputAskPercentile(i).getSample(time).value;
+			if (serverTimestamp > lastTimestamp) {
+				OrderPercentile[] bids = new OrderPercentile[percentiles.length];
+				OrderPercentile[] asks = new OrderPercentile[percentiles.length];
 				
-				bids[i] = new OrderPercentile(percentiles[i], -1f, bidPercentileVolume);
-				//asks[i] = new OrderPercentile(percentiles[i], -1f, askPercentileVolume);
+				for (int i = 0; i < percentiles.length; i++) {
+					double bidPercentileVolume = percentileTransformer.getOutputBidPercentile(i).getSample(tick).value;
+					//double askPercentileVolume = percentileTransformer.getOutputAskPercentile(i).getSample(time).value;
+					
+					bids[i] = new OrderPercentile(percentiles[i], -1f, bidPercentileVolume);
+					//asks[i] = new OrderPercentile(percentiles[i], -1f, askPercentileVolume);
+				}
+				
+				buffer.add(new OrderBookPercentileSnapshot(serverTimestamp, bids, asks));
 			}
-			
-			buffer.add(new OrderBookPercentileSnapshot(time, bids, asks));
 		}
 		
 		public int size() {
