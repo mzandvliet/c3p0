@@ -60,6 +60,9 @@ public abstract class OrderBookPercentileTransformer extends AbstractTickable im
 	protected abstract void pollServer(long clientTimestamp);
 
 	private void updateOutputs(long clientTimestamp) {
+		if (buffer.size() == 0)
+			throw new IllegalStateException("The interpolation buffer is empty.");
+		
 		/*
 		 *  If clientTime is older than most recent server entry (which happens at
 		 *   startup), just return the oldest possible value. This results in a

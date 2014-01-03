@@ -83,8 +83,6 @@ public class OrderBookVolumePercentileTransformer extends OrderBookPercentileTra
 			double percentileVolumeThreshold = totalVolume * ((100 - currentPercentile) / 100d);
 			
 			if (volumeParsed + order.volume > percentileVolumeThreshold) {
-//				double lerp = SignalMath.interpolateInverse(volumeParsed, volumeParsed + volume, percentileVolumeThreshold);
-//				double percentilePrice = SignalMath.interpolate(lastPrice, price, lerp);
 				double percentilePrice = order.price;
 				
 				percentileValues.put(new Double(currentPercentile), new Double(percentilePrice));
@@ -108,11 +106,7 @@ public class OrderBookVolumePercentileTransformer extends OrderBookPercentileTra
 			index++;
 		}
 	}
-	
-	private static String getOrderBookSignalName(final String orderType, final int percentile) {
-		return String.format("P%s_%s", percentile, orderType);
-	}
-	
+
 	private double calculateTotalOrderVolume(List<Order> orders) {
 		double totalVolume = 0;
 		for (Order order : orders) {
