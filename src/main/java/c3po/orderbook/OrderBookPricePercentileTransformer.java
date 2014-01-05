@@ -38,8 +38,8 @@ public class OrderBookPricePercentileTransformer extends OrderBookPercentileTran
 		List<Order> bids = sample.bids;
 		List<Order> asks = sample.asks;
 		
-		removeDeviantOrders(bids, 0.95d);
-		removeDeviantOrders(asks, 0.95d);
+		removeStatisticallyDeviantOrders(bids, 0.95d);
+		removeStatisticallyDeviantOrders(asks, 0.95d);
 		
 		double lowestBid = bids.get(bids.size()-1).price;
 		double highestBid = bids.get(0).price;
@@ -67,15 +67,14 @@ public class OrderBookPricePercentileTransformer extends OrderBookPercentileTran
 	 * @param orders
 	 * @param maxDeviation Maximum deviation from average. Range: 0.0 < n < 1.0
 	 */
-	private static void removeDeviantOrders(List<Order> orders, double maxDeviation) {
+	private static void removeStatisticallyDeviantOrders(List<Order> orders, double maxDeviation) {
 		double averagePrice = 0;
-		
 		for (int i = 0; i < orders.size(); i++) {
 			Order order = orders.get(i);
 			averagePrice += order.price;
 		}
-		
 		averagePrice /= (double)orders.size();
+		
 		double minPrice = averagePrice - averagePrice * maxDeviation;
 		double maxPrice = averagePrice + averagePrice * maxDeviation;
 		
@@ -89,7 +88,7 @@ public class OrderBookPricePercentileTransformer extends OrderBookPercentileTran
 	}
 	
 	/*
-	 *  Bids are ordered ASCENDING price
+	 *  Bids are ordered by ASCENDING price
 	 *  Asks are ordered by DESCENDING price
 	 *  
 	 *  Orders with prices closest to LAST are first in the arrays.
