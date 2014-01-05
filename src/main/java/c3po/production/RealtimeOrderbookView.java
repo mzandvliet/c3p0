@@ -22,16 +22,27 @@ import processing.core.*;
 
 public class RealtimeOrderbookView extends PApplet {
 	private static final long serialVersionUID = -3659687308548476180L;
-	private static final float PERCENTILE_SCALE = 10.0f;
+	
+	private static final float PRICE_SCALE = 10.0f;
 	private static final float VOLUME_SCALE = 1f;
+	private static final float TIME_SCALE = 100f;
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(RealtimeBotRunner.class);
 
 	private final static long interpolationTime = 10 * Time.SECONDS;
 	private final static long timestep = 5 * Time.SECONDS;
-	private final static long timespan = 1 * Time.HOURS;
+	private final static long timespan = 30 * Time.MINUTES;
 	
-	private static final double[] percentiles = { 99, 98, 97, 96, 95, 94, 93, 92, 91, 90, 89, 88, 87, 86, 85, 84, 83, 82, 81, 80 };
+	private static final double[] percentiles; // Note: these currently *need* to be in high-to-low order
+	
+	static {
+//		percentiles = new double[] { 99, 98, 97 };
+		
+		percentiles = new double[50];
+		for (int i = 0; i < 50; i++) {
+			percentiles[i] = (double)(99-i);
+		}
+	}
 	
 	private PObjectSystem objectSystem;
 	private Camera camera;
@@ -54,8 +65,8 @@ public class RealtimeOrderbookView extends PApplet {
 	}
 	
 	private void updateScene() {
-		camera.setPosition(850f, -200f, 200f);
-		camera.lookAt(new PVector(900f, 0f, 0f));
+		camera.setPosition(250f, -200f, 600f);
+		camera.lookAt(new PVector(750f, 0f, -200f));
 		
 		background(104, 118, 212);
 		
@@ -149,20 +160,24 @@ public class RealtimeOrderbookView extends PApplet {
 			strokeWeight(1);
 			noFill();
 			
+			// TODO: render triangle mesh instead of lines, add lighting
+			
 			for (int i = 0; i < buffer.size(); i++) {
 				OrderBookPercentileSnapshot snapshot = buffer.get(i);
 				
 				double delta = (double)(snapshot.timestamp - time) / (double)Time.MINUTES;
-				float z = (float)delta * 100f;
+				float z = (float)delta * TIME_SCALE; // Time axis
 				
 				beginShape();
+				
 				for (int j = 0; j < percentiles.length; j++) {
 					OrderPercentile percentile = snapshot.bids[j];
-					float x = (float)percentiles[j] * PERCENTILE_SCALE; // This does not have a value, currently. Volume is incorrect.
-					float y = (float)percentile.volume * VOLUME_SCALE;
+					float x = (float)percentiles[j] * PRICE_SCALE; // Price axis TODO: use percentile's price point, which we don't have access to right now
+					float y = (float)percentile.volume * VOLUME_SCALE; // Volume axis
 					
 					vertex(x, y, z);
 				}
+				
 				endShape();
 			}
 		}
@@ -173,10 +188,7 @@ public class RealtimeOrderbookView extends PApplet {
 		private final CircularArrayList<OrderBookPercentileSnapshot> buffer;
 		
 		public OrderBookPercentileBuffer(int size) {
-			// Set up global signal tree
-			//final BitstampTickerSource ticker = new BitstampTickerJsonSource(timestep, interpolationTime, "https://www.bitstamp.net:443/api/ticker/");
 			final IOrderBookSource orderBook = new BitstampOrderBookJsonSource(timestep, "https://www.bitstamp.net/api/order_book/");
-			
 			percentileTransformer = new OrderBookPricePercentileTransformer(timestep, interpolationTime, percentiles, orderBook);
 			buffer = new CircularArrayList<OrderBookPercentileSnapshot>(size);
 		}
@@ -187,6 +199,7 @@ public class RealtimeOrderbookView extends PApplet {
 			// Get latest percentiles, store in buffer.
 			// TODO: To achieve that currently you need to iterate over all the outputs and group them together in a new datatype. That's a fucked up interface.
 
+			// Only update if server has new data to offer (TODO: yep, this is yet another duplicate data invalidation check in the pipeline)
 			long serverTimestamp = percentileTransformer.getOutputBidPercentile(0).getSample(tick).timestamp;
 			long lastTimestamp = buffer.size() != 0 ? buffer.get(buffer.size()-1).timestamp : 0;
 			
@@ -224,41 +237,6 @@ public class RealtimeOrderbookView extends PApplet {
 			this.timestamp = timestamp;
 			this.bids = bids;
 			this.asks = asks;
-		}
-		
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + getOuterType().hashCode();
-			result = prime * result + Arrays.hashCode(asks);
-			result = prime * result + Arrays.hashCode(bids);
-			result = prime * result + (int) (timestamp ^ (timestamp >>> 32));
-			return result;
-		}
-		
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			OrderBookPercentileSnapshot other = (OrderBookPercentileSnapshot) obj;
-			if (!getOuterType().equals(other.getOuterType()))
-				return false;
-			if (!Arrays.equals(asks, other.asks))
-				return false;
-			if (!Arrays.equals(bids, other.bids))
-				return false;
-			if (timestamp != other.timestamp)
-				return false;
-			return true;
-		}
-		
-		private RealtimeOrderbookView getOuterType() {
-			return RealtimeOrderbookView.this;
 		}
 	}
 }

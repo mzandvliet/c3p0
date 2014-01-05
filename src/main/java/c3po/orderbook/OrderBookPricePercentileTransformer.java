@@ -35,30 +35,30 @@ public class OrderBookPricePercentileTransformer extends OrderBookPercentileTran
 		}
 		
 		List<Order> bids = sample.bids;
-		List<Order> asks = sample.asks;
+//		List<Order> asks = sample.asks;
 		
 		removeDeviantOrders(bids, 0.95d);
-		removeDeviantOrders(asks, 0.95d);
+//		removeDeviantOrders(asks, 0.95d);
 		
 		double lowestBid = bids.get(bids.size()-1).price;
 		double highestBid = bids.get(0).price;
-		double lowestAsk = asks.get(0).price;
-		double highestAsk = asks.get(asks.size()-1).price;
+//		double lowestAsk = asks.get(0).price;
+//		double highestAsk = asks.get(asks.size()-1).price;
 		
 		// Calculate percentiles and format them to signals
 		
 		HashMap<Double, Double> bidPercentiles = calculateBidPercentiles(bids, lowestBid, highestBid, percentiles);
 		//HashMap<Double, Double> askPercentiles = calculateBidPercentiles(asks, lowestAsk, highestAsk, percentiles);
 		
-		ServerSnapshot entry = new ServerSnapshot(sample.timestamp, 2 + 2 * percentiles.length);
+		ServerSnapshot snapshot = new ServerSnapshot(sample.timestamp, 2 + 2 * percentiles.length);
 		
-		entry.set(0, new Sample(sample.timestamp, 0d));
+		snapshot.set(0, new Sample(sample.timestamp, 0d));
 		//entry.set(1, new Sample(sample.timestamp, 0d));
 		
-		setSnapshotValues(entry, bidPercentiles, "BID", 2);
+		setSnapshotValues(snapshot, bidPercentiles, "BID", 2);
 		//setSnapshotValues(entry, askPercentiles, "ASK", 2 + percentiles.length);
 		
-		buffer.add(entry);
+		buffer.add(snapshot);
 	}
 	
 	/**
@@ -88,8 +88,8 @@ public class OrderBookPricePercentileTransformer extends OrderBookPercentileTran
 	}
 	
 	/*
-	 *  Bids are ordered price ASCENDING
-	 *  Asks are ordered price DESCENDING
+	 *  Bids are ordered ASCENDING price
+	 *  Asks are ordered by DESCENDING price
 	 *  
 	 *  Orders with prices closest to LAST are first in the arrays.
 	 *  
@@ -98,11 +98,8 @@ public class OrderBookPricePercentileTransformer extends OrderBookPercentileTran
 	 *  High percentiles should map to orders close to LAST, low percentiles to orders far away from LAST.
 	 *  
 	 *  TODO: 
-	 *  - Maybe we should just enforce linear non-sparse percentiles at this point. 
+	 *  - Maybe we should just enforce linear percentiles definitions at this point. 
 	 *  	- Non-linear definitions can be interpolated to linear. And using these non-linear lists makes calculations and apis very messy.
-	 *  - I wonder if high-to-low percentile calculation is correct here.
-	 *  
-	 *  First percentile is last percentile is 75%, which encapsulates the 1% average the range of 75% of the volume. Is it correct to show that at the 75% mark in the graph?
 	 */
 	
 	private static HashMap<Double, Double> calculateBidPercentiles(final List<Order> orders, final double minPrice, final double maxPrice, double[] percentiles) {
@@ -130,6 +127,8 @@ public class OrderBookPricePercentileTransformer extends OrderBookPercentileTran
 				aggregatedVolume = 0d;
 				percentileIndex++;
 			}
+			
+			// TODO: This breaks at very low percentiles because the orders in that range have likely been filtered out earlier
 			
 			if (percentileIndex >= percentiles.length)
 				break;
