@@ -1,7 +1,5 @@
 package c3po.simulation;
 
-import c3po.*;
-
 import java.net.InetSocketAddress;
 import java.sql.SQLException;
 import java.util.Date;
@@ -11,16 +9,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import c3po.bitstamp.BitstampSimulationOrderBookDbSource;
-import c3po.bitstamp.BitstampSimulationTradeFloor;
 import c3po.bitstamp.BitstampSimulationTickerDbSource;
 import c3po.clock.ISimulationClock;
 import c3po.clock.SimulationClock;
 import c3po.node.GraphingNode;
 import c3po.utils.Time;
-import c3po.wallet.IWallet;
-import c3po.wallet.Wallet;
 import c3po.DbConnection;
-import c3po.ITradeFloor;
 
 public class TradeAdviceRunner {
 	//================================================================================
@@ -31,7 +25,7 @@ public class TradeAdviceRunner {
 	
 	// Earliest time 1384079023000l
 	private final static long simulationEndTime = new Date().getTime() - Time.DAYS * 1;
-	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 1;
+	private final static long simulationStartTime = simulationEndTime - Time.HOURS * 1;
 
 	
 	private final static long interpolationTime = 60 * Time.SECONDS;
@@ -58,16 +52,7 @@ public class TradeAdviceRunner {
 				simulationEndTime
 				);
 		
-		final BitstampSimulationOrderBookDbSource orderbookNode = new BitstampSimulationOrderBookDbSource(
-				timestep,
-				interpolationTime,
-				dbConnection,
-				simulationStartTime,
-				simulationEndTime
-				);
-		
 		// Create bot
-		int botId = Math.abs(new Random().nextInt());
 		OptimalTradeAdviceAnalysis bot = new OptimalTradeAdviceAnalysis(timestep, tickerNode.getOutputLast(), Time.MINUTES * 10);
 		
 		// Create the grapher

@@ -59,7 +59,7 @@ public class OptimalTradeAdviceAnalysis extends AbstractTickable implements INod
 				break;
 			}
 			priceHistory.add(sample);
-			lastFetchedTimestamp = sample.timestamp;
+			lastFetchedTimestamp +=  this.getTimestep();
 		} 
 		
 		
