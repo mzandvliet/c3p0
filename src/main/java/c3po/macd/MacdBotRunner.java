@@ -104,6 +104,8 @@ public class MacdBotRunner {
 		
 		GraphingNode priceChart = new GraphingNode(graphInterval, "Price",
 				tickerNode.getOutputLast(),
+				p99Last.getOutput(0),
+				orderbookNode.getOutputBidPercentile(0),
 				orderbookNode.getOutputAskPercentile(0)
 				);
 		bot.addTradeListener(priceChart);

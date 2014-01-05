@@ -97,10 +97,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		boolean buyThresholdReached = currentDiff.value > config.minBuyDiffThreshold;
 		boolean volumeThresholdReached = volumeAnalysis.getOutputDifference().getSample(tick).value > config.buyVolumeThreshold;
 
-		if (buyThresholdReached && volumeThresholdReached) {
-			if(verbose)
-				LOGGER.debug(String.format("%,.4f > %,.4f = %b", currentDiff.value, config.minBuyDiffThreshold, buyThresholdReached));
-			
+		if (buyThresholdReached && volumeThresholdReached) {			
 			double usdToSell = wallet.getUsdAvailable();
 			TradeAction buyAction = new TradeAction(TradeActionType.BUY, tick, usdToSell);
 			tradeFloor.buy(wallet, buyAction);
