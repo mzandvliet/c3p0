@@ -18,13 +18,12 @@ public class BitstampSimulationOrderBookDbSource extends OrderBookPercentileTran
 	
 	private DbTimeseriesSource source;
 	
-	private static final double[] percentiles = { 99, 98, 97, 96, 95, 90, 85, 80, 75 }; // Hardcoded here, since it depends on database structure
+	private static final double[] percentiles = { 99, 98, 97, 96, 95 }; // Hardcoded here, since it depends on database structure
 	
 	public BitstampSimulationOrderBookDbSource(long timestep, long interpolationTime, DbConnection connection, long dataStartTime, long dataEndTime) {
 		  super(timestep, interpolationTime, percentiles);
 		  
 		  this.source = new DbTimeseriesSource(timestep, connection, "bitstamp_order_book", Arrays.asList(
-				  "volume_ask", "volume_bid", 
 				  "p99_bid", "p98_bid", "p97_bid", "p96_bid", "p95_bid",
 				  "p99_ask", "p98_ask", "p97_ask", "p96_ask", "p95_ask"));
 		  

@@ -16,8 +16,6 @@ import c3po.utils.SignalMath;
  * TODO Avoid duplication between the two. High prio.
  */
 public abstract class OrderBookPercentileTransformer extends AbstractTickable implements IOrderBookPercentileTransformer {
-	protected final OutputSignal bidVolumeSignal;
-	protected final OutputSignal askVolumeSignal;
 	protected final List<OutputSignal> bidPercentileSignals;
 	protected final List<OutputSignal> askPercentileSignals;
 	protected final long interpolationTime;
@@ -33,10 +31,7 @@ public abstract class OrderBookPercentileTransformer extends AbstractTickable im
 		
 		this.interpolationTime = interpolationTime;
 		this.percentiles = percentiles;
-		
-		this.bidVolumeSignal = new OutputSignal(this, "bid_volume");
-		this.askVolumeSignal = new OutputSignal(this, "ask_volume");
-		
+
 		this.bidPercentileSignals = new ArrayList<OutputSignal>(percentiles.length);
 		this.askPercentileSignals = new ArrayList<OutputSignal>(percentiles.length);
 		
@@ -46,8 +41,6 @@ public abstract class OrderBookPercentileTransformer extends AbstractTickable im
 		}
 		
 		signals = new ArrayList<OutputSignal>();
-		signals.add(bidVolumeSignal);
-		signals.add(askVolumeSignal);
 		signals.addAll(bidPercentileSignals);
 		signals.addAll(askPercentileSignals);
 		
@@ -135,14 +128,6 @@ public abstract class OrderBookPercentileTransformer extends AbstractTickable im
 		for (OutputSignal signal : signals) {
 			signal.setSample(Sample.none);
 		}
-	}
-	
-	public ISignal getOutputVolumeBid() {
-		return bidVolumeSignal;
-	}
-
-	public ISignal getOutputVolumeAsk() {
-		return askVolumeSignal;
 	}
 
 	public ISignal getOutputBidPercentile(int percentileIndex) {

@@ -15,6 +15,7 @@ import c3po.bitstamp.BitstampSimulationTradeFloor;
 import c3po.bitstamp.BitstampSimulationTickerDbSource;
 import c3po.clock.ISimulationClock;
 import c3po.clock.SimulationClock;
+import c3po.node.AggregateNode;
 import c3po.node.GraphingNode;
 import c3po.utils.Time;
 import c3po.wallet.IWallet;
@@ -41,6 +42,8 @@ public class MacdBotRunner {
 	private final static double walletStartBtcInUsd = 0.0d;
 	
 	private final static long graphInterval = 20 * Time.SECONDS;
+	
+	private final static String botConfig = "{\"timestep\":60000,\"buyAnalysisConfig\":{\"fastPeriod\":2220000,\"slowPeriod\":27720000,\"signalPeriod\":16680000},\"sellAnalysisConfig\":{\"fastPeriod\":8160000,\"slowPeriod\":8880000,\"signalPeriod\":17400000},\"volumeAnalysisConfig\":{\"fastPeriod\":1800000,\"slowPeriod\":3780000,\"signalPeriod\":22800000},\"traderConfig\":{\"minBuyDiffThreshold\":6.223,\"minSellDiffThreshold\":-17.1638,\"buyVolumeThreshold\":0.3376,\"lossCutThreshold\":0.988042,\"sellThresholdRelaxationFactor\":13.83,\"sellPricePeriod\":5280000}}";
 	
 	//================================================================================
     // Main
@@ -77,10 +80,8 @@ public class MacdBotRunner {
 		double walletStartBtc = walletStartBtcInUsd / tickerNode.getOutputLast().getSample(simulationStartTime).value;
 		final IWallet wallet = new Wallet(walletStartUsd, walletStartBtc, 0d, 0d);
 		
-		MacdBotConfig config = MacdBotConfig.fromJSON("{\"timestep\":60000,\"buyAnalysisConfig\":{\"fastPeriod\":2220000,\"slowPeriod\":27720000,\"signalPeriod\":16680000},\"sellAnalysisConfig\":{\"fastPeriod\":8160000,\"slowPeriod\":8880000,\"signalPeriod\":17400000},\"volumeAnalysisConfig\":{\"fastPeriod\":1800000,\"slowPeriod\":3780000,\"signalPeriod\":22800000},\"traderConfig\":{\"minBuyDiffThreshold\":6.223,\"minSellDiffThreshold\":-17.1638,\"buyVolumeThreshold\":0.3376,\"lossCutThreshold\":0.988042,\"sellThresholdRelaxationFactor\":13.83,\"sellPricePeriod\":5280000}}");
+		MacdBotConfig config = MacdBotConfig.fromJSON(botConfig);
 
-//		DbConnection dbConnection = new DbConnection(new InetSocketAddress("94.208.87.249", 3309), "c3po", "D7xpJwzGJEWf5qWB");
-//		dbConnection.open();
 		
 		// Create bot
 		
@@ -88,6 +89,8 @@ public class MacdBotRunner {
 		MacdBot bot = new MacdBot(botId, config, tickerNode.getOutputLast(), tickerNode.getOutputVolume(), wallet, tradeFloor);
 		bot.getTraderNode().setVerbose(true);
 		LOGGER.debug(bot.getConfig().toJSON());
+		
+		final AggregateNode p99Last = new AggregateNode(timestep, orderbookNode.getOutputBidPercentile(0), orderbookNode.getOutputAskPercentile(0)); 
 		
 		// Create loggers
 		
@@ -97,32 +100,30 @@ public class MacdBotRunner {
 //		DbTradeLogger dbLogger = new DbTradeLogger(bot, dbConnection);
 //		dbLogger.startSession(simulationStartTime);
 		
-//		EmailTradeLogger mailLogger = new EmailTradeLogger("martijn@ramjetanvil.com", "jopast@gmail.com");
-//		bot.addTradeListener(mailLogger);
-		
 		// Create the grapher
 		
-		GraphingNode grapher = new GraphingNode(graphInterval, "Ticker",
-				tickerNode.getOutputLast()
+		GraphingNode priceChart = new GraphingNode(graphInterval, "Price",
+				tickerNode.getOutputLast(),
+				orderbookNode.getOutputAskPercentile(0)
 				);
-		bot.addTradeListener(grapher);
+		bot.addTradeListener(priceChart);
 		
-		GraphingNode volumeGrapher = new GraphingNode(graphInterval, "Volume",
+		GraphingNode volumeChart = new GraphingNode(graphInterval, "Volume",
 				tickerNode.getOutputVolume()
 				);
 		
-		GraphingNode diffGrapher = new GraphingNode(graphInterval, "Macd",
+		GraphingNode analysisGrapher = new GraphingNode(graphInterval, "Analysis",
 				bot.getBuyAnalysisNode().getOutputDifference(),
 				bot.getSellAnalysisNode().getOutputDifference());
-		bot.addTradeListener(diffGrapher);
+		bot.addTradeListener(analysisGrapher);
 		
 		// Create a clock
 		
 		ISimulationClock botClock = new SimulationClock(timestep, interpolationTime);
 		botClock.addListener(bot);
-		botClock.addListener(grapher);
-		botClock.addListener(volumeGrapher);
-		botClock.addListener(diffGrapher);
+		botClock.addListener(priceChart);
+		botClock.addListener(volumeChart);
+		botClock.addListener(analysisGrapher);
 		
 		// Run the program
 
@@ -133,20 +134,18 @@ public class MacdBotRunner {
 		
 		// Log results
 		
-		grapher.pack();
-		grapher.setVisible(true);
+		priceChart.pack();
+		priceChart.setVisible(true);
 		
-		volumeGrapher.pack();
-		volumeGrapher.setVisible(true);
+		volumeChart.pack();
+		volumeChart.setVisible(true);
 		
-		diffGrapher.pack();
-		diffGrapher.setVisible(true);
+		analysisGrapher.pack();
+		analysisGrapher.setVisible(true);
 		
 		tradeLogger.writeLog();
 		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Wallet: " + tradeFloor.getWalletValueInUsd(wallet));
 		LOGGER.debug(bot.getConfig().toString());
 		LOGGER.debug(bot.getConfig().toJSON());
-
-//		dbConnection.close();
 	}
 }
