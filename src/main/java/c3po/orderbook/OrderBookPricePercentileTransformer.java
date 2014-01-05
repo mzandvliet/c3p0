@@ -104,7 +104,11 @@ public class OrderBookPricePercentileTransformer extends OrderBookPercentileTran
 	 */
 	
 	private static List<OrderPercentile> calculateBidPercentiles(final List<Order> orders, final double minPrice, final double maxPrice, double[] percentiles) {
-		final List<OrderPercentile> percentileValues = new ArrayList<OrderPercentile>(); // TODO: this is inefficient. Cache it?
+		final List<OrderPercentile> percentileValues = new ArrayList<OrderPercentile>();
+		
+		for (int i = 0; i < percentiles.length; i++) {
+			percentileValues.add(new OrderPercentile(percentiles[i]));
+		}
 		
 		int percentileIndex = 0;
 		double aggregatedVolume = 0d;
@@ -112,8 +116,8 @@ public class OrderBookPricePercentileTransformer extends OrderBookPercentileTran
 		for (int i = 0; i < orders.size(); i++) {
 			Order order = orders.get(i);
 			
-			double percentile = percentiles[percentileIndex];
-			double percentilePriceThreshold = maxPrice * (percentile / 100d);
+			OrderPercentile orderPercentile = percentileValues.get(percentileIndex);
+			double percentilePriceThreshold = maxPrice * (orderPercentile.percentile / 100d);
 			
 			aggregatedVolume += order.volume;
 			
@@ -122,15 +126,14 @@ public class OrderBookPricePercentileTransformer extends OrderBookPercentileTran
 //				double lastPercentile = percentileIndex > 0 ? percentiles[percentileIndex-1] : 100d;
 //				double normalizedAggregatedVolume = aggregatedVolume / (percentile - lastPercentile);
 				
-				percentileValues.add(new OrderPercentile(percentile, percentilePriceThreshold, aggregatedVolume));
-				LOGGER.debug(percentile + ", " + aggregatedVolume);
+				orderPercentile.price = percentilePriceThreshold;
+				orderPercentile.volume = aggregatedVolume;
+				LOGGER.debug(orderPercentile.percentile + ", " + aggregatedVolume);
 				
 				aggregatedVolume = 0d;
 				percentileIndex++;
 			}
-			
-			// TODO: This breaks at very low percentiles because the orders in that range have likely been filtered out earlier
-			
+
 			if (percentileIndex >= percentiles.length)
 				break;
 		}

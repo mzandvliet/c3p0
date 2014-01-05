@@ -38,9 +38,12 @@ public class RealtimeOrderbookView extends PApplet {
 	static {
 //		percentiles = new double[] { 99, 98, 97, 96, 95 };
 		
-		percentiles = new double[50];
-		for (int i = 0; i < 50; i++) {
-			percentiles[i] = (double)(99-i);
+		final double percentileStep = 0.5;
+		final int numPercentiles = (int)(100d / percentileStep);		
+		
+		percentiles = new double[numPercentiles];
+		for (int i = 0; i < numPercentiles; i++) {
+			percentiles[i] = 100d-(i*percentileStep);
 		}
 	}
 	
@@ -65,8 +68,8 @@ public class RealtimeOrderbookView extends PApplet {
 	}
 	
 	private void updateScene() {
-		camera.setPosition(250f, -200f, 600f);
-		camera.lookAt(new PVector(750f, 0f, -400f));
+		camera.setPosition(1000f, -200f, 600f);
+		camera.lookAt(new PVector(500f, 0f, -400f));
 		
 		background(104, 118, 212);
 		
