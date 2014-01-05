@@ -9,7 +9,7 @@ import org.junit.Test;
 import c3po.Sample;
 import c3po.macd.MacdTraderNode;
 
-public class OptimalTradeAnalysisTest {
+public class OptimalTradeAdviceAnalysisTest {
 	@Test
 	public void testCalculateTradeAdvice() {
 		
@@ -32,5 +32,19 @@ public class OptimalTradeAnalysisTest {
 		data.add(new Sample(5, 1.027));
 		assertEquals(1, OptimalTradeAdviceAnalysis.calculateTradeAdvice(data), 0.001d);
 
+	}
+	
+	@Test
+	public void testRemoveOldSamples() {
+		LinkedList<Sample> data = new LinkedList<Sample>();
+		data.add(new Sample(1, 1));
+		data.add(new Sample(2, 1));
+		data.add(new Sample(3, 1));
+		
+		// Small dip should give negative
+		LinkedList<Sample> result = OptimalTradeAdviceAnalysis.removeOldSamples(data, 2);
+		assertEquals(2, result.size());
+		assertEquals(2, result.getFirst().timestamp);
+		assertEquals(3, result.getLast().timestamp);
 	}
 }

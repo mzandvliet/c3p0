@@ -47,18 +47,12 @@ public class OptimalTradeAdviceAnalysis extends AbstractTickable implements INod
 			lastFetchedTimestamp = tick - this.getTimestep();
 		}
 		
-		// Remove all data older then tick
-		for(Sample sample : priceHistory) {
-			if(sample.timestamp > tick) {
-				priceHistory.remove(sample);
-			}
-		}
-		
 		// Update the price history
+		removeOldSamples(priceHistory, tick);
 		
 		// Fetch missing data
 		while(lastNeededTimestamp > lastFetchedTimestamp) {
-			Sample sample = priceSignal.getSample(tick);
+			Sample sample = priceSignal.getSample(lastFetchedTimestamp + this.getTimestep());
 			priceHistory.add(sample);
 			lastFetchedTimestamp = sample.timestamp;
 		} 
@@ -66,6 +60,34 @@ public class OptimalTradeAdviceAnalysis extends AbstractTickable implements INod
 		
 		// Here I need to calculate the new advice for this period
 		this.adviceSignal.setSample(new Sample(tick, calculateTradeAdvice(priceHistory)));
+	}
+	
+	/**
+	 * Remove all data older then maxTime
+	 * 
+	 * @param samples
+	 * @param maxTime
+	 * @return
+	 */
+	public static LinkedList<Sample> removeOldSamples(LinkedList<Sample> samples, long maxTime) {
+		// List to store the stuff in we are going to remove 
+		// We dont do this in the forloop itself since then we get a ConcurrentModificationException
+		List<Sample> toRemove = new LinkedList<Sample>();
+		for(Sample sample : samples) {
+			if(sample.timestamp < maxTime) {
+				toRemove.add(sample);
+			} else {
+				// Timestamps are sequential so we can break after a miss
+				break;
+			}
+		}
+		
+		// Remove the samples that were scheduled for removal
+		for(Sample sample : toRemove) {
+			samples.remove(sample);
+		}
+		
+		return samples;
 	}
 	
 	public static double calculateTradeAdvice(LinkedList<Sample> priceHistory) {
