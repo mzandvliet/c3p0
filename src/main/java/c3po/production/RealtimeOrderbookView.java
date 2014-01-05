@@ -34,7 +34,7 @@ public class RealtimeOrderbookView extends PApplet {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RealtimeBotRunner.class);
 
 	private final static String jsonUrl = "https://www.bitstamp.net/api/order_book/";
-	private final static long timestep = 5 * Time.SECONDS;
+	private final static long timestep = 10 * Time.SECONDS;
 	private final static long timespan = 30 * Time.MINUTES;
 	
 	private static final double[] percentiles; 
@@ -226,14 +226,20 @@ public class RealtimeOrderbookView extends PApplet {
 				app.beginShape(QUAD_STRIP);
 				
 				for (int j = 0; j < percentiles.length; j++) {
-					OrderPercentile orderPercentileA = snapshotA.bids.get(j);
-					OrderPercentile orderPercentileB = snapshotB.bids.get(j);
+					OrderPercentile bidPercentileA = snapshotA.bids.get(j);
+					OrderPercentile bidPercentileB = snapshotB.bids.get(j);
+					OrderPercentile askPercentileA = snapshotA.asks.get(j);
+					OrderPercentile askPercentileB = snapshotB.asks.get(j);
 					
-					PVector percentileVertexA = orderPercentileToVertex(orderPercentileA, clientTime, snapshotA.timestamp);
-					PVector percentileVertexB = orderPercentileToVertex(orderPercentileB, clientTime, snapshotB.timestamp);
+					PVector bidPercentileVertexA = orderPercentileToVertex(bidPercentileA, clientTime, snapshotA.timestamp);
+					PVector bidPercentileVertexB = orderPercentileToVertex(bidPercentileB, clientTime, snapshotB.timestamp);
+					PVector askPercentileVertexA = orderPercentileToVertex(askPercentileA, clientTime, snapshotA.timestamp);
+					PVector askPercentileVertexB = orderPercentileToVertex(askPercentileB, clientTime, snapshotB.timestamp);
 					
-					app.vertex(percentileVertexA.x, percentileVertexA.y, percentileVertexA.z);
-					app.vertex(percentileVertexB.x, percentileVertexB.y, percentileVertexB.z);
+					app.vertex(bidPercentileVertexA.x, bidPercentileVertexA.y, bidPercentileVertexA.z);
+					app.vertex(bidPercentileVertexB.x, bidPercentileVertexB.y, bidPercentileVertexB.z);
+					app.vertex(askPercentileVertexA.x, askPercentileVertexA.y, askPercentileVertexA.z);
+					app.vertex(askPercentileVertexB.x, askPercentileVertexB.y, askPercentileVertexB.z);
 				}
 				
 				app.endShape();
@@ -243,13 +249,18 @@ public class RealtimeOrderbookView extends PApplet {
 		private PVector orderPercentileToVertex(OrderPercentile orderPercentile, long currentTime, long snapshotTime) {
 			double delta = (double)(snapshotTime - currentTime) / (double)Time.MINUTES;
 			return new PVector(
-					(float)orderPercentile.price * PRICE_SCALE, // TODO: use order.price, of course
+					(float)orderPercentile.price * PRICE_SCALE,
 					(float)orderPercentile.volume * -VOLUME_SCALE,
 					(float)delta * TIME_SCALE
 			);
 		}
 	}
 	
+	/*
+	 *  TODO: Specify maximum item age, prune old entries on every update.
+	 *  
+	 *  This is needed because buffer length is no longer linearly correlated to update rate.
+	 */
 	private class OrderBookPercentileBuffer implements IEventListener<OrderBookPercentileSnapshot> {
 		
 		private final CircularArrayList<OrderBookPercentileSnapshot> buffer;
