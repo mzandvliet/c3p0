@@ -24,7 +24,7 @@ public class RealtimeOrderbookView extends PApplet {
 	private static final long serialVersionUID = -3659687308548476180L;
 	
 	private static final float PRICE_SCALE = 10.0f;
-	private static final float VOLUME_SCALE = 1f;
+	private static final float VOLUME_SCALE = 0.1f;
 	private static final float TIME_SCALE = 100f;
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(RealtimeBotRunner.class);
@@ -36,7 +36,7 @@ public class RealtimeOrderbookView extends PApplet {
 	private static final double[] percentiles; // Note: these currently *need* to be in high-to-low order
 	
 	static {
-//		percentiles = new double[] { 99, 98, 97 };
+//		percentiles = new double[] { 99, 98, 97, 96, 95 };
 		
 		percentiles = new double[50];
 		for (int i = 0; i < 50; i++) {
@@ -66,7 +66,7 @@ public class RealtimeOrderbookView extends PApplet {
 	
 	private void updateScene() {
 		camera.setPosition(250f, -200f, 600f);
-		camera.lookAt(new PVector(750f, 0f, -200f));
+		camera.lookAt(new PVector(750f, 0f, -400f));
 		
 		background(104, 118, 212);
 		
@@ -173,7 +173,7 @@ public class RealtimeOrderbookView extends PApplet {
 				for (int j = 0; j < percentiles.length; j++) {
 					OrderPercentile percentile = snapshot.bids[j];
 					float x = (float)percentiles[j] * PRICE_SCALE; // Price axis TODO: use percentile's price point, which we don't have access to right now
-					float y = (float)percentile.volume * VOLUME_SCALE; // Volume axis
+					float y = (float)percentile.volume * -VOLUME_SCALE; // Volume axis
 					
 					vertex(x, y, z);
 				}

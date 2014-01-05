@@ -1,5 +1,6 @@
 package c3po.orderbook;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -35,28 +36,28 @@ public class OrderBookPricePercentileTransformer extends OrderBookPercentileTran
 		}
 		
 		List<Order> bids = sample.bids;
-//		List<Order> asks = sample.asks;
+		List<Order> asks = sample.asks;
 		
 		removeDeviantOrders(bids, 0.95d);
-//		removeDeviantOrders(asks, 0.95d);
+		removeDeviantOrders(asks, 0.95d);
 		
 		double lowestBid = bids.get(bids.size()-1).price;
 		double highestBid = bids.get(0).price;
-//		double lowestAsk = asks.get(0).price;
-//		double highestAsk = asks.get(asks.size()-1).price;
+		double lowestAsk = asks.get(0).price;
+		double highestAsk = asks.get(asks.size()-1).price;
 		
 		// Calculate percentiles and format them to signals
 		
-		HashMap<Double, Double> bidPercentiles = calculateBidPercentiles(bids, lowestBid, highestBid, percentiles);
-		//HashMap<Double, Double> askPercentiles = calculateBidPercentiles(asks, lowestAsk, highestAsk, percentiles);
+		List<OrderPercentile> bidPercentiles = calculateBidPercentiles(bids, lowestBid, highestBid, percentiles);
+		List<OrderPercentile> askPercentiles = calculateAskPercentiles(asks, lowestAsk, highestAsk, percentiles);
 		
 		ServerSnapshot snapshot = new ServerSnapshot(sample.timestamp, 2 + 2 * percentiles.length);
 		
 		snapshot.set(0, new Sample(sample.timestamp, 0d));
-		//entry.set(1, new Sample(sample.timestamp, 0d));
+		snapshot.set(1, new Sample(sample.timestamp, 0d));
 		
 		setSnapshotValues(snapshot, bidPercentiles, "BID", 2);
-		//setSnapshotValues(entry, askPercentiles, "ASK", 2 + percentiles.length);
+		setSnapshotValues(snapshot, askPercentiles, "ASK", 2 + percentiles.length);
 		
 		buffer.add(snapshot);
 	}
@@ -102,8 +103,8 @@ public class OrderBookPricePercentileTransformer extends OrderBookPercentileTran
 	 *  	- Non-linear definitions can be interpolated to linear. And using these non-linear lists makes calculations and apis very messy.
 	 */
 	
-	private static HashMap<Double, Double> calculateBidPercentiles(final List<Order> orders, final double minPrice, final double maxPrice, double[] percentiles) {
-		final HashMap<Double, Double> percentileValues = new HashMap<Double, Double>(); // TODO: this is inefficient. Cache it?
+	private static List<OrderPercentile> calculateBidPercentiles(final List<Order> orders, final double minPrice, final double maxPrice, double[] percentiles) {
+		final List<OrderPercentile> percentileValues = new ArrayList<OrderPercentile>(); // TODO: this is inefficient. Cache it?
 		
 		int percentileIndex = 0;
 		double aggregatedVolume = 0d;
@@ -121,7 +122,7 @@ public class OrderBookPricePercentileTransformer extends OrderBookPercentileTran
 //				double lastPercentile = percentileIndex > 0 ? percentiles[percentileIndex-1] : 100d;
 //				double normalizedAggregatedVolume = aggregatedVolume / (percentile - lastPercentile);
 				
-				percentileValues.put(new Double(percentile), new Double(aggregatedVolume));
+				percentileValues.add(new OrderPercentile(percentile, percentilePriceThreshold, aggregatedVolume));
 				LOGGER.debug(percentile + ", " + aggregatedVolume);
 				
 				aggregatedVolume = 0d;
@@ -137,10 +138,21 @@ public class OrderBookPricePercentileTransformer extends OrderBookPercentileTran
 		return percentileValues;
 	}
 	
-	private static void setSnapshotValues(ServerSnapshot entry, final HashMap<Double, Double> percentiles, final String orderType, final int startIndex) {
+	private static List<OrderPercentile> calculateAskPercentiles(final List<Order> orders, final double minPrice, final double maxPrice, double[] percentiles) {
+		final List<OrderPercentile> percentileValues = new ArrayList<OrderPercentile>(); // TODO: this is inefficient. Cache it?
+		
+		for (int i = 0; i < percentiles.length; i++) {
+			double percentile = percentiles[i];
+			percentileValues.add(new OrderPercentile(percentile, 0d, 0d));
+		}
+		
+		return percentileValues;
+	}
+	
+	private static void setSnapshotValues(ServerSnapshot entry, List<OrderPercentile> percentiles, final String orderType, final int startIndex) {
 		int index = startIndex;
-		for (Entry<Double, Double> percentile : percentiles.entrySet()) {
-			entry.set(index, new Sample(entry.timestamp, percentile.getValue().doubleValue()));
+		for (OrderPercentile percentile : percentiles) {
+			entry.set(index, new Sample(entry.timestamp, percentile.volume));
 			index++;
 		}
 	}
