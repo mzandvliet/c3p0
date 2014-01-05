@@ -30,7 +30,7 @@ public class VolatilityNode extends AbstractTickable implements INode {
 	}
 	
 	@Override
-	public void onNewTick(long tick) {
+	public void update(long tick) {
 		output.setSample(Sample.none);
 	}
 }

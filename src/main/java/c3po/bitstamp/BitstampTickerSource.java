@@ -32,7 +32,7 @@ public abstract class BitstampTickerSource extends AbstractTickable implements I
 	}
 	
 	@Override
-	public void onNewTick(long clientTimestamp) {
+	public void update(long clientTimestamp) {
 		pollServer(clientTimestamp);
 		updateOutputs(clientTimestamp);
 	}

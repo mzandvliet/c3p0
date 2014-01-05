@@ -28,7 +28,7 @@ public class SubtractNode extends AbstractTickable implements INode {
 	}
 	
 	@Override
-	public void onNewTick(long tick) {
+	public void update(long tick) {
 		Sample newest = subtract(inputA.getSample(tick), inputB.getSample(tick));
 		output.setSample(newest);
 	}

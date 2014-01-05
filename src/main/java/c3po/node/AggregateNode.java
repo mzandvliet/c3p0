@@ -26,7 +26,7 @@ public class AggregateNode extends AbstractTickable implements INode {
 	}
 
 	@Override
-	public void onNewTick(long tick) {
+	public void update(long tick) {
 		long aggregateTimestamp = 0;
 		double aggregateValue = 0d;
 		for (ISignal signal : inputs) {

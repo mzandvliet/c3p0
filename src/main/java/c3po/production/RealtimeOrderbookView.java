@@ -8,11 +8,15 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import c3po.AbstractTickable;
 import c3po.CircularArrayList;
+import c3po.bitstamp.BitstampOrderBookJsonEventSource;
 import c3po.bitstamp.BitstampOrderBookJsonSource;
 import c3po.bitstamp.BitstampTickerJsonSource;
 import c3po.bitstamp.BitstampTickerSource;
+import c3po.events.IEventListener;
 import c3po.orderbook.IOrderBookSource;
+import c3po.orderbook.OrderBookPercentileSnapshot;
 import c3po.orderbook.OrderBookPercentileTransformer;
 import c3po.orderbook.OrderBookPricePercentileTransformer;
 import c3po.orderbook.OrderBookVolumePercentileTransformer;
@@ -29,14 +33,20 @@ public class RealtimeOrderbookView extends PApplet {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(RealtimeBotRunner.class);
 
-	private final static long interpolationTime = 10 * Time.SECONDS;
+	private final static String jsonUrl = "https://www.bitstamp.net/api/order_book/";
 	private final static long timestep = 5 * Time.SECONDS;
 	private final static long timespan = 30 * Time.MINUTES;
 	
-	private static final double[] percentiles; // Note: these currently *need* to be in high-to-low order
+	private static final double[] percentiles; 
 	
 	static {
-//		percentiles = new double[] { 99, 98, 97, 96, 95 };
+		/*
+		 *  Create the list of percentiles used in the orderbook transformation stage
+		 *  
+		 *  Note that these currently *need* to be in high-to-low order, like this:
+		 *  
+		 *  percentiles = new double[] { 99, 98, 97, 96, 95 };
+		 */
 		
 		final double percentileStep = 0.5;
 		final int numPercentiles = (int)(100d / percentileStep);		
@@ -47,28 +57,46 @@ public class RealtimeOrderbookView extends PApplet {
 		}
 	}
 	
+	private BitstampOrderBookJsonEventSource orderBook;
+	private OrderBookPricePercentileTransformer percentileTransformer;
+	private OrderBookPercentileBuffer percentileBuffer;
+	
 	private PObjectSystem objectSystem;
 	private Camera camera;
-	private OrderBookRenderer orderBook;
+	private OrderBookRenderer orderBookRenderer;
 	
 	public void setup() {
 		size(1280, 720, P3D);
 		
+		// Signal chain, event based
+		
+		orderBook = new BitstampOrderBookJsonEventSource(timestep, jsonUrl);
+		percentileTransformer = new OrderBookPricePercentileTransformer(percentiles);
+		percentileBuffer =  new OrderBookPercentileBuffer((int)(timespan / timestep));
+		
+		orderBook.addListener(percentileTransformer);
+		percentileTransformer.addListener(percentileBuffer);
+		
+		// Rendering components
+		
 		objectSystem = new PObjectSystem();
 		
 		camera = new Camera(this);
-		orderBook = new OrderBookRenderer(this, new OrderBookPercentileBuffer((int)(timespan / timestep)));
+		orderBookRenderer = new OrderBookRenderer(this, percentileBuffer);
 		
 		objectSystem.add(camera);
-		objectSystem.add(orderBook);
+		objectSystem.add(orderBookRenderer);
 	}
 
 	public void draw() {
+		long clientTime = new Date().getTime();
+		orderBook.tick(clientTime);
+		
 		updateScene();
 	}
 	
 	private void updateScene() {
-		camera.setPosition(1000f, -200f, 600f);
+		camera.setPosition(1000f, -300f, 400f);
 		camera.lookAt(new PVector(500f, 0f, -400f));
 		
 		background(104, 118, 212);
@@ -155,71 +183,52 @@ public class RealtimeOrderbookView extends PApplet {
 		
 		@Override
 		public void draw() {
-			buffer.update();
-			
-			long time = new Date().getTime() - interpolationTime;
-			
+			long clientTime = new Date().getTime();
+
+			fill(200);
 			stroke(255);
 			strokeWeight(1);
-			noFill();
 			
-			// TODO: render triangle mesh instead of lines, add lighting
+			if (buffer.size() < 2)
+				return;
 			
-			for (int i = 0; i < buffer.size(); i++) {
-				OrderBookPercentileSnapshot snapshot = buffer.get(i);
+			for (int i = 0; i < buffer.size()-1; i++) {
+				OrderBookPercentileSnapshot snapshotA = buffer.get(i);
+				OrderBookPercentileSnapshot snapshotB = buffer.get(i+1);
 				
-				double delta = (double)(snapshot.timestamp - time) / (double)Time.MINUTES;
-				float z = (float)delta * TIME_SCALE; // Time axis
-				
-				beginShape();
+				beginShape(QUAD_STRIP);
 				
 				for (int j = 0; j < percentiles.length; j++) {
-					OrderPercentile percentile = snapshot.bids[j];
-					float x = (float)percentiles[j] * PRICE_SCALE; // Price axis TODO: use percentile's price point, which we don't have access to right now
-					float y = (float)percentile.volume * -VOLUME_SCALE; // Volume axis
+					OrderPercentile orderPercentileA = snapshotA.bids.get(j);
+					OrderPercentile orderPercentileB = snapshotB.bids.get(j);
 					
-					vertex(x, y, z);
+					PVector percentileVertexA = orderPercentileToVertex(orderPercentileA, clientTime, snapshotA.timestamp);
+					PVector percentileVertexB = orderPercentileToVertex(orderPercentileB, clientTime, snapshotB.timestamp);
+					
+					vertex(percentileVertexA.x, percentileVertexA.y, percentileVertexA.z);
+					vertex(percentileVertexB.x, percentileVertexB.y, percentileVertexB.z);
 				}
 				
 				endShape();
 			}
 		}
+		
+		private PVector orderPercentileToVertex(OrderPercentile orderPercentile, long currentTime, long snapshotTime) {
+			double delta = (double)(snapshotTime - currentTime) / (double)Time.MINUTES;
+			return new PVector(
+					(float)orderPercentile.percentile * PRICE_SCALE, // TODO: use order.price, of course
+					(float)orderPercentile.volume * -VOLUME_SCALE,
+					(float)delta * TIME_SCALE
+			);
+		}
 	}
 	
-	private class OrderBookPercentileBuffer {
-		private final OrderBookPercentileTransformer percentileTransformer;
+	private class OrderBookPercentileBuffer implements IEventListener<OrderBookPercentileSnapshot> {
+		
 		private final CircularArrayList<OrderBookPercentileSnapshot> buffer;
 		
-		public OrderBookPercentileBuffer(int size) {
-			final IOrderBookSource orderBook = new BitstampOrderBookJsonSource(timestep, "https://www.bitstamp.net/api/order_book/");
-			percentileTransformer = new OrderBookPricePercentileTransformer(timestep, interpolationTime, percentiles, orderBook);
-			buffer = new CircularArrayList<OrderBookPercentileSnapshot>(size);
-		}
-		
-		public void update() {
-			long tick = new Date().getTime() - interpolationTime;
-			
-			// Get latest percentiles, store in buffer.
-			// TODO: To achieve that currently you need to iterate over all the outputs and group them together in a new datatype. That's a fucked up interface.
-
-			// Only update if server has new data to offer (TODO: yep, this is yet another duplicate data invalidation check in the pipeline)
-			long serverTimestamp = percentileTransformer.getOutputBidPercentile(0).getSample(tick).timestamp;
-			long lastTimestamp = buffer.size() != 0 ? buffer.get(buffer.size()-1).timestamp : 0;
-			
-			if (serverTimestamp > lastTimestamp) {
-				OrderPercentile[] bids = new OrderPercentile[percentiles.length];
-				OrderPercentile[] asks = new OrderPercentile[percentiles.length];
-				
-				for (int i = 0; i < percentiles.length; i++) {
-					double bidPercentileVolume = percentileTransformer.getOutputBidPercentile(i).getSample(tick).value;
-					//double askPercentileVolume = percentileTransformer.getOutputAskPercentile(i).getSample(time).value;
-					
-					bids[i] = new OrderPercentile(percentiles[i], -1f, bidPercentileVolume);
-					//asks[i] = new OrderPercentile(percentiles[i], -1f, askPercentileVolume);
-				}
-				
-				buffer.add(new OrderBookPercentileSnapshot(serverTimestamp, bids, asks));
-			}
+		public OrderBookPercentileBuffer(int length) {
+			buffer = new CircularArrayList<OrderBookPercentileSnapshot>(length);
 		}
 		
 		public int size() {
@@ -229,17 +238,10 @@ public class RealtimeOrderbookView extends PApplet {
 		public OrderBookPercentileSnapshot get(int i) {
 			return buffer.get(i);
 		}
-	}
-	
-	private class OrderBookPercentileSnapshot {
-		public final long timestamp;
-		public final OrderPercentile[] bids;
-		public final OrderPercentile[] asks;
-		
-		public OrderBookPercentileSnapshot(long timestamp, OrderPercentile[] bids, OrderPercentile[] asks) {
-			this.timestamp = timestamp;
-			this.bids = bids;
-			this.asks = asks;
+
+		@Override
+		public void onEvent(OrderBookPercentileSnapshot snapshot) {
+			buffer.add(snapshot);
 		}
 	}
 }

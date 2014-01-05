@@ -56,7 +56,7 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 	}
 
 	@Override
-	public void onNewTick(long tick) {
+	public void update(long tick) {
 		tradeFloor.updateWallet(wallet);
 		tradeFloor.adjustOrders();
 		traderNode.tick(tick);

@@ -26,7 +26,7 @@ public abstract class AbstractTickable implements ITickable {
 	@Override
 	public void tick(long tick) {
 		if (tick >= lastTick + timestep) {
-			onNewTick(tick);
+			update(tick);
 		
 			lastTick = tick;
 		}
@@ -36,5 +36,5 @@ public abstract class AbstractTickable implements ITickable {
 		lastTick = -1;
 	}
 	
-	public abstract void onNewTick(long tick);
+	public abstract void update(long tick);
 }

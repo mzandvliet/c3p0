@@ -7,6 +7,10 @@ import ch.qos.logback.classic.Logger;
 import c3po.*;
 import c3po.utils.SignalMath;
 
+//BUILD BETTER INTERFACE ALONGSIDE INTERFACE
+//REMOVE INTERPOLATION BECAUSE IT JUST COMPLICATES THINGS AND NEEDS TO BE ABSTRACTED ANYWAY
+//THINK ABOUT COMPOSITE AND/OR GENERIC SAMPLES
+
 /**
  * This class is quite the copy pasta from the BitstampTickerSource.
  * TODO Avoid duplication between the two. High prio.
@@ -52,7 +56,7 @@ public abstract class OrderBookPercentileTransformer extends AbstractTickable im
 	}
 	
 	@Override
-	public void onNewTick(long clientTimestamp) {
+	public void update(long clientTimestamp) {
 		pollServer(clientTimestamp);
 		updateOutputs(clientTimestamp);
 	}

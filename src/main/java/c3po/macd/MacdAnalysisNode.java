@@ -85,7 +85,7 @@ public class MacdAnalysisNode extends AbstractTickable implements INode {
 	}
 	
 	@Override
-	public void onNewTick(long tick) {
+	public void update(long tick) {
 		diffNode.tick(tick);
 	}
 	

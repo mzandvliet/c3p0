@@ -32,7 +32,7 @@ public class MovingAverageNode extends AbstractTickable implements INode {
 	}
 	
 	@Override
-	public void onNewTick(long tick) {
+	public void update(long tick) {
 		Sample newest = input.getSample(tick);
 		buffer.add(newest);
 		output.setSample(SignalMath.basicMovingAverage(buffer));

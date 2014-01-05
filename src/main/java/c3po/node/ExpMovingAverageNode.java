@@ -31,7 +31,7 @@ public class ExpMovingAverageNode extends AbstractTickable implements INode {
 	}
 	
 	@Override
-	public void onNewTick(long tick) {
+	public void update(long tick) {
 		Sample newest = transform(lastSample, input.getSample(tick), kernelSize);
 		lastSample = newest;
 		output.setSample(newest);

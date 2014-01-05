@@ -40,7 +40,7 @@ public class OptimalTradeAdviceAnalysis extends AbstractTickable implements INod
 	}
 
 	@Override
-	public void onNewTick(long tick) {
+	public void update(long tick) {
 		long lastNeededTimestamp = tick + tradePeriod;
 		
 		if(lastFetchedTimestamp <= 0) {

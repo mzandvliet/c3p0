@@ -56,7 +56,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	}
 	
 	@Override
-	public void onNewTick(long tick) {
+	public void update(long tick) {
 		decide(tick);
 	}
 	
