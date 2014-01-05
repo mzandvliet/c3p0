@@ -31,14 +31,14 @@ public class TradeAdviceRunner {
 	
 	// Earliest time 1384079023000l
 	private final static long simulationEndTime = new Date().getTime() - Time.DAYS * 1;
-	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 9;
+	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 1;
 
 	
 	private final static long interpolationTime = 60 * Time.SECONDS;
-	private final static long timestep = 20 * Time.SECONDS;
+	private final static long timestep = 60 * Time.SECONDS;
 	
 	
-	private final static long graphInterval = 20 * Time.SECONDS;
+	private final static long graphInterval = 60 * Time.SECONDS;
 	
 	//================================================================================
     // Main

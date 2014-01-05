@@ -53,6 +53,11 @@ public class OptimalTradeAdviceAnalysis extends AbstractTickable implements INod
 		// Fetch missing data
 		while(lastNeededTimestamp > lastFetchedTimestamp) {
 			Sample sample = priceSignal.getSample(lastFetchedTimestamp + this.getTimestep());
+			
+			if(lastFetchedTimestamp == sample.timestamp) {
+				System.out.println("Breaking on " + lastFetchedTimestamp);
+				break;
+			}
 			priceHistory.add(sample);
 			lastFetchedTimestamp = sample.timestamp;
 		} 
@@ -91,6 +96,10 @@ public class OptimalTradeAdviceAnalysis extends AbstractTickable implements INod
 	}
 	
 	public static double calculateTradeAdvice(LinkedList<Sample> priceHistory) {
+		if(priceHistory.size() < 2) {
+			return 0;
+		}
+		
 		Sample first = priceHistory.getFirst();
 		Sample last = priceHistory.getLast();
 		
