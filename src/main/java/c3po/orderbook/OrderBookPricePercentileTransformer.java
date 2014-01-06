@@ -77,7 +77,7 @@ public class OrderBookPricePercentileTransformer extends AbstractEventSource<Ord
 	 *  High percentiles should map to orders close to LAST, low percentiles to orders far away from LAST.
 	 */
 	
-	private static List<OrderPercentile> calculateBidPercentiles(final List<Order> orders, final double minPrice, final double maxPrice, double[] percentiles) {
+	private static List<OrderPercentile> calculateBidPercentiles(final List<Order> orders, final double lowestPrice, final double highestPrice, double[] percentiles) {
 		final List<OrderPercentile> percentileValues = new ArrayList<OrderPercentile>();
 		
 		for (int i = 0; i < percentiles.length; i++) {
@@ -91,14 +91,15 @@ public class OrderBookPricePercentileTransformer extends AbstractEventSource<Ord
 			Order order = orders.get(i);
 			
 			OrderPercentile orderPercentile = percentileValues.get(percentileIndex);
-			double percentilePriceThreshold = maxPrice * (orderPercentile.percentile / 100d);
+			double percentilePriceThreshold = highestPrice * (orderPercentile.percentile / 100d);
 			
 			aggregatedVolume += order.volume;
 			
 			if (order.price < percentilePriceThreshold) {
 				orderPercentile.price = percentilePriceThreshold;
 				orderPercentile.volume = aggregatedVolume;
-				LOGGER.debug(orderPercentile.percentile + ", " + aggregatedVolume);
+				
+				LOGGER.debug(orderPercentile.percentile + ", " + order.price + ", "+ aggregatedVolume);
 				
 				aggregatedVolume = 0d;
 				percentileIndex++;
@@ -111,7 +112,7 @@ public class OrderBookPricePercentileTransformer extends AbstractEventSource<Ord
 		return percentileValues;
 	}
 	
-	private static List<OrderPercentile> calculateAskPercentiles(final List<Order> orders, final double minPrice, final double maxPrice, double[] percentiles) {
+	private static List<OrderPercentile> calculateAskPercentiles(final List<Order> orders, final double lowestPrice, final double highestPrice, double[] percentiles) {
 		final List<OrderPercentile> percentileValues = new ArrayList<OrderPercentile>();
 		
 		for (int i = 0; i < percentiles.length; i++) {
@@ -125,14 +126,15 @@ public class OrderBookPricePercentileTransformer extends AbstractEventSource<Ord
 			Order order = orders.get(i);
 			
 			OrderPercentile orderPercentile = percentileValues.get(percentileIndex);
-			double percentilePriceThreshold = minPrice + (maxPrice-minPrice) * (orderPercentile.percentile / 100d);
+			double percentilePriceThreshold = lowestPrice + (highestPrice-lowestPrice) * ((100d - orderPercentile.percentile) / 100d);
 			
 			aggregatedVolume += order.volume;
 			
 			if (order.price > percentilePriceThreshold) {
 				orderPercentile.price = percentilePriceThreshold;
 				orderPercentile.volume = aggregatedVolume;
-				LOGGER.debug(orderPercentile.percentile + ", " + aggregatedVolume);
+				
+				LOGGER.debug(orderPercentile.percentile + ", " + order.price + ", "+ aggregatedVolume);
 				
 				aggregatedVolume = 0d;
 				percentileIndex++;

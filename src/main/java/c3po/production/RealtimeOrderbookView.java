@@ -27,9 +27,15 @@ import processing.core.*;
 public class RealtimeOrderbookView extends PApplet {
 	private static final long serialVersionUID = -3659687308548476180L;
 	
+	private static final float PRICE_RANGE = 3000.0f;
+	private static final float VOLUME_RANGE = 10000f;
+	private static final float TIME_RANGE = 1000f; // Minutes
+	
 	private static final float PRICE_SCALE = 1.0f;
 	private static final float VOLUME_SCALE = 0.1f;
-	private static final float TIME_SCALE = 100f;
+	private static final float TIME_SCALE = 50f;
+	
+	private static final long TIME_UNIT = Time.MINUTES;
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(RealtimeBotRunner.class);
 
@@ -99,8 +105,8 @@ public class RealtimeOrderbookView extends PApplet {
 	}
 	
 	private void updateScene() {
-		camera.setPosition(1000f, -300f, 400f);
-		camera.lookAt(new PVector(500f, 0f, -400f));
+		camera.setPosition(900, -600f, 800f);
+		camera.lookAt(new PVector(900f, 100f, -400f));
 		
 		background(104, 118, 212);
 		
@@ -182,16 +188,43 @@ public class RealtimeOrderbookView extends PApplet {
 
 		@Override
 		public void draw() {
+			final float xRange = PRICE_RANGE * PRICE_SCALE;
+			final float yRange = VOLUME_RANGE * VOLUME_SCALE;
+			final float zRange = TIME_RANGE * TIME_SCALE;
+			
+			final float xStep = 10;
+			final float yStep = 100f;
+			
 			app.strokeWeight(2);
 			
 			app.stroke(255, 0, 0);
-			drawLine(new PVector(0f, 0f, 0f), new PVector(1000f, 0f, 0f));
+			drawLine(new PVector(0f, 0f, 0f), new PVector(xRange, 0f, 0f));
 			
 			app.stroke(0, 255, 0);
-			drawLine(new PVector(0f, 0f, 0f), new PVector(0f, -1000f, 0f));
+			drawLine(new PVector(0f, 0f, 0f), new PVector(0f, -yRange, 0f));
 			
 			app.stroke(0, 0, 255);
-			drawLine(new PVector(0f, 0f, 0f), new PVector(0f, 0f, -1000f));
+			drawLine(new PVector(0f, 0f, 0f), new PVector(0f, 0f, -zRange));
+			
+			app.strokeWeight(1);
+			app.stroke(255);
+			
+			final int xNumLines = (int)(xRange / xStep);
+			final int yNumLines = (int)(yRange / yStep);
+			
+			for (int x = 0; x < xNumLines; x++) {
+				drawLine(
+						new PVector(x * xStep, 0f, 0f),
+						new PVector(x * xStep, 0f, -100f)
+				);
+				//app.text("" + x, x * xStep, 20f, 0f);
+			}
+			for (int y = 0; y < yNumLines; y++) {
+				drawLine(
+					new PVector(0f, y * -yStep, 0f),
+					new PVector(0f, y * -yStep, -100f)
+				);
+			}
 		}
 		
 		private void drawLine(PVector a, PVector b) {
@@ -211,13 +244,14 @@ public class RealtimeOrderbookView extends PApplet {
 		@Override
 		public void draw() {
 			long clientTime = new Date().getTime();
-
-			app.fill(200);
+			
 			app.stroke(255);
 			app.strokeWeight(1);
 			
 			if (buffer.size() < 2)
 				return;
+			
+			app.fill(100, 100, 255);
 			
 			for (int i = 0; i < buffer.size()-1; i++) {
 				OrderBookPercentileSnapshot snapshotA = buffer.get(i);
@@ -228,16 +262,32 @@ public class RealtimeOrderbookView extends PApplet {
 				for (int j = 0; j < percentiles.length; j++) {
 					OrderPercentile bidPercentileA = snapshotA.bids.get(j);
 					OrderPercentile bidPercentileB = snapshotB.bids.get(j);
-					OrderPercentile askPercentileA = snapshotA.asks.get(j);
-					OrderPercentile askPercentileB = snapshotB.asks.get(j);
 					
 					PVector bidPercentileVertexA = orderPercentileToVertex(bidPercentileA, clientTime, snapshotA.timestamp);
 					PVector bidPercentileVertexB = orderPercentileToVertex(bidPercentileB, clientTime, snapshotB.timestamp);
-					PVector askPercentileVertexA = orderPercentileToVertex(askPercentileA, clientTime, snapshotA.timestamp);
-					PVector askPercentileVertexB = orderPercentileToVertex(askPercentileB, clientTime, snapshotB.timestamp);
 					
 					app.vertex(bidPercentileVertexA.x, bidPercentileVertexA.y, bidPercentileVertexA.z);
 					app.vertex(bidPercentileVertexB.x, bidPercentileVertexB.y, bidPercentileVertexB.z);
+				}
+				
+				app.endShape();
+			}
+			
+			app.fill(255, 100, 100);
+			
+			for (int i = 0; i < buffer.size()-1; i++) {
+				OrderBookPercentileSnapshot snapshotA = buffer.get(i);
+				OrderBookPercentileSnapshot snapshotB = buffer.get(i+1);
+				
+				app.beginShape(QUAD_STRIP);
+				
+				for (int j = 0; j < percentiles.length; j++) {
+					OrderPercentile askPercentileA = snapshotA.asks.get(j);
+					OrderPercentile askPercentileB = snapshotB.asks.get(j);
+					
+					PVector askPercentileVertexA = orderPercentileToVertex(askPercentileA, clientTime, snapshotA.timestamp);
+					PVector askPercentileVertexB = orderPercentileToVertex(askPercentileB, clientTime, snapshotB.timestamp);
+					
 					app.vertex(askPercentileVertexA.x, askPercentileVertexA.y, askPercentileVertexA.z);
 					app.vertex(askPercentileVertexB.x, askPercentileVertexB.y, askPercentileVertexB.z);
 				}
@@ -247,11 +297,11 @@ public class RealtimeOrderbookView extends PApplet {
 		}
 		
 		private PVector orderPercentileToVertex(OrderPercentile orderPercentile, long currentTime, long snapshotTime) {
-			double delta = (double)(snapshotTime - currentTime) / (double)Time.MINUTES;
+			double deltaTime = (double)(snapshotTime - currentTime) / TIME_UNIT;
 			return new PVector(
 					(float)orderPercentile.price * PRICE_SCALE,
 					(float)orderPercentile.volume * -VOLUME_SCALE,
-					(float)delta * TIME_SCALE
+					(float)deltaTime * TIME_SCALE
 			);
 		}
 	}
