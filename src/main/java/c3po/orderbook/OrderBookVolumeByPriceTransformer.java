@@ -9,13 +9,15 @@ import org.slf4j.LoggerFactory;
 import c3po.events.AbstractEventSource;
 import c3po.events.IEventListener;
 
-public class OrderBookPricePercentileTransformer extends AbstractEventSource<OrderBookPercentileSnapshot> implements IEventListener<OrderBookSample> {
-	private static final Logger LOGGER = LoggerFactory.getLogger(OrderBookPricePercentileTransformer.class);
+public class OrderBookVolumeByPriceTransformer extends AbstractEventSource<OrderBookPercentileSnapshot> implements IEventListener<OrderBookSample> {
+	private static final Logger LOGGER = LoggerFactory.getLogger(OrderBookVolumeByPriceTransformer.class);
 	
 	private final double[] percentiles;
+	private final double priceRange;
 	
-	public OrderBookPricePercentileTransformer(double[] percentiles) {
+	public OrderBookVolumeByPriceTransformer(double[] percentiles, double priceRange) {
 		this.percentiles = percentiles;
+		this.priceRange = priceRange;
 	}
 
 	@Override
@@ -30,17 +32,15 @@ public class OrderBookPricePercentileTransformer extends AbstractEventSource<Ord
 		removeStatisticallyDeviantOrders(bids, 0.95d);
 		removeStatisticallyDeviantOrders(asks, 0.95d);
 		
-		double lowestBid = bids.get(bids.size()-1).price;
 		double highestBid = bids.get(0).price;
 		double lowestAsk = asks.get(0).price;
-		double highestAsk = asks.get(asks.size()-1).price;
 		
 		// Calculate percentiles and format them to signals
 		
-		List<OrderPercentile> bidPercentiles = calculateBidPercentiles(bids, lowestBid, highestBid, percentiles);
-		List<OrderPercentile> askPercentiles = calculateAskPercentiles(asks, lowestAsk, highestAsk, percentiles);
+		List<OrderPercentile> bidPercentiles = calculateBidPercentiles(bids, highestBid - priceRange, highestBid, percentiles);
+		List<OrderPercentile> askPercentiles = calculateAskPercentiles(asks, lowestAsk, lowestAsk + priceRange, percentiles);
 		
-		return new OrderBookPercentileSnapshot(orderbookSample.timestamp, lowestBid, highestBid, lowestAsk, highestAsk, bidPercentiles, askPercentiles);
+		return new OrderBookPercentileSnapshot(orderbookSample.timestamp, bidPercentiles, askPercentiles);
 	}
 	
 	/**
@@ -91,7 +91,7 @@ public class OrderBookPricePercentileTransformer extends AbstractEventSource<Ord
 			Order order = orders.get(i);
 			
 			OrderPercentile orderPercentile = percentileValues.get(percentileIndex);
-			double percentilePriceThreshold = highestPrice * (orderPercentile.percentile / 100d);
+			double percentilePriceThreshold = lowestPrice + (highestPrice - lowestPrice) * (orderPercentile.percentile / 100d);
 			
 			aggregatedVolume += order.volume;
 			
@@ -101,7 +101,7 @@ public class OrderBookPricePercentileTransformer extends AbstractEventSource<Ord
 				
 				LOGGER.debug(orderPercentile.percentile + ", " + order.price + ", "+ aggregatedVolume);
 				
-				aggregatedVolume = 0d;
+				//aggregatedVolume = 0d;
 				percentileIndex++;
 			}
 
@@ -136,7 +136,7 @@ public class OrderBookPricePercentileTransformer extends AbstractEventSource<Ord
 				
 				LOGGER.debug(orderPercentile.percentile + ", " + order.price + ", "+ aggregatedVolume);
 				
-				aggregatedVolume = 0d;
+				//aggregatedVolume = 0d;
 				percentileIndex++;
 			}
 

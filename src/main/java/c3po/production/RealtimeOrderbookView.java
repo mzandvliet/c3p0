@@ -18,7 +18,7 @@ import c3po.events.IEventListener;
 import c3po.orderbook.IOrderBookSource;
 import c3po.orderbook.OrderBookPercentileSnapshot;
 import c3po.orderbook.OrderBookPercentileTransformer;
-import c3po.orderbook.OrderBookPricePercentileTransformer;
+import c3po.orderbook.OrderBookVolumeByPriceTransformer;
 import c3po.orderbook.OrderBookVolumePercentileTransformer;
 import c3po.orderbook.OrderPercentile;
 import c3po.utils.Time;
@@ -32,7 +32,7 @@ public class RealtimeOrderbookView extends PApplet {
 	private static final float TIME_RANGE = 1000f; // Minutes
 	
 	private static final float PRICE_SCALE = 1.0f;
-	private static final float VOLUME_SCALE = 0.1f;
+	private static final float VOLUME_SCALE = 0.01f;
 	private static final float TIME_SCALE = 50f;
 	
 	private static final long TIME_UNIT = Time.MINUTES;
@@ -64,7 +64,7 @@ public class RealtimeOrderbookView extends PApplet {
 	}
 	
 	private BitstampOrderBookJsonEventSource orderBook;
-	private OrderBookPricePercentileTransformer percentileTransformer;
+	private OrderBookVolumeByPriceTransformer percentileTransformer;
 	private OrderBookPercentileBuffer percentileBuffer;
 	
 	private PObjectSystem objectSystem;
@@ -78,7 +78,7 @@ public class RealtimeOrderbookView extends PApplet {
 		// Signal chain, event based
 		
 		orderBook = new BitstampOrderBookJsonEventSource(timestep, jsonUrl);
-		percentileTransformer = new OrderBookPricePercentileTransformer(percentiles);
+		percentileTransformer = new OrderBookVolumeByPriceTransformer(percentiles, 200d);
 		percentileBuffer =  new OrderBookPercentileBuffer((int)(timespan / timestep));
 		
 		orderBook.addListener(percentileTransformer);
@@ -105,7 +105,7 @@ public class RealtimeOrderbookView extends PApplet {
 	}
 	
 	private void updateScene() {
-		camera.setPosition(900, -600f, 800f);
+		camera.setPosition(900, -100f, 100f);
 		camera.lookAt(new PVector(900f, 100f, -400f));
 		
 		background(104, 118, 212);
@@ -245,12 +245,12 @@ public class RealtimeOrderbookView extends PApplet {
 		public void draw() {
 			long clientTime = new Date().getTime();
 			
-			app.stroke(255);
 			app.strokeWeight(1);
 			
 			if (buffer.size() < 2)
 				return;
 			
+			app.stroke(175, 175, 255);
 			app.fill(100, 100, 255);
 			
 			for (int i = 0; i < buffer.size()-1; i++) {
@@ -273,6 +273,7 @@ public class RealtimeOrderbookView extends PApplet {
 				app.endShape();
 			}
 			
+			app.stroke(255, 175, 175);
 			app.fill(255, 100, 100);
 			
 			for (int i = 0; i < buffer.size()-1; i++) {
