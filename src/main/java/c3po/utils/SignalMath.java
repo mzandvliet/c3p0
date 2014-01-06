@@ -6,6 +6,10 @@ import java.util.List;
 import c3po.Sample;
 
 public class SignalMath {
+	public static float interpolate(float low, float high, float lerp) {
+		return low + (low-high) * lerp;
+	}
+	
 	public static double interpolate(double low, double high, double lerp) {
 		return low + (low-high) * lerp;
 	}
@@ -65,6 +69,10 @@ public class SignalMath {
 	}
 	
 	public static int clamp(int value, int min, int max) {
+		return Math.max(min, Math.min(max, value));
+	}
+	
+	public static float clamp(float value, float min, float max) {
 		return Math.max(min, Math.min(max, value));
 	}
 	

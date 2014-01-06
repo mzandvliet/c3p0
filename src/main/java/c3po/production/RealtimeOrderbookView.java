@@ -21,11 +21,13 @@ import c3po.orderbook.OrderBookPercentileTransformer;
 import c3po.orderbook.OrderBookVolumeByPriceTransformer;
 import c3po.orderbook.OrderBookVolumePercentileTransformer;
 import c3po.orderbook.OrderPercentile;
+import c3po.utils.SignalMath;
 import c3po.utils.Time;
 import processing.core.*;
 
 public class RealtimeOrderbookView extends PApplet {
 	private static final long serialVersionUID = -3659687308548476180L;
+	private static final Logger LOGGER = LoggerFactory.getLogger(RealtimeBotRunner.class);
 	
 	private static final float PRICE_RANGE = 3000.0f;
 	private static final float VOLUME_RANGE = 10000f;
@@ -33,11 +35,9 @@ public class RealtimeOrderbookView extends PApplet {
 	
 	private static final float PRICE_SCALE = 1.0f;
 	private static final float VOLUME_SCALE = 0.01f;
-	private static final float TIME_SCALE = 50f;
+	private static final float TIME_SCALE = 5f;
 	
 	private static final long TIME_UNIT = Time.MINUTES;
-	
-	private static final Logger LOGGER = LoggerFactory.getLogger(RealtimeBotRunner.class);
 
 	private final static String jsonUrl = "https://www.bitstamp.net/api/order_book/";
 	private final static long timestep = 10 * Time.SECONDS;
@@ -104,11 +104,36 @@ public class RealtimeOrderbookView extends PApplet {
 		updateScene();
 	}
 	
+	private float lastMouseX;
+	private float lastMouseY;
+	
+	private float cameraX = 900f;
+	private float cameraY = -100f;
+	private float cameraTargetX = cameraX;
+	private float cameraTargetY = cameraY;
+	
 	private void updateScene() {
-		camera.setPosition(900, -100f, 100f);
-		camera.lookAt(new PVector(900f, 100f, -400f));
+		PVector orbitPoint = new PVector(900f, -50f, -200f);
 		
-		background(104, 118, 212);
+		if (mousePressed) {
+			cameraTargetX = cameraX + (mouseX - lastMouseX) * -1f;
+			cameraTargetY = cameraY + (mouseY - lastMouseY) * -1f;
+			cameraTargetX = SignalMath.clamp(cameraTargetX, 0f, 1200f);
+			cameraTargetY = SignalMath.clamp(cameraTargetY, -300f, 0f);
+		}
+		
+		cameraX = cameraTargetX; //SignalMath.interpolate(cameraX, cameraTargetX, 0.33f);
+		cameraY = cameraTargetY;//SignalMath.interpolate(cameraY, cameraTargetY, 0.33f);
+		
+		lastMouseX = mouseX;
+		lastMouseY = mouseY;
+		
+		PVector cameraPosition = new PVector(cameraX, cameraY, 150f);
+		
+		camera.setPosition(cameraPosition);
+		camera.lookAt(orbitPoint);
+		
+		background(240, 240, 255);
 		
 		objectSystem.update();
 	}
@@ -160,6 +185,10 @@ public class RealtimeOrderbookView extends PApplet {
 			position.x = x;
 			position.y = y;
 			position.z = z;
+		}
+		
+		public void setPosition(PVector position) {
+			this.position = position;
 		}
 		
 		public void translate(float x, float y, float z) {
@@ -250,12 +279,16 @@ public class RealtimeOrderbookView extends PApplet {
 			if (buffer.size() < 2)
 				return;
 			
-			app.stroke(175, 175, 255);
+			app.stroke(150, 150, 255);
 			app.fill(100, 100, 255);
 			
 			for (int i = 0; i < buffer.size()-1; i++) {
 				OrderBookPercentileSnapshot snapshotA = buffer.get(i);
 				OrderBookPercentileSnapshot snapshotB = buffer.get(i+1);
+				double priceOffsetA = 0f; //-snapshotA.highestBid;
+				double priceOffsetB = 0f; //-snapshotB.highestBid;
+				double deltaTimeA = (double)(snapshotA.timestamp - clientTime) / TIME_UNIT;
+				double deltaTimeB = (double)(snapshotB.timestamp - clientTime) / TIME_UNIT;
 				
 				app.beginShape(QUAD_STRIP);
 				
@@ -263,8 +296,8 @@ public class RealtimeOrderbookView extends PApplet {
 					OrderPercentile bidPercentileA = snapshotA.bids.get(j);
 					OrderPercentile bidPercentileB = snapshotB.bids.get(j);
 					
-					PVector bidPercentileVertexA = orderPercentileToVertex(bidPercentileA, clientTime, snapshotA.timestamp);
-					PVector bidPercentileVertexB = orderPercentileToVertex(bidPercentileB, clientTime, snapshotB.timestamp);
+					PVector bidPercentileVertexA = orderPercentileToVertex(bidPercentileA, priceOffsetA, deltaTimeA);
+					PVector bidPercentileVertexB = orderPercentileToVertex(bidPercentileB, priceOffsetB, deltaTimeB);
 					
 					app.vertex(bidPercentileVertexA.x, bidPercentileVertexA.y, bidPercentileVertexA.z);
 					app.vertex(bidPercentileVertexB.x, bidPercentileVertexB.y, bidPercentileVertexB.z);
@@ -273,12 +306,16 @@ public class RealtimeOrderbookView extends PApplet {
 				app.endShape();
 			}
 			
-			app.stroke(255, 175, 175);
+			app.stroke(255, 150, 150);
 			app.fill(255, 100, 100);
 			
 			for (int i = 0; i < buffer.size()-1; i++) {
 				OrderBookPercentileSnapshot snapshotA = buffer.get(i);
 				OrderBookPercentileSnapshot snapshotB = buffer.get(i+1);
+				double priceOffsetA = 0f; //-snapshotA.lowestAsk;
+				double priceOffsetB = 0f; //-snapshotB.lowestAsk;
+				double deltaTimeA = (double)(snapshotA.timestamp - clientTime) / TIME_UNIT;
+				double deltaTimeB = (double)(snapshotB.timestamp - clientTime) / TIME_UNIT;
 				
 				app.beginShape(QUAD_STRIP);
 				
@@ -286,8 +323,8 @@ public class RealtimeOrderbookView extends PApplet {
 					OrderPercentile askPercentileA = snapshotA.asks.get(j);
 					OrderPercentile askPercentileB = snapshotB.asks.get(j);
 					
-					PVector askPercentileVertexA = orderPercentileToVertex(askPercentileA, clientTime, snapshotA.timestamp);
-					PVector askPercentileVertexB = orderPercentileToVertex(askPercentileB, clientTime, snapshotB.timestamp);
+					PVector askPercentileVertexA = orderPercentileToVertex(askPercentileA, priceOffsetA, deltaTimeA);
+					PVector askPercentileVertexB = orderPercentileToVertex(askPercentileB, priceOffsetB, deltaTimeB);
 					
 					app.vertex(askPercentileVertexA.x, askPercentileVertexA.y, askPercentileVertexA.z);
 					app.vertex(askPercentileVertexB.x, askPercentileVertexB.y, askPercentileVertexB.z);
@@ -297,10 +334,9 @@ public class RealtimeOrderbookView extends PApplet {
 			}
 		}
 		
-		private PVector orderPercentileToVertex(OrderPercentile orderPercentile, long currentTime, long snapshotTime) {
-			double deltaTime = (double)(snapshotTime - currentTime) / TIME_UNIT;
+		private PVector orderPercentileToVertex(OrderPercentile orderPercentile, double priceOffset, double deltaTime) {
 			return new PVector(
-					(float)orderPercentile.price * PRICE_SCALE,
+					(float)(orderPercentile.price + priceOffset) * PRICE_SCALE,
 					(float)orderPercentile.volume * -VOLUME_SCALE,
 					(float)deltaTime * TIME_SCALE
 			);

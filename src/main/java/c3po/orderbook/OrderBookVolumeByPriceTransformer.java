@@ -40,7 +40,7 @@ public class OrderBookVolumeByPriceTransformer extends AbstractEventSource<Order
 		List<OrderPercentile> bidPercentiles = calculateBidPercentiles(bids, highestBid - priceRange, highestBid, percentiles);
 		List<OrderPercentile> askPercentiles = calculateAskPercentiles(asks, lowestAsk, lowestAsk + priceRange, percentiles);
 		
-		return new OrderBookPercentileSnapshot(orderbookSample.timestamp, bidPercentiles, askPercentiles);
+		return new OrderBookPercentileSnapshot(orderbookSample.timestamp, highestBid, lowestAsk, bidPercentiles, askPercentiles);
 	}
 	
 	/**
