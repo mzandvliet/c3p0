@@ -26,15 +26,15 @@ public class SimpleMacdTrainer {
 	
 	// First timestamp in database: 1384079023000l
 	private final static long simulationEndTime = new Date().getTime();
-	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 21;
+	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 6;
 	private final static long simulationLength = Time.DAYS * 3;
 	
 	// Timing
 	private final static long interpolationTime = 60 * Time.SECONDS;
-	private final static long timestep = 20 * Time.SECONDS;
+	private final static long timestep = 60 * Time.SECONDS;
 
 	// Simulation and fitness test
-	private final static int numEpochs = 10;
+	private final static int numEpochs = 50;
 	private final static int numSimulationsPerEpoch = 10;
 	private final static int numBots = 600;
 	
@@ -92,8 +92,8 @@ public class SimpleMacdTrainer {
 		
 		final ITradeFloor tradeFloor =  new BitstampSimulationTradeFloor(
 				tickerNode.getOutputLast(),
-				tickerNode.getOutputBid(),
-				tickerNode.getOutputAsk()
+				orderbookNode.getOutputBidVolumePrice(0),
+				orderbookNode.getOutputAskVolumePrice(0)
 		);
 		
 		ISimulationClock botClock = new SimulationClock(timestep, interpolationTime);
@@ -103,7 +103,7 @@ public class SimpleMacdTrainer {
 	    List<INonRealtimeSource> sources = new LinkedList<INonRealtimeSource>();
 	    sources.add(tickerNode);
 	    sources.add(orderbookNode);
-		SimulationContext simContext = new SimulationContext(sources, botClock, tickerNode.getOutputLast(), tickerNode.getOutputVolume(), tradeFloor, wallet);
+		SimulationContext simContext = new SimulationContext(sources, botClock, orderbookNode.getOutputBidPercentile(0), tickerNode.getOutputVolume(), tradeFloor, wallet);
 		
 		
 		// Create and run the trainer on the context
@@ -208,6 +208,6 @@ public class SimpleMacdTrainer {
 		tradeLogger.writeLog();
 		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Wallet: " + simContext.getTradeFloor().getWalletValueInUsd(bot.getWallet()));
 		LOGGER.debug("Ran winner: " + winningConfig.toString());
-		LOGGER.debug(winningConfig.toJSON());
+		LOGGER.debug(winningConfig.toEscapedJSON());
 	}
 }

@@ -1,22 +1,16 @@
 package c3po.composite;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import c3po.*;
 import c3po.TradeAction.TradeActionType;
-import c3po.macd.*;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import c3po.macd.MacdBotConfig;
 import c3po.wallet.IWallet;
-import c3po.ISignal;
 import c3po.ITradeFloor;
 import c3po.ITradeListener;
-import c3po.Sample;
 import c3po.TradeAction;
 
 public class CompositeBot extends AbstractTickable implements IBot<CompositeBotConfig>, ITradeActionSource {

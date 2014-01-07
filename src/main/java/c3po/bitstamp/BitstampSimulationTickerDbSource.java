@@ -80,6 +80,7 @@ public class BitstampSimulationTickerDbSource extends BitstampTickerSource imple
 	public void setSimulationRange(long startTime, long endTime) {
 		this.simulationStartTime = startTime - interpolationTime;
 		this.simulationEndTime = endTime;
-		reset();
+		super.reset();
+		source.resetToTimestamp(startTime);
 	}
 }

@@ -1,5 +1,7 @@
 package c3po.macd;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 import com.google.gson.Gson;
 
 import c3po.IBotConfig;
@@ -39,6 +41,10 @@ public class MacdBotConfig implements IBotConfig {
 	public String toJSON() {
 		Gson gson = new Gson();
 		return gson.toJson(this);
+	}
+	
+	public String toEscapedJSON() {
+		return StringEscapeUtils.escapeJava(toJSON());
 	}
 
 	@Override

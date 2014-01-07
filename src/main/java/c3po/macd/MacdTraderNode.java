@@ -101,6 +101,10 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 			double usdToSell = wallet.getUsdAvailable();
 			TradeAction buyAction = new TradeAction(TradeActionType.BUY, tick, usdToSell);
 			tradeFloor.buy(wallet, buyAction);
+			
+			if (verbose)
+				LOGGER.debug("Opening at " + new Date(tick));
+	
 
 			double currentAveragePrice = averagePrice.getOutput(0).getSample(tick).value;
 			this.lastBuyPrice = currentAveragePrice;

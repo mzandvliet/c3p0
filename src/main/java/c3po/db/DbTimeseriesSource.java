@@ -1,6 +1,7 @@
 package c3po.db;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class DbTimeseriesSource {
 	private String tableName;
 	private List<String> columns;
 	
-	private LinkedList<ServerSnapshot> data = new LinkedList<ServerSnapshot>();
+	private List<ServerSnapshot> data = new ArrayList<ServerSnapshot>();
 	private int lastDataIndex = 0;
 	
 	/**
@@ -136,6 +137,19 @@ public class DbTimeseriesSource {
 	
 	public void reset() {
 		lastDataIndex = 0;
+	}
+	
+	public void resetToTimestamp(long tick) {
+		int index = 0;
+		for(ServerSnapshot snapshot : data) {
+			if(snapshot.timestamp < tick) {
+				index++;
+			} else {
+				break;
+			}
+		}
+		
+		lastDataIndex = index;
 	}
 
 	public boolean open() {

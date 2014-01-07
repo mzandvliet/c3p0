@@ -1,25 +1,17 @@
 package c3po.production;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import c3po.AbstractTickable;
 import c3po.CircularArrayList;
 import c3po.bitstamp.BitstampOrderBookJsonEventSource;
-import c3po.bitstamp.BitstampOrderBookJsonSource;
-import c3po.bitstamp.BitstampTickerJsonSource;
-import c3po.bitstamp.BitstampTickerSource;
 import c3po.events.IEventListener;
-import c3po.orderbook.IOrderBookSource;
 import c3po.orderbook.OrderBookPercentileSnapshot;
-import c3po.orderbook.OrderBookPercentileTransformer;
 import c3po.orderbook.OrderBookVolumeByPriceTransformer;
-import c3po.orderbook.OrderBookVolumePercentileTransformer;
 import c3po.orderbook.OrderPercentile;
 import c3po.utils.SignalMath;
 import c3po.utils.Time;

@@ -49,7 +49,6 @@ public class CompositeBotRunner {
 	
 	private final static long graphInterval = 20 * Time.SECONDS;
 	
-	private final static String botConfig = "{\"timestep\":60000,\"buyAnalysisConfig\":{\"fastPeriod\":2220000,\"slowPeriod\":27720000,\"signalPeriod\":16680000},\"sellAnalysisConfig\":{\"fastPeriod\":8160000,\"slowPeriod\":8880000,\"signalPeriod\":17400000},\"volumeAnalysisConfig\":{\"fastPeriod\":1800000,\"slowPeriod\":3780000,\"signalPeriod\":22800000},\"traderConfig\":{\"minBuyDiffThreshold\":6.223,\"minSellDiffThreshold\":-17.1638,\"buyVolumeThreshold\":0.3376,\"lossCutThreshold\":0.988042,\"sellThresholdRelaxationFactor\":13.83,\"sellPricePeriod\":5280000}}";
 	
 	//================================================================================
     // Main
@@ -89,16 +88,17 @@ public class CompositeBotRunner {
 		double walletStartBtc = walletStartBtcInUsd / tickerNode.getOutputLast().getSample(simulationStartTime).value;
 		final IWallet wallet = new Wallet(walletStartUsd, walletStartBtc, 0d, 0d);
 		
-		MacdBotConfig config = MacdBotConfig.fromJSON(botConfig);
+		CompositeBotConfig config = new CompositeBotConfig(timestep, 5, -5);
 		
 		// Components (components could be individually trained)
+		MacdAnalysisNode macdPriceVolume10BTCBid = new MacdAnalysisNode(timestep, orderbookNode.getOutputBidPercentile(99), new MacdAnalysisConfig(10, 20, 30));
+		MacdAnalysisNode macdPriceVolume10BTCAsk = new MacdAnalysisNode(timestep, orderbookNode.getOutputBidPercentile(99), new MacdAnalysisConfig(10, 20, 30));
 		MacdAnalysisNode macdP99Bid = new MacdAnalysisNode(timestep, orderbookNode.getOutputBidPercentile(99), new MacdAnalysisConfig(10, 20, 30));
-		MacdAnalysisNode macdP98Bid = new MacdAnalysisNode(timestep, orderbookNode.getOutputBidPercentile(99), new MacdAnalysisConfig(10, 20, 30));
-		MacdAnalysisNode macdP97Bid = new MacdAnalysisNode(timestep, orderbookNode.getOutputBidPercentile(99), new MacdAnalysisConfig(10, 20, 30));
+		MacdAnalysisNode macdP99Ask = new MacdAnalysisNode(timestep, orderbookNode.getOutputBidPercentile(99), new MacdAnalysisConfig(10, 20, 30));
 		
 		// Convert Components to TradeAdvice Components
-		MacdAnalysisToTradeAdviceNode macdP99BidAdvice = new MacdAnalysisToTradeAdviceNode(timestep, macdP99Bid.getOutputDifference(), 1d, 1d);
-		MacdAnalysisToTradeAdviceNode macdP98BidAdvice = new MacdAnalysisToTradeAdviceNode(timestep, macdP99Bid.getOutputDifference(), 1d, 1d);
+		MacdAnalysisToTradeAdviceNode macdP99BidAdvice = new MacdAnalysisToTradeAdviceNode(timestep, macdPriceVolume10BTCBid.getOutputDifference(), 1d, 1d);
+		MacdAnalysisToTradeAdviceNode macdP98BidAdvice = new MacdAnalysisToTradeAdviceNode(timestep, macdPriceVolume10BTCAsk.getOutputDifference(), 1d, 1d);
 		MacdAnalysisToTradeAdviceNode macdP97BidAdvice = new MacdAnalysisToTradeAdviceNode(timestep, macdP99Bid.getOutputDifference(), 1d, 1d);
 		
 		// How much the bot is listening to the seperate advices
@@ -109,11 +109,7 @@ public class CompositeBotRunner {
 
 		// Create bot
 		int botId = Math.abs(new Random().nextInt());
-		CompositeBot bot = new CompositeBot(botId, config, tickerNode.getOutputLast(), tickerNode.getOutputVolume(), wallet, tradeFloor);
-		bot.getTraderNode().setVerbose(true);
-		LOGGER.debug(bot.getConfig().toJSON());
-		
-		final AggregateNode p99Last = new AggregateNode(timestep, orderbookNode.getOutputBidPercentile(0), orderbookNode.getOutputAskPercentile(0)); 
+		CompositeBot bot = new CompositeBot(botId, config, weightedTradeAdviceSignals, wallet, tradeFloor);
 		
 		// Create loggers
 		
@@ -127,7 +123,6 @@ public class CompositeBotRunner {
 		
 		GraphingNode priceChart = new GraphingNode(graphInterval, "Price",
 				tickerNode.getOutputLast(),
-				p99Last.getOutput(0),
 				orderbookNode.getOutputBidPercentile(0),
 				orderbookNode.getOutputAskPercentile(0)
 				);
@@ -137,18 +132,12 @@ public class CompositeBotRunner {
 				tickerNode.getOutputVolume()
 				);
 		
-		GraphingNode analysisGrapher = new GraphingNode(graphInterval, "Analysis",
-				bot.getBuyAnalysisNode().getOutputDifference(),
-				bot.getSellAnalysisNode().getOutputDifference());
-		bot.addTradeListener(analysisGrapher);
-		
 		// Create a clock
 		
 		ISimulationClock botClock = new SimulationClock(timestep, interpolationTime);
 		botClock.addListener(bot);
 		botClock.addListener(priceChart);
 		botClock.addListener(volumeChart);
-		botClock.addListener(analysisGrapher);
 		
 		// Run the program
 
@@ -162,15 +151,8 @@ public class CompositeBotRunner {
 		priceChart.pack();
 		priceChart.setVisible(true);
 		
-		volumeChart.pack();
-		volumeChart.setVisible(true);
-		
-		analysisGrapher.pack();
-		analysisGrapher.setVisible(true);
-		
 		tradeLogger.writeLog();
 		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Wallet: " + tradeFloor.getWalletValueInUsd(wallet));
 		LOGGER.debug(bot.getConfig().toString());
-		LOGGER.debug(bot.getConfig().toJSON());
 	}
 }

@@ -32,16 +32,16 @@ public class MacdBotRunner {
 	
 	// Earliest time 1384079023000l
 	private final static long simulationEndTime = new Date().getTime();
-	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 10;
+	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 6;
 
 	
 	private final static long interpolationTime = 60 * Time.SECONDS;
-	private final static long timestep = 20 * Time.SECONDS;
+	private final static long timestep = 60 * Time.SECONDS;
 	
 	private final static double walletStartUsd = 100.0d;
 	private final static double walletStartBtcInUsd = 0.0d;
 	
-	private final static long graphInterval = 20 * Time.SECONDS;
+	private final static long graphInterval = 120 * Time.SECONDS;
 	
 	private final static String botConfig = "{\"timestep\":60000,\"buyAnalysisConfig\":{\"fastPeriod\":2220000,\"slowPeriod\":27720000,\"signalPeriod\":16680000},\"sellAnalysisConfig\":{\"fastPeriod\":8160000,\"slowPeriod\":8880000,\"signalPeriod\":17400000},\"volumeAnalysisConfig\":{\"fastPeriod\":1800000,\"slowPeriod\":3780000,\"signalPeriod\":22800000},\"traderConfig\":{\"minBuyDiffThreshold\":6.223,\"minSellDiffThreshold\":-17.1638,\"buyVolumeThreshold\":0.3376,\"lossCutThreshold\":0.988042,\"sellThresholdRelaxationFactor\":13.83,\"sellPricePeriod\":5280000}}";
 	
@@ -89,6 +89,7 @@ public class MacdBotRunner {
 		MacdBot bot = new MacdBot(botId, config, tickerNode.getOutputLast(), tickerNode.getOutputVolume(), wallet, tradeFloor);
 		bot.getTraderNode().setVerbose(true);
 		LOGGER.debug(bot.getConfig().toJSON());
+		LOGGER.debug(bot.getConfig().toEscapedJSON());
 		
 		final AggregateNode p99Last = new AggregateNode(timestep, orderbookNode.getOutputBidPercentile(0), orderbookNode.getOutputAskPercentile(0)); 
 		

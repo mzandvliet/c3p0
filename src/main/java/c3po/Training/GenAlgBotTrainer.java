@@ -72,6 +72,8 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 			HashMap<TBotConfig, PerformanceResult> results = createResults(configs);
 			
 			for (int j = 0; j < config.numSimulationsPerEpoch; j++) {
+				
+				try {
 				// Create the population and loggers
 				List<IBot<TBotConfig>> population = createPopulationFromConfigs(configs, botFactory);
 				HashMap<IBot<TBotConfig>, DebugTradeLogger> loggers = createLoggers(population);
@@ -97,6 +99,10 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 				}
 				
 				LOGGER.debug("Finished run " + j );
+				
+				} catch(IllegalStateException e) {
+					LOGGER.error("Could not run " + j, e);
+				}
 			}
 			
 			// Average the results for this epoch's simulations
