@@ -31,7 +31,7 @@ public class MacdAnalysisNode extends AbstractTickable implements INode {
 	
 	private final MacdAnalysisConfig config;
 	
-	public MacdAnalysisNode(long timestep, ISignal price, ISignal volume, MacdAnalysisConfig config) {
+	public MacdAnalysisNode(long timestep, ISignal price, MacdAnalysisConfig config) {
 		super(timestep);
 		this.config = config;
 		this.signals = new OutputSignal[6];

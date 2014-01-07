@@ -47,9 +47,9 @@ public class MacdBot extends AbstractTickable implements IBot<MacdBotConfig> {
 		
 		// Define the signal tree		
 		
-		buyAnalysisNode = new MacdAnalysisNode(config.timestep, price, volume, config.buyAnalysisConfig);
-		sellAnalysisNode = new MacdAnalysisNode(config.timestep, price, volume, config.sellAnalysisConfig);
-		volumeAnalysisNode = new MacdAnalysisNode(config.timestep, volume, volume, config.volumeAnalysisConfig);
+		buyAnalysisNode = new MacdAnalysisNode(config.timestep, price, config.buyAnalysisConfig);
+		sellAnalysisNode = new MacdAnalysisNode(config.timestep, price, config.sellAnalysisConfig);
+		volumeAnalysisNode = new MacdAnalysisNode(config.timestep, volume, config.volumeAnalysisConfig);
 		
 		long startDelayInTicks = Math.max(config.buyAnalysisConfig.max() / config.timestep, config.sellAnalysisConfig.max() / config.timestep);
 		traderNode = new MacdTraderNode(config.timestep, price, buyAnalysisNode, sellAnalysisNode, volumeAnalysisNode, wallet, tradeFloor, config.traderConfig, startDelayInTicks);
