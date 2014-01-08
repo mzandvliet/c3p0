@@ -11,19 +11,17 @@ import c3po.wallet.IWallet;
  */
 
 public interface ITradeFloor extends ITradeActionSource {
-	public double toBtc(double usd);
-	public double toUsd(double btc);
+	public double toBtc(long tick, double usd);
+	public double toUsd(long tick, double btc);
 
-	public OpenOrder buy(IWallet wallet, TradeAction action);
-	public OpenOrder sell(IWallet wallet, TradeAction action);
+	public OpenOrder buy(long tick, IWallet wallet, TradeAction action);
+	public OpenOrder sell(long tick, IWallet wallet, TradeAction action);
 	
-	double getWalletValueInUsd(IWallet wallet);
-	void updateWallet(IWallet wallet);
+	public void updateWallet(IWallet wallet);
 	
-	public double peekBid() throws Exception;
+	public double getWalletValueInUsd(long tick, IWallet wallet);
 	
-	/**
-	 * This method readjusts open orders to match the current prices
+	/* This method readjusts open orders to match the current prices
 	 * in an attempt to fill them as soon as possible.
 	 */
 	public void adjustOrders();

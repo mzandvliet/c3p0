@@ -40,7 +40,7 @@ public class BitstampTickerDbSource extends BitstampTickerSource {
 		source.setLatestSampleTimestamp(newestTimeInBuffer);
 		
 		// See if there are new samples from after that moment
-		source.getNewSamples(serverTimestamp);
+		source.getNewSamplesUntil(serverTimestamp);
 	}
 	
 	

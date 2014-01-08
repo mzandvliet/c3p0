@@ -152,7 +152,7 @@ public class CompositeBotRunner {
 		priceChart.setVisible(true);
 		
 		tradeLogger.writeLog();
-		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Wallet: " + tradeFloor.getWalletValueInUsd(wallet));
+		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Wallet: " + tradeFloor.getWalletValueInUsd(new Date().getTime(), wallet));
 		LOGGER.debug(bot.getConfig().toString());
 	}
 }

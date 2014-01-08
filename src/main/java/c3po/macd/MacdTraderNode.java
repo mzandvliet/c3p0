@@ -69,22 +69,15 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		averagePrice.tick(tick);
 		
 		if (numSkippedTicks > startDelay) {
-			Sample buyCurrentDiff = buyAnalysis.getOutputDifference().getSample(tick);
-			Sample sellCurrentDiff = sellAnalysis.getOutputDifference().getSample(tick);
-			
 			boolean hasEnoughUsd = wallet.getUsdAvailable() > minDollars;
-			boolean hasEnoughBtc = wallet.getBtcAvailable() > tradeFloor.toBtc(minDollars);	
-			
-//			if(verbose) {
-//				LOGGER.debug(String.format("Decide: hasEnoughUsd: %b, isAfterBuyBackoff: %b, hasEnoughBtc: %b, isAfterSellBackoff: %b", hasEnoughUsd, isAfterBuyBackoff, hasEnoughBtc, isAfterSellBackoff));
-//			}
+			boolean hasEnoughBtc = wallet.getBtcAvailable() > tradeFloor.toBtc(tick, minDollars);	
 			
 			if(hasEnoughUsd) {
-				tryToOpenPosition(tick, buyCurrentDiff);
+				tryToOpenPosition(tick);
 			}
 			
 			if(hasEnoughBtc) {
-				tryToClosePosition(tick, sellCurrentDiff);
+				tryToClosePosition(tick);
 				tryToCutPosition(tick);
 			}			
 		}
@@ -93,14 +86,15 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		}
 	}
 	
-	private void tryToOpenPosition(long tick, Sample currentDiff) {
-		boolean buyThresholdReached = currentDiff.value > config.minBuyDiffThreshold;
+	private void tryToOpenPosition(long tick) {
+		Sample buyCurrentDiff = buyAnalysis.getOutputDifference().getSample(tick);
+		boolean buyThresholdReached = buyCurrentDiff.value > config.minBuyDiffThreshold;
 		boolean volumeThresholdReached = volumeAnalysis.getOutputDifference().getSample(tick).value > config.buyVolumeThreshold;
 
 		if (buyThresholdReached && volumeThresholdReached) {			
 			double usdToSell = wallet.getUsdAvailable();
 			TradeAction buyAction = new TradeAction(TradeActionType.BUY, tick, usdToSell);
-			tradeFloor.buy(wallet, buyAction);
+			tradeFloor.buy(tick, wallet, buyAction);
 			
 			if (verbose)
 				LOGGER.debug("Opening at " + new Date(tick));
@@ -114,21 +108,19 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		}
 	}
 
-	private void tryToClosePosition(long tick, Sample currentDiff) {
-		double currentPrice = tradeFloor.toUsd(1d);
+	private void tryToClosePosition(long tick) {
+		Sample sellCurrentDiff = sellAnalysis.getOutputDifference().getSample(tick);
+		double currentPrice = tradeFloor.toUsd(tick, 1d);
 		double currentSellThreshold = calculateCurrentSellThreshold(config.minSellDiffThreshold, lastBuyPrice, currentPrice, config.sellThresholdRelaxationFactor);
-		boolean sellThresholdReached = currentDiff.value < currentSellThreshold;
+		boolean sellThresholdReached = sellCurrentDiff.value < currentSellThreshold;
 
 		if (sellThresholdReached) {
-//			if(verbose)
-//				LOGGER.debug(String.format("%,.4f < %,.4f = %b", currentDiff.value, config.minSellDiffThreshold, sellThresholdReached));
-			
 			double btcToSell = wallet.getBtcAvailable(); 
 			TradeAction sellAction = new TradeAction(TradeActionType.SELL, tick, btcToSell);
-			tradeFloor.sell(wallet, sellAction);
+			tradeFloor.sell(tick, wallet, sellAction);
 			
 			if (verbose)
-				LOGGER.debug("Closing at " + new Date(tick) + ". Last Buy: " + String.valueOf(lastBuyPrice) + ", Current Price: " + String.valueOf(currentPrice) + ", Current Diff: " + String.valueOf(currentDiff.value) + ", New Treshold: " + String.valueOf(currentSellThreshold));
+				LOGGER.debug("Closing at " + new Date(tick) + ". Last Buy: " + String.valueOf(lastBuyPrice) + ", Current Price: " + String.valueOf(currentPrice) + ", Current Diff: " + String.valueOf(sellCurrentDiff.value) + ", New Treshold: " + String.valueOf(currentSellThreshold));
 			
 			this.lastBuyPrice = -1;
 			this.lastHighestPositionPrice = -1;
@@ -159,7 +151,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 			
 			double btcToSell = wallet.getBtcAvailable(); // All-in
 			TradeAction sellAction = new TradeAction(TradeActionType.SELL, tick, btcToSell);
-			tradeFloor.sell(wallet, sellAction);
+			tradeFloor.sell(tick, wallet, sellAction);
 			
 			this.lastHighestPositionPrice = -1;
 

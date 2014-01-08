@@ -37,20 +37,10 @@ public class BitstampSimulationOrderBookDbSource extends OrderBookPercentileTran
 	
 	@Override
 	protected void pollServer(long clientTimestamp) {
-    	readToCurrent(clientTimestamp);	    	
-	}
-	
-	private void readToCurrent(long clientTimestamp) {
-		tryGetNewEntry(clientTimestamp);
-	}
-	
-	private void tryGetNewEntry(long clientTimestamp) {
 		long serverTime = clientTimestamp + interpolationTime;
 		
-		List<ServerSnapshot> newSamples = this.source.getNewSamples(serverTime);
-		for(ServerSnapshot sample : newSamples) {
-			buffer.add(sample);
-		}
+		List<ServerSnapshot> newSamples = this.source.getNewSamplesUntil(serverTime);
+		buffer.addAll(newSamples);    	
 	}
 
 	@Override

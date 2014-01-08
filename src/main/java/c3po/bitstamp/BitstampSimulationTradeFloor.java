@@ -28,11 +28,11 @@ public class BitstampSimulationTradeFloor extends AbstractTradeFloor {
 	}
 	
 	@Override
-	public OpenOrder buyImpl(IWallet wallet, TradeAction action) {
+	public OpenOrder buyImpl(long tick, IWallet wallet, TradeAction action) {
 		// NOTE: This assumes action.volume is in USD		
 		
 		// We get the latest ask, assuming the ticker is updated by some other part of the app
-		Sample currentAsk = askSignal.peek();
+		Sample currentAsk = askSignal.getSample(tick);
 				
 		// The amount of BTC we are going to get if we buy for volume USD, with fees subtracted
 		double boughtBtc = action.volume / currentAsk.value * (1.0d-tradeFee);
@@ -44,11 +44,11 @@ public class BitstampSimulationTradeFloor extends AbstractTradeFloor {
 	}
 
 	@Override
-	public OpenOrder sellImpl(IWallet wallet, TradeAction action) {
+	public OpenOrder sellImpl(long tick, IWallet wallet, TradeAction action) {
 		// NOTE: This assumes action.volume is in BTC	
 		
 		// We get the latest ask, assuming the ticker is updated by some other part of the app
-		Sample currentBid = bidSignal.peek();
+		Sample currentBid = bidSignal.getSample(tick);
 		
 		// The amount of BTC we are going to get if we sell for volume BTC, with fees subtracted
 		double boughtUsd = action.volume * currentBid.value * (1.0d-tradeFee);
@@ -61,10 +61,6 @@ public class BitstampSimulationTradeFloor extends AbstractTradeFloor {
 
 	@Override
 	public void updateWallet(IWallet wallet) {
-	}
-
-	@Override
-	public double peekBid() throws Exception {
-		return bidSignal.peek().value;
+		
 	}
 }

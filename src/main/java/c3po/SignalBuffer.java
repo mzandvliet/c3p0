@@ -37,11 +37,6 @@ public class SignalBuffer extends AbstractList<Sample> implements ISignalBuffer,
 	}
 	
 	@Override
-	public Sample peek() {
-		return Sample.copy(source.peek()); 
-	}
-	
-	@Override
 	public Sample getSample(long tick) {
 		tick(tick);
 		return Sample.copy(source.getSample(tick));
