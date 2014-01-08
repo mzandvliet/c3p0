@@ -19,7 +19,8 @@ import c3po.utils.SignalMath;
 public abstract class OrderBookPercentileTransformer extends AbstractTickable implements IOrderBookPercentileTransformer {
 	protected final List<OutputSignal> bidPercentileSignals;
 	protected final List<OutputSignal> askPercentileSignals;
-	protected final List<OutputSignal> volumePriceSignals;
+	protected final List<OutputSignal> bidVolumePriceSignals;
+	protected final List<OutputSignal> askVolumePriceSignals;
 	
 	protected final long interpolationTime;
 	protected final CircularArrayList<ServerSnapshot> buffer;
@@ -37,24 +38,26 @@ public abstract class OrderBookPercentileTransformer extends AbstractTickable im
 
 		this.bidPercentileSignals = new ArrayList<OutputSignal>(percentiles.length);
 		this.askPercentileSignals = new ArrayList<OutputSignal>(percentiles.length);
-		this.volumePriceSignals = new ArrayList<OutputSignal>(6);
+		this.bidVolumePriceSignals = new ArrayList<OutputSignal>(3);
+		this.askVolumePriceSignals = new ArrayList<OutputSignal>(3);
 		
 		for (int i = 0; i < percentiles.length; i++) {
 			this.bidPercentileSignals.add(new OutputSignal(this, String.format("p%s_bid", percentiles[i])));
 			this.askPercentileSignals.add(new OutputSignal(this, String.format("p%s_ask", percentiles[i])));
 		}
 		
-		this.volumePriceSignals.add(new OutputSignal(this, "volumeprice_10_bid"));
-		this.volumePriceSignals.add(new OutputSignal(this, "volumeprice_50_bid"));
-		this.volumePriceSignals.add(new OutputSignal(this, "volumeprice_250_bid"));
-		this.volumePriceSignals.add(new OutputSignal(this, "volumeprice_10_ask"));
-		this.volumePriceSignals.add(new OutputSignal(this, "volumeprice_50_ask"));
-		this.volumePriceSignals.add(new OutputSignal(this, "volumeprice_250_ask"));
+		this.bidVolumePriceSignals.add(new OutputSignal(this, "volumeprice_10_bid"));
+//		this.bidVolumePriceSignals.add(new OutputSignal(this, "volumeprice_50_bid"));
+//		this.bidVolumePriceSignals.add(new OutputSignal(this, "volumeprice_250_bid"));
+		this.askVolumePriceSignals.add(new OutputSignal(this, "volumeprice_10_ask"));
+//		this.askVolumePriceSignals.add(new OutputSignal(this, "volumeprice_50_ask"));
+//		this.askVolumePriceSignals.add(new OutputSignal(this, "volumeprice_250_ask"));
 		
 		signals = new ArrayList<OutputSignal>();
 		signals.addAll(bidPercentileSignals);
 		signals.addAll(askPercentileSignals);
-		signals.addAll(volumePriceSignals);
+		signals.addAll(bidVolumePriceSignals);
+		signals.addAll(askVolumePriceSignals);
 		
 		int bufferLength = (int)Math.round(interpolationTime / timestep) + 1;
 		buffer = new CircularArrayList<ServerSnapshot>(bufferLength);
@@ -151,10 +154,10 @@ public abstract class OrderBookPercentileTransformer extends AbstractTickable im
 	}
 	
 	public ISignal getOutputBidVolumePrice(int index) {
-		return volumePriceSignals.get(index);
+		return bidVolumePriceSignals.get(index);
 	}
 	
 	public ISignal getOutputAskVolumePrice(int index) {
-		return volumePriceSignals.get(3 + index);
+		return askVolumePriceSignals.get(index);
 	}
 }

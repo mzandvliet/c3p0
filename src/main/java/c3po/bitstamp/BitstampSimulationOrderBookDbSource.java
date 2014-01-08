@@ -26,9 +26,9 @@ public class BitstampSimulationOrderBookDbSource extends OrderBookPercentileTran
 		  this.source = new DbTimeseriesSource(timestep, connection, "bitstamp_order_book", Arrays.asList(
 				  "p99_bid", "p98_bid", "p97_bid", "p96_bid", "p95_bid",
 				  "p99_ask", "p98_ask", "p97_ask", "p96_ask", "p95_ask",
-				  "volumeprice_10_bid", "volumeprice_10_ask", 
-				  "volumeprice_50_bid", "volumeprice_50_ask", 
-				  "volumeprice_250_bid", "volumeprice_250_ask"));
+				  "volumeprice_10_bid", "volumeprice_10_ask"));
+//				  "volumeprice_50_bid", "volumeprice_50_ask", 
+//				  "volumeprice_250_bid", "volumeprice_250_ask"));
 		  
 		  this.source.fetchDataFromDatabase(dataStartTime, dataEndTime);
 

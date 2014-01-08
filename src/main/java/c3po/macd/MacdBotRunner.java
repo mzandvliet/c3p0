@@ -31,9 +31,10 @@ public class MacdBotRunner {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdBotRunner.class);
 	
 	// Earliest time 1384079023000l
+//	private final static long simulationEndTime = new Date().getTime();
+//	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 6;
 	private final static long simulationEndTime = new Date().getTime();
-	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 6;
-
+	private final static long simulationStartTime = 1387309371000l;
 	
 	private final static long interpolationTime = 120 * Time.SECONDS;
 	private final static long timestep = 60 * Time.SECONDS;

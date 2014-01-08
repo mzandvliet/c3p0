@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import c3po.*;
+import c3po.utils.SignalMath;
 
 /**
  * Work in progress in using the database as source.
@@ -49,9 +50,14 @@ public class DbTimeseriesSource {
 		// All the querying is done ... now look in the buffer what we want to return
 		long lastTimestamp = 0;
 		while(lastTimestamp < maxTimestamp && lastDataIndex < data.size()) {
-			ServerSnapshot sample = data.get(lastDataIndex);
-			results.add(sample);
-			lastTimestamp = sample.timestamp;
+			ServerSnapshot serverSnapshot = data.get(lastDataIndex);
+			
+			for (Sample sample : serverSnapshot.samples) {
+				sample.toString();
+			}
+			
+			results.add(serverSnapshot);
+			lastTimestamp = serverSnapshot.timestamp;
 			lastDataIndex++;
 		}
 		
@@ -78,8 +84,11 @@ public class DbTimeseriesSource {
 		    	
 		    	for(String column : columns) {
 		    		double value = resultSet.getDouble(column);
-		    		entry.set(getSignalIndexByName(column), new Sample(sampleTimestamp, value));
 		    		
+		    		if (!SignalMath.isValidNumber(value) || value == 0d)
+		    			throw new IllegalStateException("Received illegal sample from database. Timestamp: " + sampleTimestamp + ", Column: " + column + ", Value: " + value);
+		    		
+		    		entry.set(getSignalIndexByName(column), new Sample(sampleTimestamp, value));
 		    	}
 
 		    	data.add(entry);
