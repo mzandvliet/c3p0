@@ -28,11 +28,11 @@ public class SimpleMacdTrainer {
 	private final static long simulationLength = Time.DAYS * 3;
 	
 	// Timing
-	private final static long interpolationTime = 60 * Time.SECONDS;
+	private final static long interpolationTime = 120 * Time.SECONDS;
 	private final static long timestep = 60 * Time.SECONDS;
 
 	// Simulation and fitness test
-	private final static int numEpochs = 50;
+	private final static int numEpochs = 150;
 	private final static int numSimulationsPerEpoch = 10;
 	private final static int numBots = 600;
 	
