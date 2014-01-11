@@ -47,8 +47,10 @@ public class RealtimeBotRunner {
 	    	int clientId = Integer.valueOf(prop.getProperty("clientId"));
 	    	String apiKey = prop.getProperty("apiKey");
 	    	String apiSecret = prop.getProperty("apiSecret");
+	    	String dbUser = prop.getProperty("dbUser");
+	    	String dbPwd = prop.getProperty("dbPwd");
 	    	
-	    	DbConnection dbConnection = new DbConnection(new InetSocketAddress("c3po.ramjetanvil.com", 3306), "c3po", "D7xpJwzGJEWf5qWB");
+	    	DbConnection dbConnection = new DbConnection(new InetSocketAddress("c3po.ramjetanvil.com", 3306), dbUser, dbPwd);
 	    	dbConnection.open();	
 	    	
 			/**
