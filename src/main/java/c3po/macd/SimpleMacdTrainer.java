@@ -1,9 +1,8 @@
 package c3po.macd;
 
 import java.net.InetSocketAddress;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -24,17 +23,16 @@ import c3po.wallet.Wallet;
 public class SimpleMacdTrainer {
 	private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.class);
 	
-	// First timestamp in database: 1384079023000l
 	private final static long simulationEndTime = new Date().getTime();
-	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 6;
+	private final static long simulationStartTime = 1387309371000l;
 	private final static long simulationLength = Time.DAYS * 3;
 	
 	// Timing
-	private final static long interpolationTime = 60 * Time.SECONDS;
+	private final static long interpolationTime = 120 * Time.SECONDS;
 	private final static long timestep = 60 * Time.SECONDS;
 
 	// Simulation and fitness test
-	private final static int numEpochs = 50;
+	private final static int numEpochs = 150;
 	private final static int numSimulationsPerEpoch = 10;
 	private final static int numBots = 600;
 	
@@ -100,7 +98,7 @@ public class SimpleMacdTrainer {
 		
 		final IWallet wallet = new Wallet(walletStartUsd, 0d, 0d, 0d);
 		
-	    List<INonRealtimeSource> sources = new LinkedList<INonRealtimeSource>();
+	    List<INonRealtimeSource> sources = new ArrayList<INonRealtimeSource>();
 	    sources.add(tickerNode);
 	    sources.add(orderbookNode);
 		SimulationContext simContext = new SimulationContext(sources, botClock, orderbookNode.getOutputBidPercentile(0), tickerNode.getOutputVolume(), tradeFloor, wallet);
@@ -206,7 +204,7 @@ public class SimpleMacdTrainer {
 		diffGrapher.setVisible(true); 
 		
 		tradeLogger.writeLog();
-		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Wallet: " + simContext.getTradeFloor().getWalletValueInUsd(bot.getWallet()));
+		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Wallet: " + simContext.getTradeFloor().getWalletValueInUsd(new Date().getTime(), bot.getWallet()));
 		LOGGER.debug("Ran winner: " + winningConfig.toString());
 		LOGGER.debug(winningConfig.toEscapedJSON());
 	}

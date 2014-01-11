@@ -31,11 +31,12 @@ public class MacdBotRunner {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdBotRunner.class);
 	
 	// Earliest time 1384079023000l
+//	private final static long simulationEndTime = new Date().getTime();
+//	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 6;
 	private final static long simulationEndTime = new Date().getTime();
-	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 6;
-
+	private final static long simulationStartTime = 1387309371000l;
 	
-	private final static long interpolationTime = 60 * Time.SECONDS;
+	private final static long interpolationTime = 120 * Time.SECONDS;
 	private final static long timestep = 60 * Time.SECONDS;
 	
 	private final static double walletStartUsd = 100.0d;
@@ -88,7 +89,6 @@ public class MacdBotRunner {
 		int botId = Math.abs(new Random().nextInt());
 		MacdBot bot = new MacdBot(botId, config, tickerNode.getOutputLast(), tickerNode.getOutputVolume(), wallet, tradeFloor);
 		bot.getTraderNode().setVerbose(true);
-		LOGGER.debug(bot.getConfig().toJSON());
 		LOGGER.debug(bot.getConfig().toEscapedJSON());
 		
 		final AggregateNode p99Last = new AggregateNode(timestep, orderbookNode.getOutputBidPercentile(0), orderbookNode.getOutputAskPercentile(0)); 
@@ -97,9 +97,6 @@ public class MacdBotRunner {
 		
 		DebugTradeLogger tradeLogger = new DebugTradeLogger();
 		bot.addTradeListener(tradeLogger);
-		
-//		DbTradeLogger dbLogger = new DbTradeLogger(bot, dbConnection);
-//		dbLogger.startSession(simulationStartTime);
 		
 		// Create the grapher
 		
@@ -147,7 +144,7 @@ public class MacdBotRunner {
 		analysisGrapher.setVisible(true);
 		
 		tradeLogger.writeLog();
-		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Wallet: " + tradeFloor.getWalletValueInUsd(wallet));
+		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Wallet: " + tradeFloor.getWalletValueInUsd(new Date().getTime(), wallet));
 		LOGGER.debug(bot.getConfig().toString());
 		LOGGER.debug(bot.getConfig().toJSON());
 	}

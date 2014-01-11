@@ -61,7 +61,7 @@ public class CompositeBot extends AbstractTickable implements IBot<CompositeBotC
 			}
 			
 			boolean hasEnoughUsd = wallet.getUsdAvailable() > minDollars;
-			boolean hasEnoughBtc = wallet.getBtcAvailable() > tradeFloor.toBtc(minDollars);	
+			boolean hasEnoughBtc = wallet.getBtcAvailable() > tradeFloor.toBtc(tick, minDollars);	
 			boolean buyThresholdReached = score > config.minBuyDiffThreshold;
 			boolean sellThresholdReached = score < config.minSellDiffThreshold;
 			
@@ -82,7 +82,7 @@ public class CompositeBot extends AbstractTickable implements IBot<CompositeBotC
 	private void tryToOpenPosition(long tick) {
 		double usdToSell = wallet.getUsdAvailable();
 		TradeAction buyAction = new TradeAction(TradeActionType.BUY, tick, usdToSell);
-		tradeFloor.buy(wallet, buyAction);
+		tradeFloor.buy(tick, wallet, buyAction);
 
 		//double currentAveragePrice = averagePrice.getOutput(0).getSample(tick).value;
 		//this.lastBuyPrice = currentAveragePrice;
@@ -95,7 +95,7 @@ public class CompositeBot extends AbstractTickable implements IBot<CompositeBotC
 			
 			double btcToSell = wallet.getBtcAvailable(); 
 			TradeAction sellAction = new TradeAction(TradeActionType.SELL, tick, btcToSell);
-			tradeFloor.sell(wallet, sellAction);
+			tradeFloor.sell(tick, wallet, sellAction);
 			
 			//this.lastBuyPrice = -1;
 			//this.lastHighestPositionPrice = -1;

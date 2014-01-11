@@ -4,11 +4,6 @@ public class SignalWrapper implements ISignal {
 	private ISignal input;
 	
 	@Override
-	public Sample peek() {
-		return input.peek();
-	}
-	
-	@Override
 	public Sample getSample(long tick) {
 		return input.getSample(tick);
 	}

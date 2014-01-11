@@ -6,6 +6,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import c3po.utils.SignalMath;
+
 /**
  * Generic Implementation of the Wallet class
  * currently used for USD/BTC currencies.
@@ -44,18 +46,20 @@ public class Wallet implements IWallet {
 	}
 
 	@Override
-	public void reserve(double reserveUsd, double reserveBtc) throws Exception {
+	public void reserve(double reserveUsd, double reserveBtc) throws IllegalStateException {
 		if(usdAvailable < reserveUsd)
-			throw new Exception("Could not reserve " + reserveUsd + "USD because the wallet only has " + usdAvailable);
+			throw new IllegalStateException("Could not reserve " + reserveUsd + "USD because the wallet only has " + usdAvailable);
 		
 		if(btcAvailable < reserveBtc)
-			throw new Exception("Could not reserve " + reserveBtc + "USD because the wallet only has " + btcAvailable);
+			throw new IllegalStateException("Could not reserve " + reserveBtc + "USD because the wallet only has " + btcAvailable);
 		
 		usdAvailable -= reserveUsd;
 		usdReserved += reserveUsd;
 		
 		btcAvailable -= reserveBtc;
 		btcReserved += reserveBtc;
+		
+		assertWalletState();
 	}
 	
 	@Override
@@ -69,6 +73,18 @@ public class Wallet implements IWallet {
 			this.btcReserved = btcReserved;
 			
 			notify(new WalletUpdateResult(timestamp, this.usdAvailable + this.usdReserved, this.btcAvailable - this.btcReserved));
+		}
+		
+		assertWalletState();
+	}
+
+	private void assertWalletState() {
+		// Assert wallet state
+		if (!SignalMath.isValidNumber(usdAvailable) ||
+				!SignalMath.isValidNumber(btcAvailable) ||
+				!SignalMath.isValidNumber(usdReserved) ||
+				!SignalMath.isValidNumber(btcReserved)) {
+			throw new IllegalStateException("Wallet state is illegal: " + toString());
 		}
 	}
 	

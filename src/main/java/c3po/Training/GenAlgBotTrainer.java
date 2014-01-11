@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,8 +72,9 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 		for (int i = 0; i < config.numEpochs; i++) {
 			HashMap<TBotConfig, PerformanceResult> results = createResults(configs);
 			
+			int numFailedRuns = 0;
+			
 			for (int j = 0; j < config.numSimulationsPerEpoch; j++) {
-				
 				try {
 				// Create the population and loggers
 				List<IBot<TBotConfig>> population = createPopulationFromConfigs(configs, botFactory);
@@ -97,21 +99,24 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 					result.averageNumTrades += loggers.get(bot).getActions().size();
 					result.averageWalletValue += getBotDollarValue(bot);
 				}
-				
+
 				LOGGER.debug("Finished run " + j );
 				
 				} catch(IllegalStateException e) {
 					LOGGER.error("Could not run " + j, e);
+					numFailedRuns++;
 				}
 			}
 			
 			// Average the results for this epoch's simulations
 			for (TBotConfig config : configs) {
 				PerformanceResult result = results.get(config);
-				result.averageNumTrades /= this.config.numSimulationsPerEpoch;
-				result.averageWalletValue /= this.config.numSimulationsPerEpoch;
+				result.averageNumTrades /= this.config.numSimulationsPerEpoch - numFailedRuns;
+				result.averageWalletValue /= this.config.numSimulationsPerEpoch - numFailedRuns;
 				countBotConfig(config);
 			}
+			
+			numFailedRuns = 0;
 			
 			// Sort
 			sortByPerformance(configs, results);
@@ -167,6 +172,7 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 	}
 	
 	private void sortByPerformance(List<TBotConfig> configs, final HashMap<TBotConfig, PerformanceResult> results) {
+		try {
 		Collections.sort(configs, new Comparator<TBotConfig>() {
 
 	        public int compare(TBotConfig configA, TBotConfig configB) {
@@ -188,11 +194,18 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
             	
             	return configAPerformance > configBPerformance ? -1 : 1;
 	        }
-	    });
+	    }); 
+		} catch (IllegalArgumentException e) {
+			LOGGER.error("Fatal error, comparison failed. Performance results: ");
+			for (PerformanceResult result : results.values()) {
+				LOGGER.debug(result.toString());
+			}
+			throw e;
+		}
 	}
 	
 	private double getBotDollarValue(final IBot<TBotConfig> bot) {
-		return bot.getTradeFloor().getWalletValueInUsd(bot.getWallet());
+		return bot.getTradeFloor().getWalletValueInUsd(config.dataEndTime, bot.getWallet());
 	}
 	
 	private HashMap<TBotConfig, PerformanceResult> createResults(List<TBotConfig> configs) {
@@ -284,5 +297,11 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 	private class PerformanceResult {
 		public int averageNumTrades;
 		public double averageWalletValue;
+		
+		@Override
+		public String toString() {
+			return "PerformanceResult [averageNumTrades=" + averageNumTrades
+					+ ", averageWalletValue=" + averageWalletValue + "]";
+		}
 	}
 }

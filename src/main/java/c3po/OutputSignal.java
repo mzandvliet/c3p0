@@ -20,12 +20,7 @@ public class OutputSignal implements ISignal {
 	public void setSample(Sample sample) {
 		latestSample = sample;
 	}
-	
-	@Override
-	public Sample peek() {
-		return latestSample;
-	}
-	
+
 	@Override
 	public Sample getSample(long tick) {
 		ownerNode.tick(tick);

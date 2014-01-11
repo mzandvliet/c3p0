@@ -24,11 +24,6 @@ public class MovingAverageNodeTest {
 		// Window of 2000ms
 		MovingAverageNode movingAverageNode = new MovingAverageNode(1000l, 2000l, new ISignal() {
 			@Override
-			public Sample peek() {
-				return null;
-			}
-			
-			@Override
 			public Sample getSample(long tick) {
 				return inputData.get((int) ((tick / 1000) - 1));
 			}

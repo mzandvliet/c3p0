@@ -182,7 +182,7 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	}
 
 	@Override
-	public OpenOrder buyImpl(IWallet wallet, TradeAction action) {
+	public OpenOrder buyImpl(long tick, IWallet wallet, TradeAction action) {
 		OpenOrder order = null;
 		try {
 			// The amount of Btc we are going to get if we buy for volume USD
@@ -230,7 +230,7 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	}
 
 	@Override
-	public OpenOrder sellImpl(IWallet wallet, TradeAction action) {
+	public OpenOrder sellImpl(long tick, IWallet wallet, TradeAction action) {
 		OpenOrder order = null;
 		try {
 			// We get the latest ask, assuming the ticker is updated by some other part of the app
@@ -422,9 +422,4 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 		String result = doAuthenticatedCall("https://www.bitstamp.net/api/cancel_order/", params);
 		LOGGER.info("Cancelled order " + order + ": " + result);
     }
-
-	@Override
-	public double peekBid() throws Exception {
-		return this.getCurrentBid();
-	}
 }

@@ -30,24 +30,24 @@ public abstract class AbstractTradeFloor implements ITradeFloor {
 	}
 	
 	@Override
-	public double toBtc(double usd) {
-		return usd / tickerSignal.peek().value;
+	public double toBtc(long tick, double usd) {
+		return usd / tickerSignal.getSample(tick).value;
 	}
 
 	@Override
-	public double toUsd(double btc) {
-		return btc * tickerSignal.peek().value;
+	public double toUsd(long tick, double btc) {
+		return btc * tickerSignal.getSample(tick).value;
 	}
 
 	@Override
-	public double getWalletValueInUsd(IWallet wallet) {
-		return wallet.getUsdTotal() + toUsd(wallet.getBtcTotal());
+	public double getWalletValueInUsd(long tick, IWallet wallet) {
+		return wallet.getUsdTotal() + toUsd(tick, wallet.getBtcTotal());
 	}
 
 	@Override
-	public OpenOrder buy(IWallet wallet, TradeAction action) {
+	public OpenOrder buy(long tick, IWallet wallet, TradeAction action) {
 		// First call buyImpl, where the concrete class can store its buy logic
-		OpenOrder order = buyImpl(wallet, action);
+		OpenOrder order = buyImpl(tick, wallet, action);
 		
 		// Notify what has happened
 		notify(action);
@@ -63,12 +63,12 @@ public abstract class AbstractTradeFloor implements ITradeFloor {
 	 * @param action
 	 * @return Resulting Order
 	 */
-	public abstract OpenOrder buyImpl(IWallet wallet, TradeAction action);
+	protected abstract OpenOrder buyImpl(long tick, IWallet wallet, TradeAction action);
 
 	@Override
-	public OpenOrder sell(IWallet wallet, TradeAction action) {
+	public OpenOrder sell(long tick, IWallet wallet, TradeAction action) {
 		// First call sellImpl, where the concrete class can store its sell logic
-		OpenOrder order = sellImpl(wallet, action);
+		OpenOrder order = sellImpl(tick, wallet, action);
 		
 		// Notify what has happened
 		notify(action);
@@ -84,7 +84,7 @@ public abstract class AbstractTradeFloor implements ITradeFloor {
 	 * @param action
 	 * @return Resulting Order
 	 */
-	public abstract OpenOrder sellImpl(IWallet wallet, TradeAction action);
+	protected abstract OpenOrder sellImpl(long tick, IWallet wallet, TradeAction action);
 
 	private void notify(TradeAction action) {
 		for (ITradeListener listener : tradeListeners) {

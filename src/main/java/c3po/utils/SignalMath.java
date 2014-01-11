@@ -87,4 +87,8 @@ public class SignalMath {
 	public static long getRandomLong(long min, long max) {
 		return min + (long)(Math.random() * (double)(max-min));
 	}
+	
+	public static boolean isValidNumber(double number) {
+		return !(Double.isInfinite(number) || Double.isNaN(number));
+	}
 }
