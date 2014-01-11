@@ -27,8 +27,10 @@ import c3po.wallet.Wallet;
 
 public class RealtimeBotRunner {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(RealtimeBotRunner.class);
+	private static final String VERSION_IDENTIFIER = "6.0.0";
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(RealtimeBotRunner.class);
+	
 	private final static long interpolationTime = 2 * Time.MINUTES;
 	private final static long timestep = 1 * Time.MINUTES;
 
@@ -83,7 +85,7 @@ public class RealtimeBotRunner {
 			// Should not get any trades, but here for the wallet update
 			new DbTradeLogger(bot, dbConnection);
 			
-			LOGGER.info("Starting bot: " + bot);
+			LOGGER.info("Starting bot: " + bot + " V"+VERSION_IDENTIFIER);
 			
 			preload(wrappedSource, dbConnection, bot);
 			run(wrappedSource, dbConnection, bot, tradeFloor, wallet);
