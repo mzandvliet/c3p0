@@ -87,6 +87,13 @@ public class RealtimeBotRunner {
 			// Should not get any trades, but here for the wallet update
 			new DbTradeLogger(bot, dbConnection);
 			
+			// Email Trade Logger
+			if(prop.containsKey("emailNotify")) {
+				String[] emails = prop.getProperty("emailNotify").split(",");
+				EmailTradeLogger mailLogger = new EmailTradeLogger(bot.getId(), emails);
+				bot.addTradeListener(mailLogger);
+			}
+			
 			LOGGER.info("Starting bot: " + bot + " V"+VERSION_IDENTIFIER);
 			
 			preload(wrappedSource, dbConnection, bot);
@@ -130,11 +137,7 @@ public class RealtimeBotRunner {
 		
 		// Update the wallet with the real values
 		tradeFloor.updateWallet(wallet);
-		
-		//dbTradeLogger.startSession(new Date().getTime());
-		EmailTradeLogger mailLogger = new EmailTradeLogger(bot.getId(), "martijn@ramjetanvil.com", "jopast@gmail.com");
-		bot.addTradeListener(mailLogger);
-		
+
 		// Create a clock
 		IRealtimeClock clock = new RealtimeClock(timestep, interpolationTime);
 				

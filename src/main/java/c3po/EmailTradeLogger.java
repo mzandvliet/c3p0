@@ -43,7 +43,7 @@ public class EmailTradeLogger implements ITradeListener {
     private int botId;
     private String[] recipients;
     
-	public EmailTradeLogger(int botId, String ... recipients) {
+	public EmailTradeLogger(int botId, String[] recipients) {
 		this.botId = botId;
 		this.recipients = recipients;
 	}
