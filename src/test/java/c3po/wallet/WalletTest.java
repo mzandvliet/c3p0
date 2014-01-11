@@ -121,6 +121,19 @@ public class WalletTest {
 		verify(listener, times(0)).onWalletUpdate(any(WalletUpdateResult.class));
 	}
 	
+	@Test
+	public void testConfigReserved() throws Exception {
+		Wallet wallet = new Wallet(1.1, 0, 0.3, 0);
+		
+		// Reserve more then is in reserved
+		wallet.setConfigUsdReserved(0.7);
+		assertEquals(0.7d, wallet.getUsdAvailable(), 0.0001);
+		
+		// Reserve less then is in reserved
+		wallet.setConfigUsdReserved(0.2);
+		assertEquals(1.1d, wallet.getUsdAvailable(), 0.0001);
+	}
+	
 	/**
 	 * Test method for {@link c3po.wallet.Wallet#reserve(double, double)}.
 	 * @throws Exception 

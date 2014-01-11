@@ -7,6 +7,7 @@ public interface IWallet {
 	public double getBtcAvailable();
 	public double getUsdReserved();
 	public double getBtcReserved();
+	public void setConfigUsdReserved(double configUsdReserved);
 	
 	/**
 	 * Update the current contents of the wallet.

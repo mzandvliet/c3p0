@@ -23,6 +23,8 @@ public class Wallet implements IWallet {
 	
 	private List<IWalletUpdateListener> walletListeners;
 	
+	private double configUsdReserved = 0;
+	
 	protected double usdAvailable;
 	protected double btcAvailable;
 	private double usdReserved;
@@ -34,6 +36,11 @@ public class Wallet implements IWallet {
 		this.usdReserved = usdReserved;
 		this.btcAvailable = btcAvailable;
 		this.btcReserved = btcReserved;
+	}
+	
+	@Override
+	public void setConfigUsdReserved(double configUsdReserved) {
+		this.configUsdReserved = configUsdReserved;
 	}
 
 	@Override
@@ -60,8 +67,8 @@ public class Wallet implements IWallet {
 			this.btcAvailable = btcAvailable;
 			this.usdReserved = usdReserved;
 			this.btcReserved = btcReserved;
-
-			notify(new WalletUpdateResult(timestamp, this.usdAvailable +this.usdReserved, this.btcAvailable - this.btcReserved));
+			
+			notify(new WalletUpdateResult(timestamp, this.usdAvailable + this.usdReserved, this.btcAvailable - this.btcReserved));
 		}
 	}
 	
@@ -100,7 +107,15 @@ public class Wallet implements IWallet {
 
 	@Override
 	public double getUsdAvailable() {
-		return usdAvailable;
+		// The amount we should keep in reserve
+		double leftToReserve = configUsdReserved - usdReserved;
+		
+		// If that amount is more then 0, then we should not use all of our available usd
+		if(leftToReserve > 0) {
+			return Math.max(0, usdAvailable - leftToReserve);
+		} else {
+			return usdAvailable;
+		}
 	}
 
 	@Override

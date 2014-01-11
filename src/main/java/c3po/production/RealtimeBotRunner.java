@@ -70,6 +70,10 @@ public class RealtimeBotRunner {
 			
 			final IWallet wallet = new Wallet(0d, 0d, 0d, 0d);
 			
+			// Property "walletReserveUsd" allows you to reserve a portion of your wallet to not be used by the bot
+			if(prop.containsKey("walletReserveUsd"))
+			  wallet.setConfigUsdReserved(Double.valueOf(prop.getProperty("walletReserveUsd")));
+			
 			final DebugTradeLogger tradeLogger = new DebugTradeLogger();
 			tradeFloor.addTradeListener(tradeLogger);
 			
