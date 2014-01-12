@@ -22,14 +22,29 @@ public class DbLicenceChecker implements ITickable {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(DbLicenceChecker.class);
 	private static final int MAXRETRIES = 3;
+	
+	/**
+	 * The amount of time the licence is not checked after being validated
+	 */
 	private static final long LICENCE_CHECK_TIMEOUT = 10 * Time.MINUTES;
+	
+	/**
+	 * Retry timer if licencing fails
+	 */
 	private static final long LICENCE_RETRY_INTERVAL = 1 * Time.MINUTES;
 
 	private final IBot bot;
 	private final String apiKey;
 	private final DbConnection connection;
 	
-	private long lastCheck = 0;
+	/**
+	 * The last time the licence was approved
+	 */
+	private long lastCheckSuccess = 0;
+	
+	/**
+	 * Last fetched licence status
+	 */
 	private boolean isLicenced = false;
 	
 	public DbLicenceChecker(IBot bot, String apiKey, DbConnection connection) {
@@ -38,15 +53,19 @@ public class DbLicenceChecker implements ITickable {
 		this.connection = connection;
 	}
 	
+	/**
+	 * DB Query to check if the licence is valid
+	 * @return
+	 */
 	protected boolean checkLicence() {
 		try {
 			// Count the amount of active licences for this botId/apiKey combination
-			final String sqlTemplate = "SELECT count(*) FROM  `c3po`.`bots` WHERE bot_id = '%s' AND api_key = '%s' AND licenced = 1;";
+			final String sqlTemplate = "SELECT count(*) FROM  `c3po`.`bots` WHERE `id` = '%s' AND `api_key` = '%s' AND `licenced` = 1;";
 			String sql = String.format(sqlTemplate, bot.getId(), apiKey);
 			ResultSet result = connection.executeQueryWithRetries(sql, MAXRETRIES);
-			this.lastCheck = new Date().getTime();
 
-			if (result.getInt(0) == 1) {
+			if (result.next() && result.getInt(1) == 1) {
+				this.lastCheckSuccess = new Date().getTime();
 				return true;
 			} else {
 				LOGGER.info("No active licence found for this bot");
@@ -65,7 +84,7 @@ public class DbLicenceChecker implements ITickable {
 	 */
 	protected boolean isLicenced() {
 		// If the last time is long ago, check if the licence is valid
-		if(lastCheck + LICENCE_CHECK_TIMEOUT > new Date().getTime()) {
+		if(lastCheckSuccess + LICENCE_CHECK_TIMEOUT < new Date().getTime()) {
 			this.isLicenced = this.checkLicence();
 		}
 		
