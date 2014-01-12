@@ -152,6 +152,34 @@ public class GenAlgBotTrainer<TBotConfig extends IBotConfig> implements IBotTrai
 		LOGGER.debug("Average wallet: " + results.get(worstConfig).averageWalletValue);
 		LOGGER.debug("Average trades: " + results.get(worstConfig).averageNumTrades);
 		
+		/**
+		 * Statistics about all the winners
+		 */
+		List<TBotConfig> winners = configs.subList(0, config.numParents);
+		long maxEpochs = 0, totalEpochs = 0, totalWallet = 0;
+		
+		for(TBotConfig winner: winners) {
+			totalEpochs += configCounter.get(winner);
+			totalWallet += results.get(winner).averageWalletValue;
+			if(configCounter.get(winner) > maxEpochs)
+				maxEpochs = configCounter.get(winner);
+		}
+		
+		LOGGER.debug("Average wallet of winners: " + (double) totalWallet / winners.size());
+		LOGGER.debug("Average epoch count of winners: " + (double) totalEpochs / winners.size());
+		LOGGER.debug("Max epoch count of winners: " + maxEpochs);
+		
+		long mostSeenConfigCounter = 0;
+		TBotConfig mostSeenConfig = null;
+		for(TBotConfig config : configCounter.keySet()) {
+			if(configCounter.get(config) > mostSeenConfigCounter) {
+				mostSeenConfigCounter = configCounter.get(config);
+				mostSeenConfig = config;
+			}
+		}
+		
+		LOGGER.debug("Seen config " + mostSeenConfigCounter + " epochs: " + mostSeenConfig.toEscapedJSON());
+		
 		LOGGER.debug("...");
 	}
 	

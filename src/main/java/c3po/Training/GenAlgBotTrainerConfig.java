@@ -28,7 +28,6 @@ public class GenAlgBotTrainerConfig {
 			int numBots,
 			int numParents,
 			int numElites) {
-		super();
 		this.dataStartTime = dataStartTime;
 		this.dataEndTime = dataEndTime;
 		this.simulationLength = simulationLength;

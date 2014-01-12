@@ -23,7 +23,7 @@ import c3po.wallet.Wallet;
 public class SimpleMacdTrainer {
 	private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMacdTrainer.class);
 	
-	private final static long simulationEndTime = new Date().getTime();
+	private final static long simulationEndTime = new Date().getTime() - (Time.DAYS * 2);
 	private final static long simulationStartTime = 1387309371000l;
 	private final static long simulationLength = Time.DAYS * 3;
 	
@@ -101,7 +101,7 @@ public class SimpleMacdTrainer {
 	    List<INonRealtimeSource> sources = new ArrayList<INonRealtimeSource>();
 	    sources.add(tickerNode);
 	    sources.add(orderbookNode);
-		SimulationContext simContext = new SimulationContext(sources, botClock, orderbookNode.getOutputBidPercentile(0), tickerNode.getOutputVolume(), tradeFloor, wallet);
+		SimulationContext simContext = new SimulationContext(sources, botClock, tickerNode.getOutputLast(), tickerNode.getOutputVolume(), tradeFloor, wallet);
 		
 		
 		// Create and run the trainer on the context

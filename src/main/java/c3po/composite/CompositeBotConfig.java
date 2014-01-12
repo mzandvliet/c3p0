@@ -56,5 +56,11 @@ public class CompositeBotConfig implements IBotConfig {
 		return true;
 	}
 
+	@Override
+	public String toEscapedJSON() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	
 }
