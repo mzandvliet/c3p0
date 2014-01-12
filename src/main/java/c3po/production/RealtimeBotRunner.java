@@ -147,6 +147,7 @@ public class RealtimeBotRunner {
 		IRealtimeClock clock = new RealtimeClock(timestep, interpolationTime);
 				
 		// Run the program
+		clock.addListener(dbLicenceChecker);
 		clock.addListener(bot);
 		clock.run();
 		clock.removeListener(bot);
