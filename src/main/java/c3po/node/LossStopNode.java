@@ -67,27 +67,27 @@ public class LossStopNode extends AbstractTickable implements INode, ITradeAdvic
 		lastPriceSample = priceSignal.getSample(tick);
 		
 		// Keep track of the highest price since buy
-		if(lastPriceSample.value > highestPriceSinceBuySample.value)
+		if(highestPriceSinceBuySample == null || lastPriceSample.value > highestPriceSinceBuySample.value)
 			highestPriceSinceBuySample = lastPriceSample;
 		
 		if(lastBuySample != null) {
 			// Calculate the new trade advice and set that as output signal
-			tradeAdvice.setSample(new Sample(tick, calculateTradeAdvice(lastBuySample.value, highestPriceSinceBuySample.value, config.getIgnoreLossPercentage(), config.getMaxLossPercentage())));
+			tradeAdvice.setSample(new Sample(tick, calculateTradeAdvice(highestPriceSinceBuySample.value, lastPriceSample.value, config.getIgnoreLossPercentage(), config.getMaxLossPercentage())));
 		}
 	}
 	
 	/**
 	 * Helper method to calculate the trade advice based on config and last prices
 	 * 
-	 * @param lastBuyPrice
+	 * @param highestPriceSinceBuySample
 	 * @param currentPrice
 	 * @param ignoreLossPercentage
 	 * @param maxLossPercentage
 	 * @return Advice between 0 (neutral) and -1 (sell)
 	 */
-	public static double calculateTradeAdvice(double lastBuyPrice, double currentPrice, double ignoreLossPercentage, double maxLossPercentage) {
+	public static double calculateTradeAdvice(double highestPriceSinceBuySample, double currentPrice, double ignoreLossPercentage, double maxLossPercentage) {
 		// Difference between last buy and current, negated so the higher, the more loss
-		double negDiff = (currentPrice-lastBuyPrice)/lastBuyPrice * 100 * -1;
+		double negDiff = (currentPrice-highestPriceSinceBuySample)/highestPriceSinceBuySample * 100 * -1;
 	
 		if(negDiff > ignoreLossPercentage) {
 			return Math.min(1, (negDiff - ignoreLossPercentage) / (maxLossPercentage - ignoreLossPercentage)) * -1;
@@ -125,5 +125,10 @@ public class LossStopNode extends AbstractTickable implements INode, ITradeAdvic
 
 	public double getMaxLossPercentage() {
 		return config.getMaxLossPercentage();
+	}
+
+	@Override
+	public String toString() {
+		return "LossStopNode [config=" + config + "]";
 	}
 }

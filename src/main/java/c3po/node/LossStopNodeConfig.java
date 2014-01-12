@@ -26,4 +26,41 @@ public class LossStopNodeConfig {
 	public double getMaxLossPercentage() {
 		return maxLossPercentage;
 	}
+
+	@Override
+	public String toString() {
+		return "LossStopNodeConfig [ignoreLossPercentage="
+				+ ignoreLossPercentage + ", maxLossPercentage="
+				+ maxLossPercentage + "]";
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		long temp;
+		temp = Double.doubleToLongBits(ignoreLossPercentage);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(maxLossPercentage);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		LossStopNodeConfig other = (LossStopNodeConfig) obj;
+		if (Double.doubleToLongBits(ignoreLossPercentage) != Double
+				.doubleToLongBits(other.ignoreLossPercentage))
+			return false;
+		if (Double.doubleToLongBits(maxLossPercentage) != Double
+				.doubleToLongBits(other.maxLossPercentage))
+			return false;
+		return true;
+	}
 }
