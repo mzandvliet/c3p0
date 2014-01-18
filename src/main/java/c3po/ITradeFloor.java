@@ -32,4 +32,12 @@ public interface ITradeFloor extends ITradeActionSource {
 	 *         in a market without sell or buy orders.
 	 */
 	public boolean doLimitOrder();
+	
+	/**
+	 * Method that enables the TradeFloor to tell trader
+	 * Nodes that they are currently not allowed to trade.
+	 * 
+	 * @return
+	 */
+	public boolean allowedToTrade(long tick);
 }

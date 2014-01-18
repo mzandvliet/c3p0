@@ -12,6 +12,7 @@ import c3po.TradeAction.TradeActionType;
 import c3po.node.ExpMovingAverageNode;
 import c3po.node.INode;
 import c3po.utils.SignalMath;
+import c3po.utils.Time;
 import c3po.wallet.IWallet;
 
 public class MacdTraderNode extends AbstractTickable implements ITickable, ITradeActionSource {
@@ -69,17 +70,19 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		averagePrice.tick(tick);
 		
 		if (numSkippedTicks > startDelay) {
+			boolean allowedToTrade = tradeFloor.allowedToTrade(tick);
 			boolean hasEnoughUsd = wallet.getUsdAvailable() > minDollars;
 			boolean hasEnoughBtc = wallet.getBtcAvailable() > tradeFloor.toBtc(tick, minDollars);	
-			
-			if(hasEnoughUsd) {
+
+			if(allowedToTrade && hasEnoughUsd) {
 				tryToOpenPosition(tick);
 			}
 			
-			if(hasEnoughBtc) {
+			if(allowedToTrade && hasEnoughBtc) {
 				tryToClosePosition(tick);
 				tryToCutPosition(tick);
-			}			
+			}		
+			
 		}
 		else {
 			numSkippedTicks++;
@@ -103,7 +106,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 			double currentAveragePrice = averagePrice.getOutput(0).getSample(tick).value;
 			this.lastBuyPrice = currentAveragePrice;
 			this.lastHighestPositionPrice = currentAveragePrice;
-			
+
 			notify(buyAction);
 		}
 	}
@@ -153,6 +156,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 			TradeAction sellAction = new TradeAction(TradeActionType.SELL, tick, btcToSell);
 			tradeFloor.sell(tick, wallet, sellAction);
 			
+			this.lastBuyPrice = -1;
 			this.lastHighestPositionPrice = -1;
 
 			notify(sellAction);
@@ -191,7 +195,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		return tradeFloor;
 	}
 
-	private void notify(TradeAction action) {
+	private void notify(TradeAction action) {	
 		for (ITradeListener listener : listeners) {
 			listener.onTrade(action);
 		}

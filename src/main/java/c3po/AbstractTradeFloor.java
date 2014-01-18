@@ -3,7 +3,12 @@ package c3po;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import c3po.macd.MacdTraderNode;
 import c3po.structs.OpenOrder;
+import c3po.utils.Time;
 import c3po.wallet.IWallet;
 
 /**
@@ -14,12 +19,23 @@ import c3po.wallet.IWallet;
  */
 public abstract class AbstractTradeFloor implements ITradeFloor {
 	
+	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTradeFloor.class);
+	
 	private List<ITradeListener> tradeListeners;
 
 	protected ISignal tickerSignal;
 	protected ISignal bidSignal;
 	protected ISignal askSignal;
 	protected final boolean doLimitOrder = false;
+	
+	/**
+	 * TradeTimeout makes sure we do not trade to quick in succession. Primary reason
+	 * is currently that the bitstamp API takes a time to update it's wallet. If we
+	 * trade too quick, we trade on unupdated wallet information which could lead
+	 * to spending outside of our budget.
+	 */
+	private final long tradeTimout = 5 * Time.MINUTES;
+	private double lastTradeTime = -1;
 	
 	public AbstractTradeFloor(ISignal last, ISignal bid, ISignal ask, boolean doLimitOrder) {
 		this.tickerSignal = last;
@@ -28,7 +44,12 @@ public abstract class AbstractTradeFloor implements ITradeFloor {
 		
 		this.tradeListeners = new ArrayList<ITradeListener>();
 	}
-	
+
+	@Override
+	public boolean allowedToTrade(long tick) {
+		return lastTradeTime + tradeTimout <= tick;
+	}
+
 	@Override
 	public double toBtc(long tick, double usd) {
 		return usd / tickerSignal.getSample(tick).value;
@@ -46,14 +67,21 @@ public abstract class AbstractTradeFloor implements ITradeFloor {
 
 	@Override
 	public OpenOrder buy(long tick, IWallet wallet, TradeAction action) {
-		// First call buyImpl, where the concrete class can store its buy logic
-		OpenOrder order = buyImpl(tick, wallet, action);
-		
-		// Notify what has happened
-		notify(action);
-		
-		// Return the amount of Btc bought
-		return order;
+		if (this.allowedToTrade(tick)) {
+			// First call buyImpl, where the concrete class can store its buy logic
+			OpenOrder order = buyImpl(tick, wallet, action);
+
+			this.lastTradeTime = tick;
+
+			// Notify what has happened
+			notify(action);
+
+			// Return the amount of Btc bought
+			return order;
+		} else {
+			LOGGER.error("Not allowed to trade yet due to a recent trade");
+			return null;
+		}
 	}
 	
 	/**
@@ -67,14 +95,21 @@ public abstract class AbstractTradeFloor implements ITradeFloor {
 
 	@Override
 	public OpenOrder sell(long tick, IWallet wallet, TradeAction action) {
-		// First call sellImpl, where the concrete class can store its sell logic
-		OpenOrder order = sellImpl(tick, wallet, action);
-		
-		// Notify what has happened
-		notify(action);
-				
-		// Return the amount of USD bought
-		return order;
+		if(this.allowedToTrade(tick)) {
+			// First call sellImpl, where the concrete class can store its sell logic
+			OpenOrder order = sellImpl(tick, wallet, action);
+			
+			this.lastTradeTime = tick;
+			
+			// Notify what has happened
+			notify(action);
+					
+			// Return the amount of USD bought
+			return order;
+		} else {	
+			LOGGER.error("Not allowed to trade yet due to a recent trade");
+			return null;
+		}
 	}
 	
 	/**
