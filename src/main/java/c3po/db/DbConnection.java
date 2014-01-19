@@ -1,4 +1,4 @@
-package c3po;
+package c3po.db;
 
 import java.net.InetSocketAddress;
 import java.sql.*;

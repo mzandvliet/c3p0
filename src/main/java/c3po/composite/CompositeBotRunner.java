@@ -17,6 +17,7 @@ import c3po.bitstamp.BitstampSimulationTradeFloor;
 import c3po.bitstamp.BitstampSimulationTickerDbSource;
 import c3po.clock.ISimulationClock;
 import c3po.clock.SimulationClock;
+import c3po.db.DbConnection;
 import c3po.macd.MacdAnalysisConfig;
 import c3po.macd.MacdAnalysisNode;
 import c3po.macd.MacdAnalysisToTradeAdviceNode;
@@ -26,7 +27,6 @@ import c3po.node.GraphingNode;
 import c3po.utils.Time;
 import c3po.wallet.IWallet;
 import c3po.wallet.Wallet;
-import c3po.DbConnection;
 import c3po.ITradeFloor;
 
 public class CompositeBotRunner {

@@ -12,9 +12,9 @@ import c3po.bitstamp.BitstampSimulationOrderBookDbSource;
 import c3po.bitstamp.BitstampSimulationTickerDbSource;
 import c3po.clock.ISimulationClock;
 import c3po.clock.SimulationClock;
+import c3po.db.DbConnection;
 import c3po.node.GraphingNode;
 import c3po.utils.Time;
-import c3po.DbConnection;
 
 public class TradeAdviceRunner {
 	//================================================================================

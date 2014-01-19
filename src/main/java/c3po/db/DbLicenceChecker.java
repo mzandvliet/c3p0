@@ -7,7 +7,6 @@ import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import c3po.DbConnection;
 import c3po.IBot;
 import c3po.ITickable;
 import c3po.utils.Time;

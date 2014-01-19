@@ -14,6 +14,7 @@ import c3po.Training.*;
 import c3po.bitstamp.*;
 import c3po.clock.ISimulationClock;
 import c3po.clock.SimulationClock;
+import c3po.db.DbConnection;
 import c3po.node.GraphingNode;
 import c3po.simulation.*;
 import c3po.utils.Time;

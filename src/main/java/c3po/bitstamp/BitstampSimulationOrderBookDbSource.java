@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import c3po.*;
+import c3po.db.DbConnection;
 import c3po.db.DbTimeseriesSource;
 import c3po.orderbook.OrderBookPercentileTransformer;
 
