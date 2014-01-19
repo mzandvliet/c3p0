@@ -49,6 +49,7 @@ public class DbBotSession implements ITickable {
 		
 		// Fetch the session ID
 		ResultSet rs = connection.executeQueryWithRetries(String.format("select last_insert_id() as session_id from `%s`.`bot_session`", "bot_"+bot.getId()), MAXRETRIES);
+		rs.next();
 		this.sessionId  = rs.getInt("session_id");
 		
 		LOGGER.info("Registering start of session #" + sessionId);

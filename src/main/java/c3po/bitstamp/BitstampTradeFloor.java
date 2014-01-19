@@ -52,9 +52,6 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	
 	public BitstampTradeFloor(ISignal last, ISignal bid, ISignal ask, boolean doLimitOrder) {
 		super(last, bid, ask, doLimitOrder);
-		
-		// Real stuff is happening, extra JSON logging
-		JsonReader.debug = true;
 	}
 	
 	public BitstampTradeFloor(ISignal last, ISignal bid, ISignal ask, boolean doLimitOrder, int clientId, String apiKey, String apiSecret) {

@@ -91,7 +91,7 @@ public class DbConnection {
 	private boolean executeStatement(String sql) {
 		Statement statement = null;
 		try {
-			LOGGER.debug("Executing: " + sql);
+			//LOGGER.debug("Executing: " + sql);
 			statement = connection.createStatement();
 			statement.execute(sql);
 			return true;
@@ -122,7 +122,7 @@ public class DbConnection {
 	private ResultSet executeQuery(String sql) {
 		Statement statement = null;
 		try {
-			LOGGER.debug("Executing: " + sql);
+			//LOGGER.debug("Executing: " + sql);
 			statement = connection.createStatement();
 			return statement.executeQuery(sql);
 		} catch (SQLException e) {

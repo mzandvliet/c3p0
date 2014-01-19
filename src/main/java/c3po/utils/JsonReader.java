@@ -38,10 +38,9 @@ public class JsonReader {
 		return sb.toString();
 	}
 
-	public static JSONObject readJsonFromUrl(String url) throws IOException,
-			JSONException {
-		if (debug)
-			LOGGER.debug("GET " + url);
+	public static JSONObject readJsonFromUrl(String url) throws IOException, JSONException {
+		if(debug)
+		  LOGGER.debug("GET " + url);
 
 		InputStream is = new URL(url).openStream();
 		try {

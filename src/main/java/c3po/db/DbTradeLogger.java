@@ -41,7 +41,7 @@ public class DbTradeLogger implements ITradeListener, IWalletUpdateListener {
 	@Override
 	public void onWalletUpdate(WalletUpdateResult transaction) {
 		LOGGER.debug("Logging " + transaction);
-		final String sqlTemplate = "INSERT INTO  `%s`.`bot_wallet` (`timestamp` ,`walletUsd` ,`walletBtc`) VALUES ('%s',  '%s',  '%s',  '%s')";
+		final String sqlTemplate = "INSERT INTO  `%s`.`bot_wallet` (`timestamp` ,`walletUsd` ,`walletBtc`) VALUES ('%s',  '%s',  '%s')";
 		String sql = String.format(sqlTemplate, "bot_"+bot.getId(), transaction.timestamp / 1000, transaction.usdTotal, transaction.btcTotal);
 		connection.executeStatementWithRetries(sql, MAXRETRIES);
 	}
