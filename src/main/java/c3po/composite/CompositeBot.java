@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import c3po.*;
-import c3po.TradeAction.TradeActionType;
+import c3po.TradeIntention.TradeActionType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import c3po.wallet.IWallet;
 import c3po.ITradeFloor;
 import c3po.ITradeListener;
-import c3po.TradeAction;
+import c3po.TradeIntention;
 
 public class CompositeBot extends AbstractTickable implements IBot<CompositeBotConfig>, ITradeActionSource {
 	private static final Logger LOGGER = LoggerFactory.getLogger(CompositeBot.class);
@@ -81,7 +81,7 @@ public class CompositeBot extends AbstractTickable implements IBot<CompositeBotC
 	
 	private void tryToOpenPosition(long tick) {
 		double usdToSell = wallet.getUsdAvailable();
-		TradeAction buyAction = new TradeAction(TradeActionType.BUY, tick, usdToSell);
+		TradeIntention buyAction = new TradeIntention(TradeActionType.BUY, tick, usdToSell);
 		tradeFloor.buy(tick, wallet, buyAction);
 
 		//double currentAveragePrice = averagePrice.getOutput(0).getSample(tick).value;
@@ -94,7 +94,7 @@ public class CompositeBot extends AbstractTickable implements IBot<CompositeBotC
 	private void tryToClosePosition(long tick) {
 			
 			double btcToSell = wallet.getBtcAvailable(); 
-			TradeAction sellAction = new TradeAction(TradeActionType.SELL, tick, btcToSell);
+			TradeIntention sellAction = new TradeIntention(TradeActionType.SELL, tick, btcToSell);
 			tradeFloor.sell(tick, wallet, sellAction);
 			
 			//this.lastBuyPrice = -1;
@@ -131,7 +131,7 @@ public class CompositeBot extends AbstractTickable implements IBot<CompositeBotC
 		return String.format("Bot ID: %s, Config: [%s]", id, tradeSignals);
 	}
 
-	private void notify(TradeAction action) {
+	private void notify(TradeIntention action) {
 		for (ITradeListener listener : listeners) {
 			listener.onTrade(action);
 		}

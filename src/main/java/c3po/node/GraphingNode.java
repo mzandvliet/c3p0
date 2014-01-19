@@ -16,7 +16,7 @@ import c3po.ISignal;
 import c3po.ITickable;
 import c3po.ITradeListener;
 import c3po.Sample;
-import c3po.TradeAction;
+import c3po.TradeIntention;
 
 /*
  * 
@@ -91,7 +91,7 @@ public class GraphingNode extends ApplicationFrame implements ITickable, ITradeL
 	}
 	
 	@Override
-	public void onTrade(TradeAction action) {
+	public void onTrade(TradeIntention action) {
 		XYPlot plot = (XYPlot) chart.getPlot();
 		
 		TimeSeries firstSeries = signalTimeSeries[0];

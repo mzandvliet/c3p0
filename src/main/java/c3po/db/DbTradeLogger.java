@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import c3po.IBot;
 import c3po.ITradeListener;
-import c3po.TradeAction;
+import c3po.TradeIntention;
 import c3po.wallet.IWalletUpdateListener;
 import c3po.wallet.WalletUpdateResult;
 
@@ -30,7 +30,7 @@ public class DbTradeLogger implements ITradeListener, IWalletUpdateListener {
 	}
 
 	@Override
-	public void onTrade(TradeAction action) {
+	public void onTrade(TradeIntention action) {
 		LOGGER.debug("Logging " + action);
 		final String sqlTemplate = "INSERT INTO  `%s`.`bot_trade_action` (`timestamp` ,`action_type` ,`amount`) VALUES ('%s',  '%s',  '%s',  '%s')";
 		String sql = String.format(sqlTemplate, "bot_"+bot.getId(), Math.floor(action.timestamp / 1000.0d), action.action, action.volume);

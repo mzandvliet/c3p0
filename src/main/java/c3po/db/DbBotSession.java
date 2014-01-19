@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import c3po.IBot;
 import c3po.ITradeListener;
-import c3po.TradeAction;
+import c3po.TradeIntention;
 import c3po.wallet.IWalletUpdateListener;
 import c3po.wallet.WalletUpdateResult;
 

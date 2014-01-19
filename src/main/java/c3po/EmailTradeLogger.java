@@ -49,7 +49,7 @@ public class EmailTradeLogger implements ITradeListener {
 	}
 	
 	@Override
-	public void onTrade(TradeAction action) {
+	public void onTrade(TradeIntention action) {
 		String host = HOST;
         String from = USER_NAME;
         String pass = PASSWORD;

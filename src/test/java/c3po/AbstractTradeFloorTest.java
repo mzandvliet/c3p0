@@ -29,12 +29,12 @@ public class AbstractTradeFloorTest {
 			}
 			
 			@Override
-			protected OpenOrder sellImpl(long tick, IWallet wallet, TradeAction action) {
+			protected OpenOrder sellImpl(long tick, IWallet wallet, TradeIntention action) {
 				return null;
 			}
 			
 			@Override
-			protected OpenOrder buyImpl(long tick, IWallet wallet, TradeAction action) {
+			protected OpenOrder buyImpl(long tick, IWallet wallet, TradeIntention action) {
 				return null;
 			}
 		};

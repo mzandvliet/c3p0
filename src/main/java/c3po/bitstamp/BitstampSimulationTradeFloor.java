@@ -28,7 +28,7 @@ public class BitstampSimulationTradeFloor extends AbstractTradeFloor {
 	}
 	
 	@Override
-	public OpenOrder buyImpl(long tick, IWallet wallet, TradeAction action) {
+	public OpenOrder buyImpl(long tick, IWallet wallet, TradeIntention action) {
 		// NOTE: This assumes action.volume is in USD		
 		
 		// We get the latest ask, assuming the ticker is updated by some other part of the app
@@ -44,7 +44,7 @@ public class BitstampSimulationTradeFloor extends AbstractTradeFloor {
 	}
 
 	@Override
-	public OpenOrder sellImpl(long tick, IWallet wallet, TradeAction action) {
+	public OpenOrder sellImpl(long tick, IWallet wallet, TradeIntention action) {
 		// NOTE: This assumes action.volume is in BTC	
 		
 		// We get the latest ask, assuming the ticker is updated by some other part of the app

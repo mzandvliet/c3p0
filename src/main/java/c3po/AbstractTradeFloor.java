@@ -66,7 +66,7 @@ public abstract class AbstractTradeFloor implements ITradeFloor {
 	}
 
 	@Override
-	public OpenOrder buy(long tick, IWallet wallet, TradeAction action) {
+	public OpenOrder buy(long tick, IWallet wallet, TradeIntention action) {
 		if (this.allowedToTrade(tick)) {
 			// First call buyImpl, where the concrete class can store its buy logic
 			OpenOrder order = buyImpl(tick, wallet, action);
@@ -91,10 +91,10 @@ public abstract class AbstractTradeFloor implements ITradeFloor {
 	 * @param action
 	 * @return Resulting Order
 	 */
-	protected abstract OpenOrder buyImpl(long tick, IWallet wallet, TradeAction action);
+	protected abstract OpenOrder buyImpl(long tick, IWallet wallet, TradeIntention action);
 
 	@Override
-	public OpenOrder sell(long tick, IWallet wallet, TradeAction action) {
+	public OpenOrder sell(long tick, IWallet wallet, TradeIntention action) {
 		if(this.allowedToTrade(tick)) {
 			// First call sellImpl, where the concrete class can store its sell logic
 			OpenOrder order = sellImpl(tick, wallet, action);
@@ -119,9 +119,9 @@ public abstract class AbstractTradeFloor implements ITradeFloor {
 	 * @param action
 	 * @return Resulting Order
 	 */
-	protected abstract OpenOrder sellImpl(long tick, IWallet wallet, TradeAction action);
+	protected abstract OpenOrder sellImpl(long tick, IWallet wallet, TradeIntention action);
 
-	private void notify(TradeAction action) {
+	private void notify(TradeIntention action) {
 		for (ITradeListener listener : tradeListeners) {
 			listener.onTrade(action);
 		}

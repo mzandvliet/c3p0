@@ -2,18 +2,18 @@ package c3po;
 
 import c3po.utils.Time;
 
-/* TODO:
+/**
+ *  TODO:
  * 
  * - Reference or handle to bot who initiated the trade
  * - Separate concept of trade action from trade success/result
  */
-
-public class TradeAction {
+public class TradeIntention {
 	final public TradeActionType action;
 	final public long timestamp;
 	final public double volume;
 
-	public TradeAction(TradeActionType action, long timestamp, double volume) {
+	public TradeIntention(TradeActionType action, long timestamp, double volume) {
 		this.action = action;
 		this.timestamp = timestamp;
 		this.volume = volume;

@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import c3po.AbstractTradeFloor;
 import c3po.ISignal;
-import c3po.TradeAction;
+import c3po.TradeIntention;
 import c3po.structs.OpenOrder;
 import c3po.utils.JsonReader;
 import c3po.utils.Time;
@@ -182,7 +182,7 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	}
 
 	@Override
-	public OpenOrder buyImpl(long tick, IWallet wallet, TradeAction action) {
+	public OpenOrder buyImpl(long tick, IWallet wallet, TradeIntention action) {
 		OpenOrder order = null;
 		try {
 			// The amount of Btc we are going to get if we buy for volume USD
@@ -230,7 +230,7 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	}
 
 	@Override
-	public OpenOrder sellImpl(long tick, IWallet wallet, TradeAction action) {
+	public OpenOrder sellImpl(long tick, IWallet wallet, TradeIntention action) {
 		OpenOrder order = null;
 		try {
 			// We get the latest ask, assuming the ticker is updated by some other part of the app

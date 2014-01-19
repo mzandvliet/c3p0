@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import c3po.*;
-import c3po.TradeAction.TradeActionType;
+import c3po.TradeIntention.TradeActionType;
 import c3po.node.ExpMovingAverageNode;
 import c3po.node.INode;
 import c3po.utils.SignalMath;
@@ -96,7 +96,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 
 		if (buyThresholdReached && volumeThresholdReached) {			
 			double usdToSell = wallet.getUsdAvailable();
-			TradeAction buyAction = new TradeAction(TradeActionType.BUY, tick, usdToSell);
+			TradeIntention buyAction = new TradeIntention(TradeActionType.BUY, tick, usdToSell);
 			tradeFloor.buy(tick, wallet, buyAction);
 			
 			if (verbose)
@@ -119,7 +119,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 
 		if (sellThresholdReached) {
 			double btcToSell = wallet.getBtcAvailable(); 
-			TradeAction sellAction = new TradeAction(TradeActionType.SELL, tick, btcToSell);
+			TradeIntention sellAction = new TradeIntention(TradeActionType.SELL, tick, btcToSell);
 			tradeFloor.sell(tick, wallet, sellAction);
 			
 			if (verbose)
@@ -153,7 +153,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 				LOGGER.debug(String.format("Cutting at %s. Last buy: %s, because the current price %,.2f is less than %,.2f of %,.2f", new Date(tick), String.valueOf(lastBuyPrice), currentAveragePrice, config.lossCutThreshold, lastHighestPositionPrice));
 			
 			double btcToSell = wallet.getBtcAvailable(); // All-in
-			TradeAction sellAction = new TradeAction(TradeActionType.SELL, tick, btcToSell);
+			TradeIntention sellAction = new TradeIntention(TradeActionType.SELL, tick, btcToSell);
 			tradeFloor.sell(tick, wallet, sellAction);
 			
 			this.lastBuyPrice = -1;
@@ -195,7 +195,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		return tradeFloor;
 	}
 
-	private void notify(TradeAction action) {	
+	private void notify(TradeIntention action) {	
 		for (ITradeListener listener : listeners) {
 			listener.onTrade(action);
 		}

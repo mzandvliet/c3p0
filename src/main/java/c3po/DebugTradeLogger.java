@@ -9,25 +9,25 @@ import org.slf4j.LoggerFactory;
 public class DebugTradeLogger implements ITradeListener {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DebugTradeLogger.class);
 	
-	private List<TradeAction> actions;
+	private List<TradeIntention> actions;
 	
 	public DebugTradeLogger() {
-		this.actions = new ArrayList<TradeAction>();
+		this.actions = new ArrayList<TradeIntention>();
 	}
 	
 	@Override
-	public void onTrade(TradeAction action) {
+	public void onTrade(TradeIntention action) {
 		actions.add(action);
 	}
 	
-	public List<TradeAction> getActions() {
+	public List<TradeIntention> getActions() {
 		return actions;
 	}
 	
 	public void writeLog() {
 		LOGGER.debug("Trades: " + actions.size());
 		
-		for(TradeAction action : actions) {
+		for(TradeIntention action : actions) {
 			LOGGER.debug(action.toString());
 		}
 	}

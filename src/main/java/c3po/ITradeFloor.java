@@ -14,8 +14,8 @@ public interface ITradeFloor extends ITradeActionSource {
 	public double toBtc(long tick, double usd);
 	public double toUsd(long tick, double btc);
 
-	public OpenOrder buy(long tick, IWallet wallet, TradeAction action);
-	public OpenOrder sell(long tick, IWallet wallet, TradeAction action);
+	public OpenOrder buy(long tick, IWallet wallet, TradeIntention action);
+	public OpenOrder sell(long tick, IWallet wallet, TradeIntention action);
 	
 	public void updateWallet(IWallet wallet);
 	

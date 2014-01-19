@@ -5,8 +5,8 @@ import c3po.ISignal;
 import c3po.ITradeListener;
 import c3po.OutputSignal;
 import c3po.Sample;
-import c3po.TradeAction;
-import c3po.TradeAction.TradeActionType;
+import c3po.TradeIntention;
+import c3po.TradeIntention.TradeActionType;
 import c3po.simulation.ITradeAdviceSignal;
 
 /**
@@ -99,7 +99,7 @@ public class LossStopNode extends AbstractTickable implements INode, ITradeAdvic
 	}
 
 	@Override
-	public void onTrade(TradeAction action) {
+	public void onTrade(TradeIntention action) {
 		if(action.action == TradeActionType.BUY) {
 			this.lastBuySample = new Sample(action.timestamp, lastPriceSample.value);
 			this.highestPriceSinceBuySample = lastBuySample;
