@@ -18,6 +18,7 @@ import c3po.bitstamp.BitstampTradeFloor;
 import c3po.clock.IRealtimeClock;
 import c3po.clock.ISimulationClock;
 import c3po.clock.SimulationClock;
+import c3po.db.DbBotSession;
 import c3po.db.DbConnection;
 import c3po.db.DbLicenceChecker;
 import c3po.db.DbTradeLogger;
@@ -38,6 +39,8 @@ public class RealtimeBotRunner {
 	private final static long timestep = 1 * Time.MINUTES;
 
 	private static DbLicenceChecker dbLicenceChecker;
+	private static DbBotSession dbBotSession;
+	
 
 	public static void main(String[] args) {
 		 
@@ -92,6 +95,7 @@ public class RealtimeBotRunner {
 			// Should not get any trades, but here for the wallet update
 			new DbTradeLogger(bot, dbConnection);
 	    	dbLicenceChecker = new DbLicenceChecker(bot, apiKey, dbConnection);
+	    	dbBotSession = new DbBotSession(bot, dbConnection);
 			
 			// Email Trade Logger
 			if(prop.containsKey("emailNotify")) {
@@ -101,6 +105,7 @@ public class RealtimeBotRunner {
 			}
 			
 			LOGGER.info("Starting bot: " + bot + " V"+VERSION_IDENTIFIER);
+			dbBotSession.startSession(VERSION_IDENTIFIER);
 			
 			preload(wrappedSource, dbConnection, bot);
 			run(wrappedSource, dbConnection, bot, tradeFloor, wallet);
@@ -150,6 +155,7 @@ public class RealtimeBotRunner {
 				
 		// Run the program
 		clock.addListener(dbLicenceChecker);
+		clock.addListener(dbBotSession);
 		clock.addListener(bot);
 		clock.run();
 		clock.removeListener(bot);
