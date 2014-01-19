@@ -24,6 +24,7 @@ import c3po.AbstractTradeFloor;
 import c3po.ISignal;
 import c3po.structs.TradeIntention;
 import c3po.structs.TradeResult;
+import c3po.structs.TradeResult.TradeActionType;
 import c3po.utils.JsonReader;
 import c3po.utils.Time;
 import c3po.wallet.IWallet;
@@ -304,7 +305,7 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 				// Loop over all the open orders
 				for(TradeResult openOrder : openOrders) {
 					// Adjust sell order if needed
-					if(openOrder.getType() == TradeResult.SELL && openOrder.getPrice() != sellPrice) {
+					if(openOrder.getType() == TradeResult.TradeActionType.SELL && openOrder.getPrice() != sellPrice) {
 						LOGGER.info("Adjusting "+ openOrder + " to match price " + sellPrice);
 						cancelOrder(openOrder);
 						
@@ -313,7 +314,7 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 					}
 					
 					// Adjust buy order if needed
-					if(openOrder.getType() == TradeResult.BUY && openOrder.getPrice() != buyPrice) {
+					if(openOrder.getType() == TradeResult.TradeActionType.BUY && openOrder.getPrice() != buyPrice) {
 						LOGGER.info("Adjusting "+ openOrder + " to match price " + buyPrice);
 						cancelOrder(openOrder);
 						
@@ -352,7 +353,7 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 		
 		LOGGER.info("Placed sell order: Sell " + doubleToAmountString(amount) + " BTC for " + doubleToPriceString(price) + " USD. Result: " + result);
 		
-		return new TradeResult(result.getLong("id"), dateStringToSec(result.getString("datetime")), result.getInt("type"), result.getDouble("price"), result.getDouble("amount"));
+		return openOrderToTradeResult(result);
 	}
 	
 	/**
@@ -375,7 +376,11 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 		
 		LOGGER.info("Placed buy order: Buy " + doubleToAmountString(btcToBuy) + " BTC for " + doubleToPriceString(price) + " USD. Result: " + result);
 		
-		return new TradeResult(result.getLong("id"), dateStringToSec(result.getString("datetime")), result.getInt("type"), result.getDouble("price"), result.getDouble("amount"));
+		return openOrderToTradeResult(result);
+	}
+
+	private TradeResult openOrderToTradeResult(JSONObject result) throws ParseException {
+		return new TradeResult(result.getLong("id"), dateStringToMs(result.getString("datetime")),  intActionToEnum(result.getInt("type")), result.getDouble("price"), result.getDouble("amount"));
 	}
 
 	/**
@@ -391,14 +396,18 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 
 		for(int index = 0; index < result.length(); index++) {
 			JSONObject row = result.getJSONObject(index);
-			openOrders.add(new TradeResult(row.getLong("id"), dateStringToSec(row.getString("datetime")), row.getInt("type"), row.getDouble("price"), row.getDouble("amount")));
+			openOrders.add(openOrderToTradeResult(row));
 		}
 		
 		return openOrders;
 	}
 	
-	public long dateStringToSec(String input) throws ParseException {
-		return sdf.parse(input).getTime()/1000;
+	private long dateStringToMs(String input) throws ParseException {
+		return sdf.parse(input).getTime();
+	}
+	
+	private TradeActionType intActionToEnum(int action) {
+		return action == 0 ? TradeActionType.BUY : TradeActionType.SELL;
 	}
 
 	/**

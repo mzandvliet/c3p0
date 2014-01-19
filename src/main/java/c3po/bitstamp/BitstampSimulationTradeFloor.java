@@ -41,7 +41,7 @@ public class BitstampSimulationTradeFloor extends AbstractTradeFloor {
 		// We assume the trade is fulfilled instantly, for the price of the ask
 		wallet.modify(action.timestamp, -action.volume, boughtBtc);
 
-		return new TradeResult(0, action.timestamp, TradeResult.BUY, currentAsk.value, boughtBtc);
+		return new TradeResult(0, action.timestamp, TradeResult.TradeActionType.BUY, currentAsk.value, boughtBtc);
 	}
 
 	@Override
@@ -57,7 +57,7 @@ public class BitstampSimulationTradeFloor extends AbstractTradeFloor {
 		// We assume the trade is fulfilled instantly, for the price of the bid
 		wallet.modify(action.timestamp, boughtUsd, -action.volume);
 
-		return new TradeResult(0, action.timestamp, TradeResult.SELL, currentBid.value, boughtUsd);
+		return new TradeResult(0, action.timestamp, TradeResult.TradeActionType.SELL, currentBid.value, boughtUsd);
 	}
 
 	@Override

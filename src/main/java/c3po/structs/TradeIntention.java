@@ -1,12 +1,10 @@
 package c3po.structs;
 
-import c3po.utils.Time;
-
 /**
- *  TODO:
- * 
- * - Reference or handle to bot who initiated the trade
- * - Separate concept of trade action from trade success/result
+ * TradeIntention is a struct for all the parameters
+ * that entail the desire to make a trade. It can be 
+ * passed to the TradeFloor that will try to make it
+ * happen.
  */
 public class TradeIntention {
 	final public TradeActionType action;
@@ -24,7 +22,8 @@ public class TradeIntention {
 		SELL;
 	}
 	
+	@Override
 	public String toString() {
-		return String.format("%s for %f %s on %s", action, volume, action == TradeActionType.BUY ? "Usd" : "Btc" , Time.format(timestamp));
+		return "TradeIntention [action=" + action + ", timestamp=" + timestamp + ", volume=" + volume + "]";
 	}
 }

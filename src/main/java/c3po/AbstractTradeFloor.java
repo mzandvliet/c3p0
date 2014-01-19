@@ -6,7 +6,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import c3po.macd.MacdTraderNode;
 import c3po.structs.TradeIntention;
 import c3po.structs.TradeResult;
 import c3po.utils.Time;
@@ -75,7 +74,7 @@ public abstract class AbstractTradeFloor implements ITradeFloor {
 			this.lastTradeTime = tick;
 
 			// Notify what has happened
-			notify(action);
+			notify(order);
 
 			// Return the amount of Btc bought
 			return order;
@@ -103,7 +102,7 @@ public abstract class AbstractTradeFloor implements ITradeFloor {
 			this.lastTradeTime = tick;
 			
 			// Notify what has happened
-			notify(action);
+			notify(order);
 					
 			// Return the amount of USD bought
 			return order;
@@ -122,7 +121,7 @@ public abstract class AbstractTradeFloor implements ITradeFloor {
 	 */
 	protected abstract TradeResult sellImpl(long tick, IWallet wallet, TradeIntention action);
 
-	private void notify(TradeIntention action) {
+	private void notify(TradeResult action) {
 		for (ITradeListener listener : tradeListeners) {
 			listener.onTrade(action);
 		}

@@ -3,7 +3,7 @@ package c3po;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import c3po.structs.TradeIntention;
+import c3po.structs.TradeResult;
 
 import java.util.*;
 
@@ -53,7 +53,7 @@ public class EmailTradeLogger implements ITradeListener {
 	}
 	
 	@Override
-	public void onTrade(TradeIntention action) {
+	public void onTrade(TradeResult action) {
 		String host = HOST;
         String from = USER_NAME;
         String pass = PASSWORD;

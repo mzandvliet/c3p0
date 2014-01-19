@@ -12,6 +12,7 @@ import c3po.node.ExpMovingAverageNode;
 import c3po.node.INode;
 import c3po.structs.TradeIntention;
 import c3po.structs.TradeIntention.TradeActionType;
+import c3po.structs.TradeResult;
 import c3po.utils.SignalMath;
 import c3po.utils.Time;
 import c3po.wallet.IWallet;
@@ -98,7 +99,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		if (buyThresholdReached && volumeThresholdReached) {			
 			double usdToSell = wallet.getUsdAvailable();
 			TradeIntention buyAction = new TradeIntention(TradeActionType.BUY, tick, usdToSell);
-			tradeFloor.buy(tick, wallet, buyAction);
+			TradeResult tradeResult = tradeFloor.buy(tick, wallet, buyAction);
 			
 			if (verbose)
 				LOGGER.debug("Opening at " + new Date(tick));
@@ -108,7 +109,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 			this.lastBuyPrice = currentAveragePrice;
 			this.lastHighestPositionPrice = currentAveragePrice;
 
-			notify(buyAction);
+			notify(tradeResult);
 		}
 	}
 
@@ -121,7 +122,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		if (sellThresholdReached) {
 			double btcToSell = wallet.getBtcAvailable(); 
 			TradeIntention sellAction = new TradeIntention(TradeActionType.SELL, tick, btcToSell);
-			tradeFloor.sell(tick, wallet, sellAction);
+			TradeResult tradeResult = tradeFloor.sell(tick, wallet, sellAction);
 			
 			if (verbose)
 				LOGGER.debug("Closing at " + new Date(tick) + ". Last Buy: " + String.valueOf(lastBuyPrice) + ", Current Price: " + String.valueOf(currentPrice) + ", Current Diff: " + String.valueOf(sellCurrentDiff.value) + ", New Treshold: " + String.valueOf(currentSellThreshold));
@@ -129,7 +130,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 			this.lastBuyPrice = -1;
 			this.lastHighestPositionPrice = -1;
 
-			notify(sellAction);
+			notify(tradeResult);
 		}
 	}
 	
@@ -155,12 +156,12 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 			
 			double btcToSell = wallet.getBtcAvailable(); // All-in
 			TradeIntention sellAction = new TradeIntention(TradeActionType.SELL, tick, btcToSell);
-			tradeFloor.sell(tick, wallet, sellAction);
+			TradeResult tradeResult = tradeFloor.sell(tick, wallet, sellAction);
 			
 			this.lastBuyPrice = -1;
 			this.lastHighestPositionPrice = -1;
 
-			notify(sellAction);
+			notify(tradeResult);
 		}
 	}
 
@@ -196,7 +197,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		return tradeFloor;
 	}
 
-	private void notify(TradeIntention action) {	
+	private void notify(TradeResult action) {	
 		for (ITradeListener listener : listeners) {
 			listener.onTrade(action);
 		}

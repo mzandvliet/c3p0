@@ -1,7 +1,7 @@
 package c3po;
 
-import c3po.structs.TradeIntention;
+import c3po.structs.TradeResult;
 
 public interface ITradeListener {
-	public void onTrade(TradeIntention action);
+	public void onTrade(TradeResult action);
 }

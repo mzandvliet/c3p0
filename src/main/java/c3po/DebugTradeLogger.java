@@ -6,30 +6,30 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import c3po.structs.TradeIntention;
+import c3po.structs.TradeResult;
 
 public class DebugTradeLogger implements ITradeListener {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DebugTradeLogger.class);
 	
-	private List<TradeIntention> actions;
+	private List<TradeResult> actions;
 	
 	public DebugTradeLogger() {
-		this.actions = new ArrayList<TradeIntention>();
+		this.actions = new ArrayList<TradeResult>();
 	}
 	
 	@Override
-	public void onTrade(TradeIntention action) {
+	public void onTrade(TradeResult action) {
 		actions.add(action);
 	}
 	
-	public List<TradeIntention> getActions() {
+	public List<TradeResult> getActions() {
 		return actions;
 	}
 	
 	public void writeLog() {
 		LOGGER.debug("Trades: " + actions.size());
 		
-		for(TradeIntention action : actions) {
+		for(TradeResult action : actions) {
 			LOGGER.debug(action.toString());
 		}
 	}

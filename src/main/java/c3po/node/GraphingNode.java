@@ -17,6 +17,7 @@ import c3po.ITickable;
 import c3po.ITradeListener;
 import c3po.Sample;
 import c3po.structs.TradeIntention;
+import c3po.structs.TradeResult;
 
 /*
  * 
@@ -91,7 +92,7 @@ public class GraphingNode extends ApplicationFrame implements ITickable, ITradeL
 	}
 	
 	@Override
-	public void onTrade(TradeIntention action) {
+	public void onTrade(TradeResult action) {
 		XYPlot plot = (XYPlot) chart.getPlot();
 		
 		TimeSeries firstSeries = signalTimeSeries[0];
@@ -101,7 +102,7 @@ public class GraphingNode extends ApplicationFrame implements ITickable, ITradeL
 		double x = item.getPeriod().getFirstMillisecond();
 		double y = item.getValue().doubleValue();
 		final double angle = -2 * Math.PI / 8;
-		XYPointerAnnotation annotation = new XYPointerAnnotation(action.action.toString(), x, y, angle);
+		XYPointerAnnotation annotation = new XYPointerAnnotation(action.getType().toString(), x, y, angle);
 		
 		plot.addAnnotation(annotation);
 	}

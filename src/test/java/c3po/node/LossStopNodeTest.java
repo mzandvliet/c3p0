@@ -8,8 +8,8 @@ import org.mockito.Mockito;
 
 import c3po.ISignal;
 import c3po.Sample;
-import c3po.structs.TradeIntention;
-import c3po.structs.TradeIntention.TradeActionType;
+import c3po.structs.TradeResult.TradeActionType;
+import c3po.structs.TradeResult;
 
 public class LossStopNodeTest {
 
@@ -39,7 +39,7 @@ public class LossStopNodeTest {
 	    assertEquals(0.0d, lossStopNode.getOutputTradeAdvice().getSample(2000).value, 0.0001d);
 	    
 	    // Buy something
-	    lossStopNode.onTrade(new TradeIntention(TradeActionType.BUY, 2000, 12));
+	    lossStopNode.onTrade(new TradeResult(0, 2000, TradeActionType.BUY, 100, 25));
 	    
 	    lossStopNode.tick(3000);
 	    assertEquals(0.0d, lossStopNode.getOutputTradeAdvice().getSample(3000).value, 0.0001d);

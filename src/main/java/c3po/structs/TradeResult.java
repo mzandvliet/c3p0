@@ -1,18 +1,21 @@
 package c3po.structs;
 
+/**
+ * Actual done trade.
+ * 
+ * Should only be created by the Tradefloor as result
+ * on a verified trade.
+ */
 public class TradeResult {
 	private final long id;
-	private final long datetime;
-	private final int type;
+	private final long timestamp;
+	private final TradeActionType type;
 	private final double price;
 	private final double amount;
 	
-	public final static int BUY = 0;
-	public final static int SELL = 1;
-
-	public TradeResult(long id, long timestamp, int type, double price, double amount) {
+	public TradeResult(long id, long timestamp, TradeActionType type, double price, double amount) {
 		this.id = id;
-		this.datetime = timestamp;
+		this.timestamp = timestamp;
 		this.type = type;
 		this.price = price;
 		this.amount = amount;
@@ -22,22 +25,13 @@ public class TradeResult {
 		return id;
 	}
 	
-	public long getDatetime() {
-		return datetime;
+	public long getTimestamp() {
+		return timestamp;
 	}
 
-	public int getType() {
+	public TradeActionType getType() {
 		return type;
 	}
-	
-	public String getTypeDisplay() {
-		switch(type) {
-		case BUY: return "BUY";
-		case SELL: return "SELL";
-		default: return "UNKNOWN";
-		}
-	}
-
 
 	public double getPrice() {
 		return price;
@@ -48,8 +42,13 @@ public class TradeResult {
 	}
 	
 	
-	
+	public enum TradeActionType {
+		BUY,
+		SELL;
+	}
+
+	@Override
 	public String toString() {
-		return String.format("OpenOrder %s #%d: %s for %s", getTypeDisplay(), id, amount, price);
+		return "TradeResult [id=" + id + ", timestamp=" + timestamp + ", type="	+ type + ", price=" + price + ", amount=" + amount + "]";
 	}
 }

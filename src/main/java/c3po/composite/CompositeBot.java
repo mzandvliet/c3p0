@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import c3po.structs.TradeIntention;
 import c3po.structs.TradeIntention.TradeActionType;
+import c3po.structs.TradeResult;
 import c3po.wallet.IWallet;
 import c3po.ITradeFloor;
 import c3po.ITradeListener;
@@ -83,7 +84,7 @@ public class CompositeBot extends AbstractTickable implements IBot<CompositeBotC
 	private void tryToOpenPosition(long tick) {
 		double usdToSell = wallet.getUsdAvailable();
 		TradeIntention buyAction = new TradeIntention(TradeActionType.BUY, tick, usdToSell);
-		tradeFloor.buy(tick, wallet, buyAction);
+		TradeResult tradeResult = tradeFloor.buy(tick, wallet, buyAction);
 
 		//double currentAveragePrice = averagePrice.getOutput(0).getSample(tick).value;
 		//this.lastBuyPrice = currentAveragePrice;
@@ -96,7 +97,7 @@ public class CompositeBot extends AbstractTickable implements IBot<CompositeBotC
 			
 			double btcToSell = wallet.getBtcAvailable(); 
 			TradeIntention sellAction = new TradeIntention(TradeActionType.SELL, tick, btcToSell);
-			tradeFloor.sell(tick, wallet, sellAction);
+			TradeResult tradeResult = tradeFloor.sell(tick, wallet, sellAction);
 			
 			//this.lastBuyPrice = -1;
 			//this.lastHighestPositionPrice = -1;
@@ -132,7 +133,7 @@ public class CompositeBot extends AbstractTickable implements IBot<CompositeBotC
 		return String.format("Bot ID: %s, Config: [%s]", id, tradeSignals);
 	}
 
-	private void notify(TradeIntention action) {
+	private void notify(TradeResult action) {
 		for (ITradeListener listener : listeners) {
 			listener.onTrade(action);
 		}
