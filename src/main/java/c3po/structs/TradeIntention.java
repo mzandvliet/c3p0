@@ -1,4 +1,4 @@
-package c3po;
+package c3po.structs;
 
 import c3po.utils.Time;
 

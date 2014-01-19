@@ -8,9 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import c3po.*;
-import c3po.TradeIntention.TradeActionType;
 import c3po.node.ExpMovingAverageNode;
 import c3po.node.INode;
+import c3po.structs.TradeIntention;
+import c3po.structs.TradeIntention.TradeActionType;
 import c3po.utils.SignalMath;
 import c3po.utils.Time;
 import c3po.wallet.IWallet;

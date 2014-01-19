@@ -8,7 +8,7 @@ import org.json.JSONObject;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import c3po.structs.OpenOrder;
+import c3po.structs.TradeResult;
 
 public class BitstampTradefloorTest {
 
@@ -57,7 +57,7 @@ public class BitstampTradefloorTest {
 	@Test
 	public void testOpenOrders() throws Exception {
 		BitstampTradeFloor tf = new BitstampTradeFloor(null, null, null, true);
-		List<OpenOrder> openOrders = tf.getOpenOrders();
+		List<TradeResult> openOrders = tf.getOpenOrders();
 		System.out.println(openOrders);
 	}
 	
@@ -84,14 +84,14 @@ public class BitstampTradefloorTest {
 		BitstampTradeFloor tf = new BitstampTradeFloor(null, null, null, true);
 		
 		// Fetch the current open orders
-		List<OpenOrder> openOrders = tf.getOpenOrders();
+		List<TradeResult> openOrders = tf.getOpenOrders();
 		
-		List<OpenOrder> newOrders = new LinkedList<OpenOrder>();
+		List<TradeResult> newOrders = new LinkedList<TradeResult>();
 		
 		// Add a buy order
 		int buyPrice = 300;
 		double buyAmount = 0.01;
-		OpenOrder buyOrder = tf.placeBuyOrder(buyPrice, buyAmount);
+		TradeResult buyOrder = tf.placeBuyOrder(buyPrice, buyAmount);
 		newOrders.add(buyOrder);
 		
 		assertEquals(buyPrice, buyOrder.getPrice(), 0.001d);
@@ -100,7 +100,7 @@ public class BitstampTradefloorTest {
 		// Add a sell order
 		int sellPrice = 10000;
 		double sellAmount = 0.01;
-		OpenOrder sellOrder = tf.placeSellOrder(sellPrice, sellAmount);
+		TradeResult sellOrder = tf.placeSellOrder(sellPrice, sellAmount);
 		newOrders.add(sellOrder);
 		
 		assertEquals(sellPrice, sellOrder.getPrice(), 0.001d);
@@ -109,7 +109,7 @@ public class BitstampTradefloorTest {
 		Thread.sleep(60000);
 		
 		// See if the new orders arrived
-		List<OpenOrder> openOrders2 = tf.getOpenOrders();
+		List<TradeResult> openOrders2 = tf.getOpenOrders();
 		assertEquals(openOrders.size() + 2, openOrders2.size());
 		
 		// Cancel the orders again, check that there are none
@@ -117,7 +117,7 @@ public class BitstampTradefloorTest {
 		
 		Thread.sleep(60000);
 		
-		List<OpenOrder> openOrders3 = tf.getOpenOrders();
+		List<TradeResult> openOrders3 = tf.getOpenOrders();
 		assertEquals(openOrders.size(), openOrders3.size());
 	}
 }

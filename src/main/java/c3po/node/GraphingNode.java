@@ -16,7 +16,7 @@ import c3po.ISignal;
 import c3po.ITickable;
 import c3po.ITradeListener;
 import c3po.Sample;
-import c3po.TradeIntention;
+import c3po.structs.TradeIntention;
 
 /*
  * 

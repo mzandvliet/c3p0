@@ -7,7 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import c3po.macd.MacdTraderNode;
-import c3po.structs.OpenOrder;
+import c3po.structs.TradeIntention;
+import c3po.structs.TradeResult;
 import c3po.utils.Time;
 import c3po.wallet.IWallet;
 
@@ -66,10 +67,10 @@ public abstract class AbstractTradeFloor implements ITradeFloor {
 	}
 
 	@Override
-	public OpenOrder buy(long tick, IWallet wallet, TradeIntention action) {
+	public TradeResult buy(long tick, IWallet wallet, TradeIntention action) {
 		if (this.allowedToTrade(tick)) {
 			// First call buyImpl, where the concrete class can store its buy logic
-			OpenOrder order = buyImpl(tick, wallet, action);
+			TradeResult order = buyImpl(tick, wallet, action);
 
 			this.lastTradeTime = tick;
 
@@ -91,13 +92,13 @@ public abstract class AbstractTradeFloor implements ITradeFloor {
 	 * @param action
 	 * @return Resulting Order
 	 */
-	protected abstract OpenOrder buyImpl(long tick, IWallet wallet, TradeIntention action);
+	protected abstract TradeResult buyImpl(long tick, IWallet wallet, TradeIntention action);
 
 	@Override
-	public OpenOrder sell(long tick, IWallet wallet, TradeIntention action) {
+	public TradeResult sell(long tick, IWallet wallet, TradeIntention action) {
 		if(this.allowedToTrade(tick)) {
 			// First call sellImpl, where the concrete class can store its sell logic
-			OpenOrder order = sellImpl(tick, wallet, action);
+			TradeResult order = sellImpl(tick, wallet, action);
 			
 			this.lastTradeTime = tick;
 			
@@ -119,7 +120,7 @@ public abstract class AbstractTradeFloor implements ITradeFloor {
 	 * @param action
 	 * @return Resulting Order
 	 */
-	protected abstract OpenOrder sellImpl(long tick, IWallet wallet, TradeIntention action);
+	protected abstract TradeResult sellImpl(long tick, IWallet wallet, TradeIntention action);
 
 	private void notify(TradeIntention action) {
 		for (ITradeListener listener : tradeListeners) {

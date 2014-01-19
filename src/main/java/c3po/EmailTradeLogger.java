@@ -2,7 +2,11 @@ package c3po;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import c3po.structs.TradeIntention;
+
 import java.util.*;
+
 import javax.mail.*;
 import javax.mail.internet.*;
 

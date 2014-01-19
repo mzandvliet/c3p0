@@ -5,9 +5,9 @@ import c3po.ISignal;
 import c3po.ITradeListener;
 import c3po.OutputSignal;
 import c3po.Sample;
-import c3po.TradeIntention;
-import c3po.TradeIntention.TradeActionType;
 import c3po.simulation.ITradeAdviceSignal;
+import c3po.structs.TradeIntention;
+import c3po.structs.TradeIntention.TradeActionType;
 
 /**
  * This node gives sell advice when the price drops

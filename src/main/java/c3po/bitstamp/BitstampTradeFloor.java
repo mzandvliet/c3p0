@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -21,8 +22,8 @@ import org.slf4j.LoggerFactory;
 
 import c3po.AbstractTradeFloor;
 import c3po.ISignal;
-import c3po.TradeIntention;
-import c3po.structs.OpenOrder;
+import c3po.structs.TradeIntention;
+import c3po.structs.TradeResult;
 import c3po.utils.JsonReader;
 import c3po.utils.Time;
 import c3po.wallet.IWallet;
@@ -182,8 +183,8 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	}
 
 	@Override
-	public OpenOrder buyImpl(long tick, IWallet wallet, TradeIntention action) {
-		OpenOrder order = null;
+	public TradeResult buyImpl(long tick, IWallet wallet, TradeIntention action) {
+		TradeResult order = null;
 		try {
 			// The amount of Btc we are going to get if we buy for volume USD
 			double buyPrice = getBuyPrice();
@@ -230,8 +231,8 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	}
 
 	@Override
-	public OpenOrder sellImpl(long tick, IWallet wallet, TradeIntention action) {
-		OpenOrder order = null;
+	public TradeResult sellImpl(long tick, IWallet wallet, TradeIntention action) {
+		TradeResult order = null;
 		try {
 			// We get the latest ask, assuming the ticker is updated by some other part of the app
 			double sellPrice = this.getSellPrice();
@@ -290,7 +291,7 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 			lastAdjustOrdersUpdate = new Date().getTime();
 			
 			try {
-				List<OpenOrder> openOrders = getOpenOrders();
+				List<TradeResult> openOrders = getOpenOrders();
 				
 				// Stop in case of no open orders
 				if(openOrders.size() == 0)
@@ -301,9 +302,9 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 				double sellPrice = getSellPrice();
 			
 				// Loop over all the open orders
-				for(OpenOrder openOrder : openOrders) {
+				for(TradeResult openOrder : openOrders) {
 					// Adjust sell order if needed
-					if(openOrder.getType() == OpenOrder.SELL && openOrder.getPrice() != sellPrice) {
+					if(openOrder.getType() == TradeResult.SELL && openOrder.getPrice() != sellPrice) {
 						LOGGER.info("Adjusting "+ openOrder + " to match price " + sellPrice);
 						cancelOrder(openOrder);
 						
@@ -312,7 +313,7 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 					}
 					
 					// Adjust buy order if needed
-					if(openOrder.getType() == OpenOrder.BUY && openOrder.getPrice() != buyPrice) {
+					if(openOrder.getType() == TradeResult.BUY && openOrder.getPrice() != buyPrice) {
 						LOGGER.info("Adjusting "+ openOrder + " to match price " + buyPrice);
 						cancelOrder(openOrder);
 						
@@ -339,7 +340,7 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	 * @throws Exception 
 	 * @throws JSONException 
 	 */
-	public OpenOrder placeSellOrder(double price, double amount) throws JSONException, Exception {
+	public TradeResult placeSellOrder(double price, double amount) throws JSONException, Exception {
 
 		List<NameValuePair> params = new LinkedList<NameValuePair>();
 		params.add(new BasicNameValuePair("price", String.valueOf(doubleToPriceString(price))));
@@ -351,7 +352,7 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 		
 		LOGGER.info("Placed sell order: Sell " + doubleToAmountString(amount) + " BTC for " + doubleToPriceString(price) + " USD. Result: " + result);
 		
-		return new OpenOrder(result.getLong("id"), dateStringToSec(result.getString("datetime")), result.getInt("type"), result.getDouble("price"), result.getDouble("amount"));
+		return new TradeResult(result.getLong("id"), dateStringToSec(result.getString("datetime")), result.getInt("type"), result.getDouble("price"), result.getDouble("amount"));
 	}
 	
 	/**
@@ -363,7 +364,7 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	 * @throws Exception 
 	 * @throws JSONException 
 	 */
-	public OpenOrder placeBuyOrder(double price, double btcToBuy) throws JSONException, Exception {
+	public TradeResult placeBuyOrder(double price, double btcToBuy) throws JSONException, Exception {
 		List<NameValuePair> params = new LinkedList<NameValuePair>();
 		params.add(new BasicNameValuePair("price", String.valueOf(doubleToPriceString(price))));
 		params.add(new BasicNameValuePair("amount", String.valueOf(doubleToAmountString(btcToBuy))));
@@ -374,7 +375,7 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 		
 		LOGGER.info("Placed buy order: Buy " + doubleToAmountString(btcToBuy) + " BTC for " + doubleToPriceString(price) + " USD. Result: " + result);
 		
-		return new OpenOrder(result.getLong("id"), dateStringToSec(result.getString("datetime")), result.getInt("type"), result.getDouble("price"), result.getDouble("amount"));
+		return new TradeResult(result.getLong("id"), dateStringToSec(result.getString("datetime")), result.getInt("type"), result.getDouble("price"), result.getDouble("amount"));
 	}
 
 	/**
@@ -383,14 +384,14 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	 * @return List of open orders
 	 * @throws Exception
 	 */
-	public List<OpenOrder> getOpenOrders() throws Exception {
+	public List<TradeResult> getOpenOrders() throws Exception {
 		JSONArray result = new JSONArray(doAuthenticatedCall("https://www.bitstamp.net/api/open_orders/"));
 		
-		List<OpenOrder> openOrders = new LinkedList<OpenOrder>();
+		List<TradeResult> openOrders = new LinkedList<TradeResult>();
 
 		for(int index = 0; index < result.length(); index++) {
 			JSONObject row = result.getJSONObject(index);
-			openOrders.add(new OpenOrder(row.getLong("id"), dateStringToSec(row.getString("datetime")), row.getInt("type"), row.getDouble("price"), row.getDouble("amount")));
+			openOrders.add(new TradeResult(row.getLong("id"), dateStringToSec(row.getString("datetime")), row.getInt("type"), row.getDouble("price"), row.getDouble("amount")));
 		}
 		
 		return openOrders;
@@ -410,13 +411,13 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 	 * @throws JSONException
 	 * @throws Exception
 	 */
-    public void cancelOrders(List<OpenOrder> ordersToCancel) throws JSONException, Exception {
-		for(OpenOrder order : ordersToCancel) {
+    public void cancelOrders(List<TradeResult> ordersToCancel) throws JSONException, Exception {
+		for(TradeResult order : ordersToCancel) {
 			cancelOrder(order);
 		}
 	}
     
-    public void cancelOrder(OpenOrder order) throws JSONException, Exception {
+    public void cancelOrder(TradeResult order) throws JSONException, Exception {
 		List<NameValuePair> params = new LinkedList<NameValuePair>();
 		params.add(new BasicNameValuePair("id", String.valueOf(order.getId())));
 		String result = doAuthenticatedCall("https://www.bitstamp.net/api/cancel_order/", params);

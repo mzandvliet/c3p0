@@ -7,7 +7,8 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import c3po.structs.OpenOrder;
+import c3po.structs.TradeIntention;
+import c3po.structs.TradeResult;
 import c3po.utils.Time;
 import c3po.wallet.IWallet;
 
@@ -29,12 +30,12 @@ public class AbstractTradeFloorTest {
 			}
 			
 			@Override
-			protected OpenOrder sellImpl(long tick, IWallet wallet, TradeIntention action) {
+			protected TradeResult sellImpl(long tick, IWallet wallet, TradeIntention action) {
 				return null;
 			}
 			
 			@Override
-			protected OpenOrder buyImpl(long tick, IWallet wallet, TradeIntention action) {
+			protected TradeResult buyImpl(long tick, IWallet wallet, TradeIntention action) {
 				return null;
 			}
 		};

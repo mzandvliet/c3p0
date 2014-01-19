@@ -1,6 +1,7 @@
 package c3po;
 
-import c3po.structs.OpenOrder;
+import c3po.structs.TradeIntention;
+import c3po.structs.TradeResult;
 import c3po.wallet.IWallet;
 
 /* Todo:
@@ -14,8 +15,8 @@ public interface ITradeFloor extends ITradeActionSource {
 	public double toBtc(long tick, double usd);
 	public double toUsd(long tick, double btc);
 
-	public OpenOrder buy(long tick, IWallet wallet, TradeIntention action);
-	public OpenOrder sell(long tick, IWallet wallet, TradeIntention action);
+	public TradeResult buy(long tick, IWallet wallet, TradeIntention action);
+	public TradeResult sell(long tick, IWallet wallet, TradeIntention action);
 	
 	public void updateWallet(IWallet wallet);
 	

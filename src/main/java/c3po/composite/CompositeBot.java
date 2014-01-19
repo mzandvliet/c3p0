@@ -4,14 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import c3po.*;
-import c3po.TradeIntention.TradeActionType;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import c3po.structs.TradeIntention;
+import c3po.structs.TradeIntention.TradeActionType;
 import c3po.wallet.IWallet;
 import c3po.ITradeFloor;
 import c3po.ITradeListener;
-import c3po.TradeIntention;
 
 public class CompositeBot extends AbstractTickable implements IBot<CompositeBotConfig>, ITradeActionSource {
 	private static final Logger LOGGER = LoggerFactory.getLogger(CompositeBot.class);

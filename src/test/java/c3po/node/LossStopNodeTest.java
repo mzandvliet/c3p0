@@ -8,8 +8,8 @@ import org.mockito.Mockito;
 
 import c3po.ISignal;
 import c3po.Sample;
-import c3po.TradeIntention;
-import c3po.TradeIntention.TradeActionType;
+import c3po.structs.TradeIntention;
+import c3po.structs.TradeIntention.TradeActionType;
 
 public class LossStopNodeTest {
 

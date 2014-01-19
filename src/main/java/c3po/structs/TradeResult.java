@@ -1,6 +1,6 @@
 package c3po.structs;
 
-public class OpenOrder {
+public class TradeResult {
 	private final long id;
 	private final long datetime;
 	private final int type;
@@ -10,7 +10,7 @@ public class OpenOrder {
 	public final static int BUY = 0;
 	public final static int SELL = 1;
 
-	public OpenOrder(long id, long timestamp, int type, double price, double amount) {
+	public TradeResult(long id, long timestamp, int type, double price, double amount) {
 		this.id = id;
 		this.datetime = timestamp;
 		this.type = type;
