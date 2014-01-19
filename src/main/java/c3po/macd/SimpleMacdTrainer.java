@@ -26,7 +26,7 @@ public class SimpleMacdTrainer {
 	
 	private final static long simulationEndTime = new Date().getTime() - (Time.DAYS * 2);
 	private final static long simulationStartTime = 1387309371000l;
-	private final static long simulationLength = Time.DAYS * 3;
+	private final static long simulationLength = Time.DAYS * 4;
 	
 	// Timing
 	private final static long interpolationTime = 120 * Time.SECONDS;
@@ -47,7 +47,7 @@ public class SimpleMacdTrainer {
 	// Config mutation ranges
 	private final static double mutationChance = 0.1d;
 	private final static long minAnalysisPeriod = 1 * Time.MINUTES;
-	private final static long maxAnalysisPeriod = 12 * Time.HOURS;
+	private final static long maxAnalysisPeriod = 24 * Time.HOURS;
 	private final static double minBuyDiffThreshold = 0.0d;
 	private final static double maxBuyDiffThreshold = 30.0d;
 	private final static double minSellDiffThreshold = -30.0d;

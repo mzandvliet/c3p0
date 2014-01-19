@@ -41,4 +41,9 @@ public interface ITradeFloor extends ITradeActionSource {
 	 * @return
 	 */
 	public boolean allowedToTrade(long tick);
+	
+	/**
+	 * Clears any state that might be in the tradefloor.
+	 */
+	public void reset();
 }

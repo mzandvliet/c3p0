@@ -149,4 +149,8 @@ public abstract class AbstractTradeFloor implements ITradeFloor {
 	
 	@Override
 	public void adjustOrders() {}
+	
+	public void reset() {
+		this.lastTradeTime = -1;
+	}
 }

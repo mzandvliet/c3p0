@@ -34,7 +34,7 @@ public class MacdBotRunner {
 //	private final static long simulationEndTime = new Date().getTime();
 //	private final static long simulationStartTime = simulationEndTime - Time.DAYS * 6;
 	private final static long simulationEndTime = new Date().getTime()  - Time.DAYS * 0;
-	private final static long simulationStartTime = new Date().getTime()  - Time.DAYS * 3;
+	private final static long simulationStartTime = new Date().getTime()  - Time.DAYS * 20;
 	
 	private final static long interpolationTime = 120 * Time.SECONDS;
 	private final static long timestep = 60 * Time.SECONDS;

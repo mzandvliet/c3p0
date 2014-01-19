@@ -74,5 +74,7 @@ public class SimulationContext {
 		for(INonRealtimeSource source : sources) {
 			source.reset();
 		}
+		
+		tradeFloor.reset();
 	}
 }
