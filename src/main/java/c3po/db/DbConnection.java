@@ -9,6 +9,10 @@ import org.slf4j.LoggerFactory;
  * This is a wrapper around the database connection which contains
  * the login credentials and can reinstate his connection
  * after a failure.
+ * 
+ * There are two methods that can query:
+ *  SELECT - executeQueryWithRetries
+ *  INS/UPD/DEL - executeStatementWithRetries
  */
 public class DbConnection {
 	

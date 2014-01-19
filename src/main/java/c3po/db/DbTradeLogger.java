@@ -28,19 +28,6 @@ public class DbTradeLogger implements ITradeListener, IWalletUpdateListener {
 		bot.getWallet().addListener(this);
 	}
 	
-	/**
-	 * This method registers the start of a bot session. It stores the current
-	 * version and config so we can keep track of what's running what.
-	 * 
-	 * @param startTime
-	 * @param version
-	 */
-	public void startSession(long startTime, String version) {
-		final String sqlTemplate = "INSERT INTO  `%s`.`bot_session` (`config`, `version`, `start_time`) VALUES ('%s', '%s',  '%s', '%s')";
-		String sql = String.format(sqlTemplate, "bot_"+bot.getId(), bot.getConfig().toEscapedJSON(), version, startTime / 1000, startTime / 1000);
-		connection.executeStatementWithRetries(sql, MAXRETRIES);
-	}
-	
 	@Override
 	public void onTrade(TradeAction action) {
 		final String sqlTemplate = "INSERT INTO  `%s`.`bot_trade_action` (`bot_id` ,`timestamp` ,`action_type` ,`amount`) VALUES ('%s',  '%s',  '%s',  '%s')";
