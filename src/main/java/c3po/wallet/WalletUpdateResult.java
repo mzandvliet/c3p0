@@ -45,10 +45,10 @@ public class WalletUpdateResult {
 			return false;
 		return true;
 	}
-
+	
+	
 	@Override
 	public String toString() {
-		return "WalletTransaction [timestamp=" + timestamp + ", usdTotal="
-				+ usdTotal + ", btcTotal=" + btcTotal + "]";
+		return "WalletTransaction [timestamp=" + timestamp + ", usdTotal=" + usdTotal + ", btcTotal=" + btcTotal + "]";
 	}
 }

@@ -10,7 +10,8 @@ import c3po.wallet.IWalletUpdateListener;
 import c3po.wallet.WalletUpdateResult;
 
 /**
- * Work in progress in using the database as source
+ * This class listens on Trade and Wallet updates and logs them in the bot specific
+ * database.
  */
 public class DbTradeLogger implements ITradeListener, IWalletUpdateListener {
 	
@@ -27,18 +28,20 @@ public class DbTradeLogger implements ITradeListener, IWalletUpdateListener {
 		bot.addTradeListener(this);
 		bot.getWallet().addListener(this);
 	}
-	
+
 	@Override
 	public void onTrade(TradeAction action) {
-		final String sqlTemplate = "INSERT INTO  `%s`.`bot_trade_action` (`bot_id` ,`timestamp` ,`action_type` ,`amount`) VALUES ('%s',  '%s',  '%s',  '%s')";
-		String sql = String.format(sqlTemplate, "bot_"+bot.getId(), bot.getId(), Math.floor(action.timestamp / 1000.0d), action.action, action.volume);
+		LOGGER.debug("Logging " + action);
+		final String sqlTemplate = "INSERT INTO  `%s`.`bot_trade_action` (`timestamp` ,`action_type` ,`amount`) VALUES ('%s',  '%s',  '%s',  '%s')";
+		String sql = String.format(sqlTemplate, "bot_"+bot.getId(), Math.floor(action.timestamp / 1000.0d), action.action, action.volume);
 		connection.executeStatementWithRetries(sql, MAXRETRIES);
 	}
 	
 	@Override
 	public void onWalletUpdate(WalletUpdateResult transaction) {
-		final String sqlTemplate = "INSERT INTO  `%s`.`bot_wallet` (`bot_id` ,`timestamp` ,`walletUsd` ,`walletBtc`) VALUES ('%s',  '%s',  '%s',  '%s')";
-		String sql = String.format(sqlTemplate, "bot_"+bot.getId(), bot.getId(), transaction.timestamp / 1000, transaction.usdTotal, transaction.btcTotal);
+		LOGGER.debug("Logging " + transaction);
+		final String sqlTemplate = "INSERT INTO  `%s`.`bot_wallet` (`timestamp` ,`walletUsd` ,`walletBtc`) VALUES ('%s',  '%s',  '%s',  '%s')";
+		String sql = String.format(sqlTemplate, "bot_"+bot.getId(), transaction.timestamp / 1000, transaction.usdTotal, transaction.btcTotal);
 		connection.executeStatementWithRetries(sql, MAXRETRIES);
 	}
 }
