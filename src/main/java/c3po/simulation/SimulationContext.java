@@ -45,8 +45,8 @@ public class SimulationContext {
 		return volumeSignal;
 	}
 
-	public ITradeFloor getTradeFloor() {
-		return tradeFloor;
+	public ITradeFloor getTradeFloorInstance() {
+		return tradeFloor.copy();
 	}
 
 	public IWallet getWalletInstance() {

@@ -46,4 +46,6 @@ public interface ITradeFloor extends ITradeActionSource {
 	 * Clears any state that might be in the tradefloor.
 	 */
 	public void reset();
+	
+	public ITradeFloor copy();
 }

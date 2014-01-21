@@ -21,7 +21,7 @@ public abstract class AbstractTradeFloor implements ITradeFloor {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTradeFloor.class);
 	
-	private List<ITradeListener> tradeListeners;
+	protected List<ITradeListener> tradeListeners;
 
 	protected ISignal tickerSignal;
 	protected ISignal bidSignal;
@@ -150,6 +150,7 @@ public abstract class AbstractTradeFloor implements ITradeFloor {
 	@Override
 	public void adjustOrders() {}
 	
+	@Override
 	public void reset() {
 		this.lastTradeTime = -1;
 	}

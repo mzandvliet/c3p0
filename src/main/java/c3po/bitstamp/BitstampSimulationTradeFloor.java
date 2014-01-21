@@ -64,4 +64,15 @@ public class BitstampSimulationTradeFloor extends AbstractTradeFloor {
 	public void updateWallet(IWallet wallet) {
 		
 	}
+	
+	
+	@Override
+	public ITradeFloor copy() {
+		BitstampSimulationTradeFloor clone = new BitstampSimulationTradeFloor(this.tickerSignal, this.bidSignal, this.askSignal);
+		for(ITradeListener listener : this.tradeListeners) {
+			clone.addTradeListener(listener);
+		}
+		
+		return clone;
+	}
 }

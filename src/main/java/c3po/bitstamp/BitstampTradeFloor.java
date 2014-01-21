@@ -22,6 +22,8 @@ import org.slf4j.LoggerFactory;
 
 import c3po.AbstractTradeFloor;
 import c3po.ISignal;
+import c3po.ITradeFloor;
+import c3po.ITradeListener;
 import c3po.structs.TradeIntention;
 import c3po.structs.TradeResult;
 import c3po.structs.TradeResult.TradeActionType;
@@ -429,4 +431,10 @@ public class BitstampTradeFloor extends AbstractTradeFloor {
 		String result = doAuthenticatedCall("https://www.bitstamp.net/api/cancel_order/", params);
 		LOGGER.info("Cancelled order " + order + ": " + result);
     }
+    
+	@Override
+	public ITradeFloor copy() {
+		new RuntimeException("May not clone real tradefloor");
+		return null;
+	}
 }

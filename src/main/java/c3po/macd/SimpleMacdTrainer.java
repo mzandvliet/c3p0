@@ -159,7 +159,7 @@ public class SimpleMacdTrainer {
 				simContext.getPriceSignal(),
 				simContext.getVolumeSignal(),
 				simContext.getWalletInstance(),
-				simContext.getTradeFloor());
+				simContext.getTradeFloorInstance());
 		bot.getTraderNode().setVerbose(true);
 		
 		DebugTradeLogger tradeLogger = new DebugTradeLogger();
@@ -205,7 +205,7 @@ public class SimpleMacdTrainer {
 		diffGrapher.setVisible(true); 
 		
 		tradeLogger.writeLog();
-		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Wallet: " + simContext.getTradeFloor().getWalletValueInUsd(new Date().getTime(), bot.getWallet()));
+		LOGGER.debug("Num trades: " + tradeLogger.getActions().size() + ", Wallet: " + simContext.getTradeFloorInstance().getWalletValueInUsd(new Date().getTime(), bot.getWallet()));
 		LOGGER.debug("Ran winner: " + winningConfig.toString());
 		LOGGER.debug(winningConfig.toEscapedJSON());
 	}
