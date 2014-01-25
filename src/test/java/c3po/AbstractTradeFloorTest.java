@@ -24,7 +24,6 @@ public class AbstractTradeFloorTest {
 	@Test
 	public void testAllowedToTrade() {
 		ITradeFloor tf = new AbstractTradeFloor(null, null, null, false) {
-			
 			@Override
 			public void updateWallet(IWallet wallet) {
 			}
@@ -36,6 +35,11 @@ public class AbstractTradeFloorTest {
 			
 			@Override
 			protected TradeResult buyImpl(long tick, IWallet wallet, TradeIntention action) {
+				return null;
+			}
+
+			@Override
+			public ITradeFloor copy() {
 				return null;
 			}
 		};
