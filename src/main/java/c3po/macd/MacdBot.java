@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import c3po.wallet.IWallet;
+import c3po.IOverrideModusChecker;
 import c3po.ISignal;
 import c3po.ITradeFloor;
 import c3po.ITradeListener;

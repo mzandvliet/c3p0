@@ -21,6 +21,7 @@ import c3po.clock.SimulationClock;
 import c3po.db.DbBotSession;
 import c3po.db.DbConnection;
 import c3po.db.DbLicenceChecker;
+import c3po.db.DbOverrideModusChecker;
 import c3po.db.DbTradeLogger;
 import c3po.EmailTradeLogger;
 import c3po.ITradeFloor;
@@ -31,7 +32,7 @@ import c3po.wallet.Wallet;
 
 public class RealtimeBotRunner {
 
-	private static final String VERSION_IDENTIFIER = "6.0.0";
+	private static final String VERSION_IDENTIFIER = "6.1.0";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RealtimeBotRunner.class);
 	
@@ -40,6 +41,7 @@ public class RealtimeBotRunner {
 
 	private static DbLicenceChecker dbLicenceChecker;
 	private static DbBotSession dbBotSession;
+	private static DbOverrideModusChecker dbOverrideModusChecker;
 	
 
 	public static void main(String[] args) {
@@ -96,6 +98,8 @@ public class RealtimeBotRunner {
 			new DbTradeLogger(bot, dbConnection);
 	    	dbLicenceChecker = new DbLicenceChecker(bot, apiKey, dbConnection);
 	    	dbBotSession = new DbBotSession(bot, dbConnection);
+	    	dbOverrideModusChecker = new DbOverrideModusChecker(bot, apiKey, dbConnection);
+	    	bot.getTraderNode().setOverrideModusChecker(dbOverrideModusChecker);
 			
 			// Email Trade Logger
 			if(prop.containsKey("emailNotify")) {
@@ -155,6 +159,7 @@ public class RealtimeBotRunner {
 				
 		// Run the program
 		clock.addListener(dbLicenceChecker);
+		clock.addListener(dbOverrideModusChecker);
 		clock.addListener(dbBotSession);
 		clock.addListener(bot);
 		clock.run();

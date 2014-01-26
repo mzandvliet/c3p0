@@ -8,8 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import c3po.*;
+import c3po.db.DbOverrideModusChecker;
 import c3po.node.ExpMovingAverageNode;
 import c3po.node.INode;
+import c3po.simulation.NoOpOverrideModusChecker;
 import c3po.structs.TradeIntention;
 import c3po.structs.TradeIntention.TradeActionType;
 import c3po.structs.TradeResult;
@@ -24,7 +26,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	 */
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(MacdTraderNode.class);
-	private final INode averagePrice;
+	private final ISignal price;
 	private final MacdAnalysisNode buyAnalysis;
 	private final MacdAnalysisNode sellAnalysis;
 	private final MacdAnalysisNode volumeAnalysis;
@@ -32,6 +34,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	private final ITradeFloor tradeFloor;
 	private final MacdTraderConfig config;
 	private final long startDelay; // Used to avoid trading while macdBuffers are still empty and yield unstable signals
+	private IOverrideModusChecker overrideModusChecker;
 	
 	private long numSkippedTicks;
 	
@@ -43,16 +46,21 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 
 	public MacdTraderNode(long timestep, ISignal price, MacdAnalysisNode buyAnalysis, MacdAnalysisNode sellAnalysis, MacdAnalysisNode volumeAnalysis, IWallet wallet, ITradeFloor tradeFloor, MacdTraderConfig config, long startDelay) {
 		super(timestep);
-		this.averagePrice = new ExpMovingAverageNode(timestep, config.sellPricePeriod, price);
+		this.price = price;
 		this.buyAnalysis = buyAnalysis;
 		this.sellAnalysis = sellAnalysis;
 		this.volumeAnalysis = volumeAnalysis;
 		this.wallet = wallet;
 		this.tradeFloor = tradeFloor;
+		this.overrideModusChecker = new NoOpOverrideModusChecker();
 		this.config = config;
 		this.startDelay = startDelay;
 		this.listeners = new ArrayList<ITradeListener>();
 	}	
+	
+	public void setOverrideModusChecker(IOverrideModusChecker overrideModusChecker) {
+		this.overrideModusChecker = overrideModusChecker;
+	}
 
 	public MacdTraderConfig getConfig() {
 		return config;
@@ -69,10 +77,9 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		buyAnalysis.tick(tick);
 		sellAnalysis.tick(tick);
 		volumeAnalysis.tick(tick);
-		averagePrice.tick(tick);
 		
 		if (numSkippedTicks > startDelay) {
-			boolean allowedToTrade = tradeFloor.allowedToTrade(tick);
+			boolean allowedToTrade = tradeFloor.allowedToTrade(tick) && overrideModusChecker.mayTrade();
 			boolean hasEnoughUsd = wallet.getUsdAvailable() > minDollars;
 			boolean hasEnoughBtc = wallet.getBtcAvailable() > tradeFloor.toBtc(tick, minDollars);	
 
@@ -96,7 +103,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		boolean buyThresholdReached = buyCurrentDiff.value > config.minBuyDiffThreshold;
 		boolean volumeThresholdReached = volumeAnalysis.getOutputDifference().getSample(tick).value > config.buyVolumeThreshold;
 
-		if (buyThresholdReached && volumeThresholdReached) {			
+		if ((buyThresholdReached && volumeThresholdReached && overrideModusChecker.mayBuy()) || overrideModusChecker.mayBuy()) {			
 			double usdToSell = wallet.getUsdAvailable();
 			TradeIntention buyAction = new TradeIntention(TradeActionType.BUY, tick, usdToSell);
 			TradeResult tradeResult = tradeFloor.buy(tick, wallet, buyAction);
@@ -105,9 +112,10 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 				LOGGER.debug("Opening at " + new Date(tick));
 	
 
-			double currentAveragePrice = averagePrice.getOutput(0).getSample(tick).value;
-			this.lastBuyPrice = currentAveragePrice;
-			this.lastHighestPositionPrice = currentAveragePrice;
+			//double currentAveragePrice = averagePrice.getOutput(0).getSample(tick).value;
+			double lastBuyPrice = price.getSample(tick).value;
+			this.lastBuyPrice = lastBuyPrice;
+			this.lastHighestPositionPrice = lastBuyPrice;
 
 			notify(tradeResult);
 		}
@@ -119,7 +127,7 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 		double currentSellThreshold = calculateCurrentSellThreshold(config.minSellDiffThreshold, lastBuyPrice, currentPrice, config.sellThresholdRelaxationFactor);
 		boolean sellThresholdReached = sellCurrentDiff.value < currentSellThreshold;
 
-		if (sellThresholdReached) {
+		if ((sellThresholdReached && overrideModusChecker.maySell()) || overrideModusChecker.mustSell()) {
 			double btcToSell = wallet.getBtcAvailable(); 
 			TradeIntention sellAction = new TradeIntention(TradeActionType.SELL, tick, btcToSell);
 			TradeResult tradeResult = tradeFloor.sell(tick, wallet, sellAction);
@@ -137,22 +145,22 @@ public class MacdTraderNode extends AbstractTickable implements ITickable, ITrad
 	private void tryToCutPosition(long tick) {
 
 		boolean shouldSell = false;
-		double currentAveragePrice = 0.0d;
+		double currentPrice = 0.0d;
 		
 		try {
-			currentAveragePrice = averagePrice.getOutput(0).getSample(tick).value;
+			currentPrice = price.getSample(tick).value;
 			
-			if (currentAveragePrice > this.lastHighestPositionPrice)
-				this.lastHighestPositionPrice = currentAveragePrice;
+			if (currentPrice > this.lastHighestPositionPrice)
+				this.lastHighestPositionPrice = currentPrice;
 			
-			shouldSell = (currentAveragePrice < lastHighestPositionPrice * config.lossCutThreshold);
+			shouldSell = (currentPrice < lastHighestPositionPrice * config.lossCutThreshold);
 		} catch (Exception e) {
 			LOGGER.error("Could not check for loss cutting safeguard", e);
 		}
 		
-		if(shouldSell) {
+		if(shouldSell && overrideModusChecker.maySell()) {
 			if (verbose)
-				LOGGER.debug(String.format("Cutting at %s. Last buy: %s, because the current price %,.2f is less than %,.2f of %,.2f", new Date(tick), String.valueOf(lastBuyPrice), currentAveragePrice, config.lossCutThreshold, lastHighestPositionPrice));
+				LOGGER.debug(String.format("Cutting at %s. Last buy: %s, because the current price %,.2f is less than %,.2f of %,.2f", new Date(tick), String.valueOf(lastBuyPrice), currentPrice, config.lossCutThreshold, lastHighestPositionPrice));
 			
 			double btcToSell = wallet.getBtcAvailable(); // All-in
 			TradeIntention sellAction = new TradeIntention(TradeActionType.SELL, tick, btcToSell);

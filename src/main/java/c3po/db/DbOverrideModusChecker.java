@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import c3po.IBot;
+import c3po.IOverrideModusChecker;
 import c3po.ITickable;
 import c3po.utils.Time;
 import c3po.wallet.IWalletUpdateListener;
@@ -17,32 +18,10 @@ import c3po.wallet.WalletUpdateResult;
  * Periodically fetches the bot override modus. This can be set using
  * the web application and can alter the bot's decision model.
  */
-public class DbOverrideModusChecker implements ITickable {
+public class DbOverrideModusChecker implements IOverrideModusChecker {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(DbOverrideModusChecker.class);
 	private static final int MAXRETRIES = 3;
-	
-	public enum OverrideModus {
-	  NONE("none"),
-	  SELL_MAX("sell_max"),
-	  DONT_BUY("dont_buy"),
-	  DO_NOTHING("do_nothing"),
-	  DONT_SELL("dont_sell"),
-	  BUY_MAX("buy_max");
-	  
-	  String modus;
-	  
-	  private OverrideModus(String modus) {
-	    this.modus = modus;
-	  }
-	  
-	  public static OverrideModus getById(String modus) {
-		    for(OverrideModus e : values()) {
-		        if(e.modus.equals(modus)) return e;
-		    }
-		    return null;
-		 }
-	}
 	
 	/**
 	 * Retry timer
@@ -56,7 +35,7 @@ public class DbOverrideModusChecker implements ITickable {
 	/**
 	 * The last fetched modus
 	 */
-	private OverrideModus lastFetchedModus = OverrideModus.NONE;
+	private OverrideModus modus = OverrideModus.NONE;
 	private long lastFetchMoment = 0;
 	private long lastTick;
 
@@ -78,7 +57,7 @@ public class DbOverrideModusChecker implements ITickable {
 			ResultSet result = connection.executeQueryWithRetries(sql, MAXRETRIES);
 
 			if (result.next()) {
-				this.lastFetchedModus = OverrideModus.getById(result.getString(1));
+				this.modus = OverrideModus.getById(result.getString(1));
 				return true;
 			} else {
 				LOGGER.info("Could not fetch override modus");
@@ -91,7 +70,52 @@ public class DbOverrideModusChecker implements ITickable {
 	}
 
 	public OverrideModus getOverrideModus() {	
-		return lastFetchedModus;
+		return modus;
+	}
+	
+	public boolean mayBuy() {
+		if(modus == OverrideModus.NONE || modus == OverrideModus.BUY_MAX || modus == OverrideModus.DONT_SELL) {
+			return true;
+		} else {
+			LOGGER.info("May not buy because override modus " + modus + " is active");
+			return false;
+		}
+	}
+	
+	public boolean mayTrade() {
+		if(modus != OverrideModus.DO_NOTHING) {
+			return true;
+		} else {
+			LOGGER.info("May not trade because override modus " + modus + " is active");
+			return false;
+		}
+	}
+	
+	public boolean maySell() {
+		if(modus == OverrideModus.NONE || modus == OverrideModus.SELL_MAX || modus == OverrideModus.DONT_BUY) {
+			return true;
+		} else {
+			LOGGER.info("May not sell because override modus " + modus + " is active");
+			return false;
+		}
+	}
+	
+	public boolean mustSell() {
+		if(modus == OverrideModus.SELL_MAX)  {
+			LOGGER.info("Must sell because override modus " + modus + " is active");
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public boolean mustBuy() {
+		if(modus == OverrideModus.BUY_MAX)  {
+			LOGGER.info("Must buy because override modus " + modus + " is active");
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	@Override
