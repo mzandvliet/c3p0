@@ -32,8 +32,8 @@ public class RealtimeOrderbookView extends PApplet {
 	private static final long TIME_UNIT = Time.MINUTES;
 
 	private final static String jsonUrl = "https://www.bitstamp.net/api/order_book/";
-	private final static long timestep = 10 * Time.SECONDS;
-	private final static long timespan = 30 * Time.MINUTES;
+	private final static long timestep = 30 * Time.SECONDS;
+	private final static long timespan = 60 * Time.MINUTES;
 	
 	private static final double[] percentiles; 
 	
@@ -46,12 +46,13 @@ public class RealtimeOrderbookView extends PApplet {
 		 *  percentiles = new double[] { 99, 98, 97, 96, 95 };
 		 */
 		
-		final double percentileStep = 0.5;
-		final int numPercentiles = (int)(100d / percentileStep);		
-		
+		final double percentileScalingPower = 2.0; // The higher this is, the more precision is concentrated towards the 100th percentile
+		final int numPercentiles = 20;
+				
 		percentiles = new double[numPercentiles];
 		for (int i = 0; i < numPercentiles; i++) {
-			percentiles[i] = 100d-(i*percentileStep);
+			double normalizedIndex = i / (double)numPercentiles;
+			percentiles[i] = 100.0 - Math.pow(normalizedIndex, percentileScalingPower) * 100.0;
 		}
 	}
 	
@@ -105,7 +106,7 @@ public class RealtimeOrderbookView extends PApplet {
 	private float cameraTargetY = cameraY;
 	
 	private void updateScene() {
-		PVector orbitPoint = new PVector(900f, -50f, -200f);
+		PVector orbitPoint = new PVector(650f, -50f, -200f);
 		
 		if (mousePressed) {
 			cameraTargetX = cameraX + (mouseX - lastMouseX) * -1f;
