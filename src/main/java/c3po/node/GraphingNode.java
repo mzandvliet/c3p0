@@ -113,9 +113,9 @@ public class GraphingNode extends ApplicationFrame implements ITickable, ITradeL
 		}
 	}
 	
-	public void setLineColor(int index, float h, float s, float b) {
+	public void setLineColor(int index, float r, float g, float b) {
 		XYPlot plot = (XYPlot) chart.getPlot();
-		plot.getRenderer().setSeriesPaint(index, Color.getHSBColor(h, s, b));
+		plot.getRenderer().setSeriesPaint(index, new Color(r, g, b));
 	}
 
 	/**
